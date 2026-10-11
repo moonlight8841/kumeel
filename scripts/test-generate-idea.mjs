@@ -1,4 +1,5 @@
-﻿import assert from 'node:assert/strict'
+import assert from 'node:assert/strict'
+import {GoogleGenerativeAIAbortError} from '@google/generative-ai'
 import {createHandler} from '../api/generate-idea.mjs'
 const owner={id:'owner-id',email:'komeil9060@gmail.com',email_confirmed_at:'2026-01-01'}
 const output={title:'Idea',text:'Reasoning',question:'Why?',counterpoint:'Another view'}
@@ -18,6 +19,8 @@ assert.equal((await run({body:'invalid-json'})).statusCode,400)
 assert.equal((await run({key:''})).statusCode,503)
 assert.equal((await run({generate:async()=>({title:'Incomplete'})})).statusCode,502)
 assert.equal((await run({generate:async()=>{throw Error('secret provider details')}})).data.error.includes('secret'),false)
+assert.equal((await run({generate:async()=>{throw new GoogleGenerativeAIAbortError('private URL')}})).statusCode,504)
+assert.equal((await run({generate:async()=>{throw Object.assign(new Error('private'),{status:429})}})).statusCode,429)
 const good=await run();assert.equal(good.statusCode,200);assert.deepEqual(good.data.data,output)
 const limits=new Map();assert.equal((await run({limits})).statusCode,200);assert.equal((await run({limits})).statusCode,429)
 console.log('Gemini API: owner authorization, validation, unavailable key, malformed output, error redaction and cooldown passed; no provider request sent.')

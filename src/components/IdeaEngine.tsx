@@ -22,7 +22,7 @@ export function IdeaEngine({content,save}:{content:Content;save:(c:Content)=>boo
   try{
    const {data:{session}}=await supabase.auth.getSession()
    if(!session)throw new Error('سجّل الدخول بحساب الإدارة؛ التجربة المحلية لا تستدعي Gemini.')
-   const response=await fetch('/api/generate-idea',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({topic:draft.seed,method:draft.method}),signal:AbortSignal.timeout(45000)})
+   const response=await fetch('/api/generate-idea',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({topic:draft.seed,method:draft.method}),signal:AbortSignal.timeout(75000)})
    const result=await response.json()
    if(!response.ok||!result.success)throw new Error(result.error||'تعذّر توليد الاقتراح.')
    if(!result.data||['title','text','question','counterpoint'].some(k=>typeof result.data[k]!=='string'))throw new Error('اقتراح غير صالح.')
