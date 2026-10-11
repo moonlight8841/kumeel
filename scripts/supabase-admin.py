@@ -6,7 +6,7 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 
-PROJECT = 'ktwugokiznarbnsvohzq'
+PROJECT = 'jigypvbqiuakdatkzoul'
 
 def token():
     values = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if '=' in line and not line.startswith('#'))

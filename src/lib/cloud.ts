@@ -13,6 +13,7 @@ export async function readPublished() {
 }
 export async function isEditor(id: string) {
   const { data, error } = await supabase.from('kumeel_editors').select('user_id').eq('user_id', id).maybeSingle()
+  if (error?.code === 'PGRST205' || error?.code === '42P01') throw new Error('جداول إدارة المنصة لم تُهيّأ بعد. نفّذ ملف تهيئة قاعدة البيانات من حساب مسؤول المشروع.')
   if (error) throw error
   return Boolean(data)
 }

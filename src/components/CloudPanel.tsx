@@ -1,4 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { LoginForm } from './LoginForm'
+import { useEffect, useState } from 'react'
 import type { Content } from '../content'
 import { supabase, isEditor, loadCloudDraft, saveCloudDraft, publishContent, uploadMedia } from '../lib/cloud'
 
@@ -6,6 +7,8 @@ type Props = { content: Content; revision: number | null; onLoad: (content: Cont
 export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizationChange }: Props) {
   const [userId, setUserId] = useState<string | null>(null)
   const [authorized, setAuthorized] = useState(false)
+  const [checking, setChecking] = useState(false)
+  const [authVersion, setAuthVersion] = useState(0)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [confirmPublish, setConfirmPublish] = useState(false)
@@ -13,33 +16,25 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
     let current = true
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!current) return
-      setUserId(session?.user.id ?? null)
+      setUserId(session?.user.id ?? null); setAuthVersion(v => v + 1); setChecking(Boolean(session)); setConfirmPublish(false)
       setAuthorized(false); onAuthorizationChange(false)
     })
     return () => { current = false; subscription.unsubscribe() }
   }, [onAuthorizationChange])
   useEffect(() => {
     let current = true
-    if (userId) isEditor(userId).then(ok => { if (current) { setAuthorized(ok); onAuthorizationChange(ok) } }).catch(() => { if (current) setMessage('تعذّر التحقق من صلاحية النشر.') })
+    if (userId) isEditor(userId).then(ok => { if (current) { setAuthorized(ok); onAuthorizationChange(ok); setChecking(false) } }).catch(error => { if (current) { setChecking(false); setMessage(error instanceof Error ? error.message : 'تعذّر التحقق من صلاحية النشر. أعد المحاولة بعد استعادة الاتصال.') } })
     return () => { current = false }
-  }, [userId, onAuthorizationChange])
+  }, [userId, authVersion, onAuthorizationChange])
   async function run(task: () => Promise<void>) {
     setBusy(true); setMessage('')
     try { await task() } catch (error) { setMessage(error instanceof Error ? error.message : 'تعذّرت العملية. تحقق من الاتصال والصلاحيات ثم أعد المحاولة.') } finally { setBusy(false) }
   }
-  function login(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const data = new FormData(e.currentTarget)
-    void run(async () => {
-      const { error } = await supabase.auth.signInWithPassword({ email: String(data.get('email')), password: String(data.get('password')) })
-      if (error) throw new Error('تعذّر تسجيل الدخول. تحقق من البريد وكلمة المرور.')
-      setMessage('تم تسجيل الدخول.')
-    })
-  }
-  return <section className="cloud-panel"><h3>النشر السحابي</h3><p>حساب المالك يحفظ مسودات خاصة وينشر نسخة عامة للموقع.</p>
-    {!userId ? <form onSubmit={login}><label>البريد الإلكتروني<input defaultValue="kumeelalnahab@gmail.com" type="email" name="email" autoComplete="username" required /></label><button type="button" disabled={busy} onClick={e => { const form=e.currentTarget.closest('form'); if(!form)return; const email=String(new FormData(form).get('email')); if(!form.querySelector<HTMLInputElement>('input[type=email]')?.reportValidity())return; void run(async()=>{const {error}=await supabase.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:window.location.origin+'/admin'}});if(error)throw new Error('تعذّر إرسال رابط الدخول. تحقق من إعدادات الاتصال والبريد.');setMessage('راجع بريدك لفتح رابط الدخول. الحساب يحتاج تفويض المالك قبل إدارة الموقع.')}) }}>أرسل رابط دخول إلى بريدي</button><label>كلمة المرور<input type="password" name="password" autoComplete="current-password" required /></label><button className="primary" disabled={busy}>دخول المالك</button></form> : <>
-      <p>{authorized ? 'حساب مخوّل بالنشر' : 'هذا الحساب غير مخوّل بالنشر.'}</p>
+  return <section className={userId ? "cloud-panel" : "login-panel"}>{userId && <><h3>النشر السحابي</h3><p>حساب المالك يحفظ مسودات خاصة وينشر نسخة عامة للموقع.</p></>}
+    {!userId ? <LoginForm /> : <>
+      <p>{checking ? 'جارٍ التحقق من صلاحيات الحساب…' : authorized ? 'حساب مخوّل بالنشر' : 'هذا الحساب غير مخوّل بالنشر.'}</p>
       <button disabled={busy} onClick={() => void run(async () => { const { error } = await supabase.auth.signOut(); if (error) throw error })}>تسجيل الخروج</button>
+      {!authorized && !checking && <button disabled={busy} onClick={() => { setChecking(true); setAuthVersion(v => v + 1) }}>إعادة التحقق من الصلاحية</button>}
       {authorized && <><div className="cloud-actions"><button disabled={busy} onClick={() => void run(async () => { await saveCloudDraft(userId, content); setMessage('حُفظت مسودتك الخاصة في Supabase.') })}>حفظ مسودة سحابية</button><button disabled={busy} onClick={() => void run(async () => { if (!onLoad(await loadCloudDraft(userId))) throw new Error('تعذّر حفظ المسودة المحمّلة محليًا.'); setMessage('تم تحميل المسودة السحابية إلى الدفتر.') })}>تحميل المسودة السحابية</button></div>
       <label>رفع صورة أو فيديو إلى المكتبة<input type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" disabled={busy} onChange={e => { const file = e.target.files?.[0]; if (!file) return; e.target.value = ''; void run(async () => { const url = await uploadMedia(file); const saved = onLoad({ ...content, media: [...content.media, { id: crypto.randomUUID(), title: file.name.replace(/\.[^.]+$/, ''), type: file.type.startsWith('video/') ? 'فيديو' : 'صورة', url }] }); if (!saved) throw new Error('رُفع الملف لكن تعذّر حفظه في المسودة المحلية.'); setMessage('رُفع الملف وأُضيف إلى المسودة. انشر المسودة ليظهر في المعرض.') }) }} /></label><p className="sample-note">حتى ٥٠ ميغابايت. الملفات المرفوعة لها روابط عامة؛ المسودات النصية خاصة بحسابك.</p>
       <button className="primary" disabled={busy || revision === null} onClick={() => setConfirmPublish(true)}>نشر النسخة الحالية</button>
