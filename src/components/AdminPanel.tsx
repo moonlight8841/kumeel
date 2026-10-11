@@ -1,3 +1,4 @@
+import {IdeaEngine} from './IdeaEngine'
 import { useState } from 'react'
 import { validContent, type Content } from '../content'
 import {NotebookEditor} from './NotebookEditor'
@@ -18,10 +19,11 @@ export function AdminPanel({ content, revision, onSave, onPublish }: Props) {
  const [undo, setUndo] = useState<Content | null>(null)
  const allowed = authorized || (import.meta.env.DEV && local)
  function commit(next: Content) { if (!allowed || !validContent(next) || !onSave(next)) { setMessage('لم يتم الحفظ. راجع الحقول والروابط وحجم المحتوى.'); return false } setUndo(null); setMessage('حُفظت المسودة. راجعها قبل النشر العام.'); return true }
- const tabs = [['settings','الهوية والتصميم'],['writings','الكتابات'],['thoughts','الأفكار والوسائط واللقاءات'],['learning','المحتوى التعليمي'],['library','ترتيب المكتبة'],['books','\u0645\u0643\u062a\u0628\u0629 \u0627\u0644\u0643\u062a\u0628'],['backup','النسخ الاحتياطية']]
+ const tabs = [['engine','مصنع الأفكار'],['settings','الهوية والتصميم'],['writings','الكتابات'],['thoughts','الأفكار والوسائط واللقاءات'],['learning','المحتوى التعليمي'],['library','ترتيب المكتبة'],['books','\u0645\u0643\u062a\u0628\u0629 \u0627\u0644\u0643\u062a\u0628'],['backup','النسخ الاحتياطية']]
  return <div className="admin-shell" dir="rtl"><header className="admin-header"><ReadingMode/><a className="wordmark" href="/">كميل<span>.</span></a><a href="/">معاينة الموقع ↗</a></header><div className="admin-layout"><aside><span className="section-label">مساحة المالك</span><h1>لوحة الإدارة</h1><p>من الفكرة إلى أثرها.</p>{allowed && <nav aria-label="أقسام الإدارة">{tabs.map(([key,label]) => <button key={key} aria-pressed={tab===key} onClick={() => setTab(key)}>{label}</button>)}</nav>}</aside><main className="editor admin-main"><CloudPanel content={content} revision={revision} onLoad={commit} onPublish={onPublish} onAuthorizationChange={setAuthorized} hasUnsavedChanges={notebookDirty} />
  {!authorized && import.meta.env.DEV && <div className="admin-local"><p>التجربة المحلية تحفظ على هذا المتصفح. النشر السحابي يحتاج حسابًا مخوّلًا.</p><button onClick={() => setLocal(!local)}>{local ? 'إغلاق التجربة المحلية' : 'فتح تجربة الإدارة المحلية'}</button></div>}
  {!allowed ? <p>سجّل الدخول بحساب يملك صلاحية الإدارة لفتح أدوات التحرير. تسجيل الحساب وحده لا يمنح صلاحيات.</p> : <>
+ {tab==='engine'&&<IdeaEngine content={content} save={commit}/>}
  {tab==='settings' && <Settings key={JSON.stringify(content.site)} content={content} save={commit} />}
  {tab==='thoughts' && <ThoughtEditor content={content} onSave={commit} />}
  {tab==='writings' && <NotebookEditor content={content} save={commit} onDirtyChange={setNotebookDirty}/>}
