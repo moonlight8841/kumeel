@@ -16,6 +16,17 @@ try {
     for (const origin of ['https://evil.example', 'https://kumeel-nine.vercel.app.evil.example', 'http://kumeel-nine.vercel.app']) assert.throws(() => safeAuthReturnUrl(origin))
   })
   const { sessionCalendar } = await server.ssrLoadModule('/src/lib/calendar.ts')
+  const {totpQrSource,normalizeTotp}=await server.ssrLoadModule('/src/lib/mfa.ts')
+  await test('MFA accepts SDK data URLs without double wrapping and normalizes Arabic codes',()=>{
+    const svg='<svg xmlns="http://www.w3.org/2000/svg"><path fill="#000000"/></svg>'
+    const expected=`data:image/svg+xml,${encodeURIComponent(svg)}`
+    assert.equal(totpQrSource(svg),expected)
+    assert.equal(totpQrSource(`data:image/svg+xml;utf-8,${svg}`),expected)
+    assert.equal(totpQrSource(expected),expected)
+    assert.equal(totpQrSource('https://evil.example/qr'), '')
+    assert.equal(normalizeTotp('١٢٣ ٤٥٦'),'123456')
+    assert.equal(normalizeTotp('۱۲۳۴۵۶'),'123456')
+  })
   const {defaultBooks,validBooks} = await server.ssrLoadModule('/src/books.ts')
   const { render } = await server.ssrLoadModule('/src/entry-server.tsx')
   await test('Notebook formatting remains escaped text and public pages expose a login entry and mind exercises',()=>{
