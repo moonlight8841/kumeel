@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   const markup = `<div id="root">${render(scoped, pathname)}</div><script type="application/json" id="kumeel-content">${safeJson(scoped)}</script>`
   const html = replaceHead(template, renderHead(content, info, siteOrigin())).replace('<div id="root"></div>', () => markup)
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
-  res.setHeader('Cache-Control', info.kind === 'admin' ? 'no-store' : fresh ? 'public, s-maxage=60, stale-while-revalidate=300' : 'no-store')
+  res.setHeader('Cache-Control', ['admin','member'].includes(info.kind) ? 'no-store' : fresh ? 'public, s-maxage=60, stale-while-revalidate=300' : 'no-store')
   res.setHeader('X-Content-Type-Options', 'nosniff')
   if (info.noindex) res.setHeader('X-Robots-Tag', 'noindex, follow')
   return res.status(info.kind === 'missing' ? 404 : 200).send(req.method === 'HEAD' ? '' : html)

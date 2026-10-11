@@ -4,36 +4,119 @@
   "buildCommand": "npm run build && node scripts/prepare-vercel.mjs",
   "outputDirectory": "dist",
   "functions": {
-    "api/generate-idea.mjs": { "includeFiles": "{src/supabase-config.json,src/auth-config.json}", "maxDuration": 90 },
-    "api/page.mjs": { "includeFiles": "{dist/template.html,dist-ssr/**,src/supabase-config.json}" },
-    "api/sitemap.mjs": { "includeFiles": "{dist-ssr/**,src/supabase-config.json}" },
-    "api/robots.mjs": { "includeFiles": "{dist-ssr/**,src/supabase-config.json}" }
+    "api/generate-idea.mjs": {
+      "includeFiles": "{src/supabase-config.json,src/auth-config.json}",
+      "maxDuration": 90
+    },
+    "api/page.mjs": {
+      "includeFiles": "{dist/template.html,dist-ssr/**,src/supabase-config.json}"
+    },
+    "api/sitemap.mjs": {
+      "includeFiles": "{dist-ssr/**,src/supabase-config.json}"
+    },
+    "api/robots.mjs": {
+      "includeFiles": "{dist-ssr/**,src/supabase-config.json}"
+    }
   },
   "rewrites": [
-    { "source": "/explore", "destination": "/api/page?path=/explore" },
-    { "source": "/writings", "destination": "/api/page?path=/writings" },
-    { "source": "/library", "destination": "/api/page?path=/library" },
-    { "source": "/library/:id", "destination": "/api/page?path=/library/:id" },
-    { "source": "/admin", "destination": "/api/page?path=/admin" },
-    { "source": "/", "destination": "/api/page" },
-    { "source": "/index.html", "destination": "/api/page" },
-    { "source": "/about", "destination": "/api/page?path=/about" },
-    { "source": "/observatory", "destination": "/api/page?path=/observatory" },
-    { "source": "/salon", "destination": "/api/page?path=/salon" },
-    { "source": "/ideas/:id", "destination": "/api/page?path=/ideas/:id" },
-    { "source": "/writings/:id", "destination": "/api/page?path=/writings/:id" },
-    { "source": "/media/:id", "destination": "/api/page?path=/media/:id" },
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/robots.txt", "destination": "/api/robots" }
+    {
+      "source": "/community",
+      "destination": "/api/page?path=/community"
+    },
+    {
+      "source": "/member",
+      "destination": "/api/page?path=/member"
+    },
+    {
+      "source": "/explore",
+      "destination": "/api/page?path=/explore"
+    },
+    {
+      "source": "/writings",
+      "destination": "/api/page?path=/writings"
+    },
+    {
+      "source": "/library",
+      "destination": "/api/page?path=/library"
+    },
+    {
+      "source": "/library/:id",
+      "destination": "/api/page?path=/library/:id"
+    },
+    {
+      "source": "/admin",
+      "destination": "/api/page?path=/admin"
+    },
+    {
+      "source": "/",
+      "destination": "/api/page"
+    },
+    {
+      "source": "/index.html",
+      "destination": "/api/page"
+    },
+    {
+      "source": "/about",
+      "destination": "/api/page?path=/about"
+    },
+    {
+      "source": "/observatory",
+      "destination": "/api/page?path=/observatory"
+    },
+    {
+      "source": "/salon",
+      "destination": "/api/page?path=/salon"
+    },
+    {
+      "source": "/ideas/:id",
+      "destination": "/api/page?path=/ideas/:id"
+    },
+    {
+      "source": "/writings/:id",
+      "destination": "/api/page?path=/writings/:id"
+    },
+    {
+      "source": "/media/:id",
+      "destination": "/api/page?path=/media/:id"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    }
   ],
   "headers": [
-    { "source": "/(.*)", "headers": [
-      { "key": "X-Content-Type-Options", "value": "nosniff" },
-      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-      { "key": "X-Frame-Options", "value": "DENY" }
-      ,{ "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" }
-      ,{ "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
-      ,{ "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' https:; connect-src 'self' https://jigypvbqiuakdatkzoul.supabase.co wss://jigypvbqiuakdatkzoul.supabase.co https://challenges.cloudflare.com; frame-src https://www.youtube-nocookie.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests" }
-    ] }
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' https:; connect-src 'self' https://jigypvbqiuakdatkzoul.supabase.co wss://jigypvbqiuakdatkzoul.supabase.co https://challenges.cloudflare.com; frame-src https://www.youtube-nocookie.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+        }
+      ]
+    }
   ]
 }

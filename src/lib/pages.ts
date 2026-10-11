@@ -1,12 +1,14 @@
 import { initialContent, youtubeEmbed, type Content, type Idea, type Media, type Writing } from '../content'
 import {booksFor,type Book} from '../books'
 
-export type PageInfo = { path: string; kind: 'admin' | 'home' | 'about' | 'observatory' | 'salon' | 'library' | 'book' | 'idea' | 'writing' | 'writings' | 'explore' | 'media' | 'missing'; title: string; description: string; noindex: boolean; idea?: Idea; writing?: Writing; media?: Media; book?:Book }
+export type PageInfo = { path: string; kind: 'community' | 'member' | 'admin' | 'home' | 'about' | 'observatory' | 'salon' | 'library' | 'book' | 'idea' | 'writing' | 'writings' | 'explore' | 'media' | 'missing'; title: string; description: string; noindex: boolean; idea?: Idea; writing?: Writing; media?: Media; book?:Book }
 export const ownerName = 'كميل ال نهاب'
 const excerpt = (text: string) => text.replace(/\s+/g, ' ').trim().slice(0, 160)
 export function pageInfo(content: Content, pathname = '/'): PageInfo {
   const path = pathname.split('?')[0].replace(/\/+$/, '') || '/'
   const page = (kind: PageInfo['kind'], title: string, description: string, noindex = false): PageInfo => ({ path, kind, title: `${title} | ${ownerName}`, description: excerpt(description), noindex })
+  if (path === '/community') return page('community','مجتمع كميل','مساهمات عربية في الفلسفة والعلم والثقافة، ونقاشات تراجعها إدارة منصة كميل قبل النشر.')
+  if (path === '/member') return page('member','مساحة العضو','مسودات ومساهمات أعضاء مجتمع كميل.',true)
   if (path === '/admin') return page('admin', 'لوحة الإدارة', 'إدارة محتوى وتصميم منصة كميل ال نهاب.', true)
   if (path === '/') return page('home', 'الفلسفة والعلم والحوار', 'مساحة كميل ال نهاب للفلسفة والعلم والثقافة. أفكار وحكم ودروس مرئية وأسئلة نختبرها معًا في مجلس الحوار.')
   if (path === '/explore') return page('explore','اكتشف','قراءات وتجارب علمية وثقافية في منصة كميل.')
@@ -40,7 +42,7 @@ export function pageInfo(content: Content, pathname = '/'): PageInfo {
   return page('missing', 'الصفحة غير موجودة', 'تعذّر العثور على الصفحة المطلوبة. يمكنك العودة إلى مرصد الأفكار.', true)
 }
 export function publicPaths(content: Content): string[] {
-  return ['/', '/about', '/observatory', '/salon', '/library', '/writings', '/explore', ...booksFor(content).map(b=>`/library/${b.id}`), ...(content.ideas ?? []).filter(i => !i.sample).map(i => `/ideas/${encodeURIComponent(i.id)}`), ...content.writings.filter(w => !pageInfo(content, `/writings/${encodeURIComponent(w.id)}`).noindex).map(w => `/writings/${encodeURIComponent(w.id)}`), ...content.media.filter(m => m.purpose && m.description?.trim() && !m.url.startsWith('data:')).map(m => `/media/${encodeURIComponent(m.id)}`)]
+  return ['/', '/community', '/about', '/observatory', '/salon', '/library', '/writings', '/explore', ...booksFor(content).map(b=>`/library/${b.id}`), ...(content.ideas ?? []).filter(i => !i.sample).map(i => `/ideas/${encodeURIComponent(i.id)}`), ...content.writings.filter(w => !pageInfo(content, `/writings/${encodeURIComponent(w.id)}`).noindex).map(w => `/writings/${encodeURIComponent(w.id)}`), ...content.media.filter(m => m.purpose && m.description?.trim() && !m.url.startsWith('data:')).map(m => `/media/${encodeURIComponent(m.id)}`)]
 }
 const htmlEscape = (value: string) => value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!)
 const safeJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')

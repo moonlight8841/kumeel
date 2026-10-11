@@ -63,7 +63,7 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
     setBusy(true); setMessage('')
     try { await task() } catch (error) { setMessage(error instanceof Error ? error.message : 'تعذّرت العملية. تحقق من الاتصال والصلاحيات ثم أعد المحاولة.') } finally { setBusy(false) }
   }
-  return <section className={userId ? "cloud-panel" : "login-panel"}>{userId && <><h3>النشر السحابي</h3><p>حساب المالك يحفظ مسودات خاصة وينشر نسخة عامة للموقع.</p></>}
+  return <section className={userId ? "cloud-panel" : "login-panel"}>{userId && <><a className="text-link" href="/member">مساحة العضو ومساهماتي ←</a><h3>النشر السحابي</h3><p>حساب المالك يحفظ مسودات خاصة وينشر نسخة عامة للموقع.</p></>}
     {!userId ? <LoginForm /> : <>
       <p>{checking ? 'جارٍ التحقق من صلاحيات الحساب…' : authorized ? (authConfig.requireAdminMfa ? 'حساب مخوّل بالنشر · مصادقة ثنائية مؤكدة' : 'حساب مخوّل بالنشر · بريد مؤكّد') : !verifiedEmail ? 'أكّد بريدك الإلكتروني قبل المتابعة.' : member ? 'أكمل المصادقة الثنائية لفتح أدوات الإدارة.' : 'حساب قارئ · لا يملك صلاحيات الإدارة.'}</p>
       {authConfig.requireAdminMfa && member && !authorized && !checking && <AdminMfa key={userId} onVerified={()=>{setChecking(true);setAuthVersion(v=>v+1)}}/>}

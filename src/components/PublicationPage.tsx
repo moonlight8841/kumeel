@@ -1,3 +1,5 @@
+import {CommunityPage} from './CommunityPage'
+import {MemberSpace} from './MemberSpace'
 import {ReaderQuestion} from './ReaderQuestion'
 import {Explore} from './Explore'
 import {SiteHeader} from './SiteHeader'
@@ -23,6 +25,8 @@ export function PublicationPage({ content, info }: { content: Content; info: Pag
   const isArticle = Boolean(info.idea || info.writing || info.media)
   const text = info.idea?.text ?? info.writing?.text
   return <><a className="skip" href="#publication">انتقل إلى المحتوى</a><SiteHeader/><main id="publication">
+    {info.kind==='community'&&<CommunityPage/>}
+    {info.kind==='member'&&<MemberSpace/>}
     {info.kind==='explore'&&<Explore content={content}/>}
     {info.kind==='writings'&&<WritingsIndex content={content}/>}
     {info.kind === 'observatory' && <ThoughtSpace content={content} section="observatory" />}

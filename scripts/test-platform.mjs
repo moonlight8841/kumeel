@@ -29,6 +29,16 @@ try {
   })
   const {defaultBooks,validBooks} = await server.ssrLoadModule('/src/books.ts')
   const { render } = await server.ssrLoadModule('/src/entry-server.tsx')
+  await test('Community navigation is public, member workspace stays out of search and private payloads',()=>{
+    assert.equal(pageInfo(initialContent,'/community').kind,'community')
+    assert.equal(pageInfo(initialContent,'/member').noindex,true)
+    assert.ok(publicPaths(initialContent).includes('/community'))
+    assert.ok(!publicPaths(initialContent).includes('/member'))
+    const publicHtml=render(initialContent,'/community')
+    assert.ok(publicHtml.includes('مجتمع كميل'))
+    assert.ok(publicHtml.includes('href="/member"'))
+    assert.ok(!publicHtml.includes('review_note'))
+  })
   await test('Notebook formatting remains escaped text and public pages expose a login entry and mind exercises',()=>{
     const writing={id:'safe-notebook',title:'Notebook',category:'فلسفة',format:'markdown',text:'## Heading\n\n**Evidence**\n\n- First\n- Second\n\n> Reflection\n\n<script>alert(1)</script>'}
     const content={...initialContent,writings:[writing]}
