@@ -4,6 +4,7 @@
   "buildCommand": "npm run build && node scripts/prepare-vercel.mjs",
   "outputDirectory": "dist",
   "functions": {
+    "api/generate-idea.mjs": { "includeFiles": "{src/supabase-config.json,src/auth-config.json}", "maxDuration": 60 },
     "api/page.mjs": { "includeFiles": "{dist/template.html,dist-ssr/**,src/supabase-config.json}" },
     "api/sitemap.mjs": { "includeFiles": "{dist-ssr/**,src/supabase-config.json}" },
     "api/robots.mjs": { "includeFiles": "{dist-ssr/**,src/supabase-config.json}" }
