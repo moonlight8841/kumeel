@@ -1,4 +1,5 @@
 import { LoginForm } from './LoginForm'
+import { AdminMfa } from './AdminMfa'
 import { useEffect, useState } from 'react'
 import type { Content } from '../content'
 import { supabase, isEditor, loadCloudDraft, saveCloudDraft, publishContent, uploadMedia } from '../lib/cloud'
@@ -7,6 +8,9 @@ type Props = { content: Content; revision: number | null; onLoad: (content: Cont
 export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizationChange }: Props) {
   const [userId, setUserId] = useState<string | null>(null)
   const [authorized, setAuthorized] = useState(false)
+  const [sessionExpired, setSessionExpired] = useState(false)
+  const [member, setMember] = useState(false)
+  const [verifiedEmail, setVerifiedEmail] = useState(false)
   const [checking, setChecking] = useState(false)
   const [authVersion, setAuthVersion] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -16,24 +20,50 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
     let current = true
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!current) return
+      if (_event === 'SIGNED_IN' && session) { setSessionExpired(false); try { sessionStorage.setItem(`kumeel-idle-${session.user.id}`, String(Date.now())) } catch { /* Optional idle persistence. */ } }
       setUserId(session?.user.id ?? null); setAuthVersion(v => v + 1); setChecking(Boolean(session)); setConfirmPublish(false)
-      setAuthorized(false); onAuthorizationChange(false)
+      setAuthorized(false); setMember(false); setVerifiedEmail(false); onAuthorizationChange(false)
     })
     return () => { current = false; subscription.unsubscribe() }
   }, [onAuthorizationChange])
   useEffect(() => {
     let current = true
-    if (userId) isEditor(userId).then(ok => { if (current) { setAuthorized(ok); onAuthorizationChange(ok); setChecking(false) } }).catch(error => { if (current) { setChecking(false); setMessage(error instanceof Error ? error.message : 'تعذّر التحقق من صلاحية النشر. أعد المحاولة بعد استعادة الاتصال.') } })
+    if (userId) void (async()=>{
+      const {data:user,error:userError}=await supabase.auth.getUser()
+      if(userError||user.user?.id!==userId)throw new Error('تعذّر التحقق من جلسة الحساب. أعد تسجيل الدخول.')
+      const confirmed=Boolean(user.user.email_confirmed_at)
+      const ok=confirmed&&await isEditor(userId)
+      const {data:assurance,error}=await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      if(error)throw new Error('تعذّر التحقق من مستوى حماية الجلسة.')
+      const secure=!sessionExpired&&ok&&assurance.currentLevel==='aal2'
+      if(current){setVerifiedEmail(confirmed);setMember(ok&&!sessionExpired);setAuthorized(secure);onAuthorizationChange(secure);setChecking(false)}
+    })().catch(error=>{if(current){setChecking(false);setMessage(error instanceof Error?error.message:'تعذّر التحقق من صلاحيات الحساب.')}})
     return () => { current = false }
-  }, [userId, authVersion, onAuthorizationChange])
+  }, [userId, authVersion, sessionExpired, onAuthorizationChange])
+  useEffect(()=>{
+    if(!userId)return
+    const storageKey=`kumeel-idle-${userId}`
+    let last=Date.now()
+    try { const saved=Number(sessionStorage.getItem(storageKey));if(saved>0)last=saved } catch { /* Memory-only fallback. */ }
+    const activity=()=>{last=Date.now();try{sessionStorage.setItem(storageKey,String(last))}catch{/* Memory-only fallback. */}}
+    const events=['pointerdown','keydown'] as const
+    let expired=false
+    const check=()=>{if(!expired&&Date.now()-last>=15*60*1000){expired=true;setSessionExpired(true);setAuthorized(false);setMember(false);onAuthorizationChange(false);void supabase.auth.signOut({scope:'local'}).then(({error})=>{setMessage(error?'انتهت مهلة الخمول. أعد تسجيل الدخول بعد استعادة الاتصال.':'أُغلقت جلسة الإدارة بعد ١٥ دقيقة من الخمول.');try{sessionStorage.removeItem(storageKey)}catch{/* Optional cleanup. */}})}}
+    check()
+    events.forEach(event=>window.addEventListener(event,activity))
+    const timer=setInterval(check,10000)
+    return()=>{clearInterval(timer);events.forEach(event=>window.removeEventListener(event,activity))}
+  },[userId,onAuthorizationChange])
   async function run(task: () => Promise<void>) {
     setBusy(true); setMessage('')
     try { await task() } catch (error) { setMessage(error instanceof Error ? error.message : 'تعذّرت العملية. تحقق من الاتصال والصلاحيات ثم أعد المحاولة.') } finally { setBusy(false) }
   }
   return <section className={userId ? "cloud-panel" : "login-panel"}>{userId && <><h3>النشر السحابي</h3><p>حساب المالك يحفظ مسودات خاصة وينشر نسخة عامة للموقع.</p></>}
     {!userId ? <LoginForm /> : <>
-      <p>{checking ? 'جارٍ التحقق من صلاحيات الحساب…' : authorized ? 'حساب مخوّل بالنشر' : 'هذا الحساب غير مخوّل بالنشر.'}</p>
-      <button disabled={busy} onClick={() => void run(async () => { const { error } = await supabase.auth.signOut(); if (error) throw error })}>تسجيل الخروج</button>
+      <p>{checking ? 'جارٍ التحقق من صلاحيات الحساب…' : authorized ? 'حساب مخوّل بالنشر · مصادقة ثنائية مؤكدة' : !verifiedEmail ? 'أكّد بريدك الإلكتروني قبل المتابعة.' : member ? 'أكمل المصادقة الثنائية لفتح أدوات الإدارة.' : 'حساب قارئ · لا يملك صلاحيات الإدارة.'}</p>
+      {member && !authorized && !checking && <AdminMfa key={userId} onVerified={()=>{setChecking(true);setAuthVersion(v=>v+1)}}/>}
+      <button disabled={busy} onClick={() => void run(async () => { const { error } = await supabase.auth.signOut({scope:'local'}); if (error) throw error })}>تسجيل الخروج</button>
+      <button disabled={busy} onClick={() => void run(async () => { const {error}=await supabase.auth.signOut({scope:'global'});if(error)throw error })}>تسجيل الخروج من جميع الأجهزة</button>
       {!authorized && !checking && <button disabled={busy} onClick={() => { setChecking(true); setAuthVersion(v => v + 1) }}>إعادة التحقق من الصلاحية</button>}
       {authorized && <><div className="cloud-actions"><button disabled={busy} onClick={() => void run(async () => { await saveCloudDraft(userId, content); setMessage('حُفظت مسودتك الخاصة في Supabase.') })}>حفظ مسودة سحابية</button><button disabled={busy} onClick={() => void run(async () => { if (!onLoad(await loadCloudDraft(userId))) throw new Error('تعذّر حفظ المسودة المحمّلة محليًا.'); setMessage('تم تحميل المسودة السحابية إلى الدفتر.') })}>تحميل المسودة السحابية</button></div>
       <label>رفع صورة أو فيديو إلى المكتبة<input type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" disabled={busy} onChange={e => { const file = e.target.files?.[0]; if (!file) return; e.target.value = ''; void run(async () => { const url = await uploadMedia(file); const saved = onLoad({ ...content, media: [...content.media, { id: crypto.randomUUID(), title: file.name.replace(/\.[^.]+$/, ''), type: file.type.startsWith('video/') ? 'فيديو' : 'صورة', url }] }); if (!saved) throw new Error('رُفع الملف لكن تعذّر حفظه في المسودة المحلية.'); setMessage('رُفع الملف وأُضيف إلى المسودة. انشر المسودة ليظهر في المعرض.') }) }} /></label><p className="sample-note">حتى ٥٠ ميغابايت. الملفات المرفوعة لها روابط عامة؛ المسودات النصية خاصة بحسابك.</p>

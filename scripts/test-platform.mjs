@@ -6,6 +6,15 @@ const server = await createServer({ server: { middlewareMode: true }, appType: '
 try {
   const { initialContent, validContent, youtubeEmbed, meetingUrl, httpsUrl } = await server.ssrLoadModule('/src/content.ts')
   const { pageInfo, publicPaths, renderHead, replaceHead, structuredData } = await server.ssrLoadModule('/src/lib/pages.ts')
+  const { validNewPassword, safeAuthReturnUrl } = await server.ssrLoadModule('/src/lib/auth-security.ts')
+  await test('Authentication rejects weak passwords and untrusted return origins', () => {
+    assert.equal(validNewPassword('short'), false)
+    assert.equal(validNewPassword('a'.repeat(14)), true)
+    assert.equal(validNewPassword('a'.repeat(129)), false)
+    assert.equal(safeAuthReturnUrl('https://kumeel-nine.vercel.app'), 'https://kumeel-nine.vercel.app/admin')
+    assert.equal(safeAuthReturnUrl('http://127.0.0.1:5173'), 'http://127.0.0.1:5173/admin')
+    for (const origin of ['https://evil.example', 'https://kumeel-nine.vercel.app.evil.example', 'http://kumeel-nine.vercel.app']) assert.throws(() => safeAuthReturnUrl(origin))
+  })
   const { sessionCalendar } = await server.ssrLoadModule('/src/lib/calendar.ts')
   const { render } = await server.ssrLoadModule('/src/entry-server.tsx')
   await test('Production prerender uses the production renderer and excludes development controls', async () => {

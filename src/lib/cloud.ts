@@ -1,9 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 import config from '../supabase-config.json'
 import { validContent, type Content } from '../content'
+import { tabAuthStorage } from './auth-security'
+
+if (typeof window !== 'undefined') {
+  try { localStorage.removeItem('sb-jigypvbqiuakdatkzoul-auth-token') } catch { /* Old persistent sessions are no longer used. */ }
+}
 
 export const supabase = createClient(config.url, config.publishableKey, {
-  auth: { persistSession: typeof window !== 'undefined', autoRefreshToken: typeof window !== 'undefined', detectSessionInUrl: typeof window !== 'undefined' },
+  auth: { storageKey: 'kumeel-auth-v2', storage: tabAuthStorage, flowType: 'pkce', persistSession: typeof window !== 'undefined', autoRefreshToken: typeof window !== 'undefined', detectSessionInUrl: typeof window !== 'undefined' },
 })
 export async function readPublished() {
   const { data, error } = await supabase.from('kumeel_published').select('content,revision').eq('id', 'main').single()
