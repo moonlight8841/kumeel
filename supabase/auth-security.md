@@ -11,3 +11,5 @@ Turnstile is prepared but not enabled while `src/auth-config.json` has an empty 
 The owner must enroll a TOTP authenticator at first administrative login and complete its challenge. Store the manual setup secret safely before closing enrollment. No recovery bypass or client-side role assignment is provided. Do not share an owner session for testing.
 
 Cloudflare official skills are installed globally and its MCP OAuth connection is registered. Restart Codex to load the newly registered MCP tools before creating the widget. The Supabase MCP connection currently cannot administer the selected project, so its CAPTCHA secret and password policy require configuration through that project's dashboard.
+
+The sole administrator is `komeil9060@gmail.com`. Run `activate-owner.sql` after this account registers and confirms its email. The script revokes all other editor memberships. `kumeelalnahab@gmail.com` remains the public contact address and an ordinary visitor account.
