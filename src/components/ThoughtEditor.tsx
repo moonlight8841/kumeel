@@ -1,0 +1,48 @@
+import { useState, type FormEvent } from 'react'
+import { initialContent, validContent, youtubeEmbed, type Content, type Idea, type Media, type Session } from '../content'
+
+type Props = { content: Content; onSave: (content: Content) => boolean }
+export function ThoughtEditor({ content, onSave }: Props) {
+  const [editing, setEditing] = useState<Idea | null>(null)
+  const [editingMedia, setEditingMedia] = useState<Media | null>(null)
+  const [editingSession, setEditingSession] = useState<Session | null>(null)
+  const [message, setMessage] = useState('')
+  const ideas = content.ideas ?? initialContent.ideas ?? []
+  function commit(next: Content, form: HTMLFormElement) {
+    if (!validContent(next)) { setMessage('تحقق من الحقول والروابط. استخدم HTTPS، ورابط فيديو YouTube صالحًا أو رابط MP4/WebM مباشرًا، وللجلسة رابط Google Meet أو YouTube.'); return false }
+    if (!onSave(next)) { setMessage('تعذّر الحفظ. صدّر نسخة من الدفتر للاحتفاظ بها.'); return false }
+    form.reset(); setMessage('حُفظت التغييرات في المسودة المحلية. استخدم النشر السحابي لإظهارها للزوار.'); return true
+  }
+  function addIdea(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault(); const form = e.currentTarget; const data = new FormData(form)
+    const value = (key: string) => String(data.get(key) || '').trim()
+    const next: Idea = { id: editing?.id ?? crypto.randomUUID(), title: value('title'), kind: value('kind') as Idea['kind'], text: value('text'), question: value('question'), sample: data.get('sample') === 'on', ...(value('counterpoint') ? { counterpoint: value('counterpoint') } : {}), ...(value('source') ? { source: value('source') } : {}), ...(value('sourceUrl') ? { sourceUrl: value('sourceUrl') } : {}) }
+    if (commit({ ...content, ideas: editing ? ideas.map(i => i.id === editing.id ? next : i) : [...ideas, next] }, form)) setEditing(null)
+  }
+  function addMedia(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault(); const form = e.currentTarget; const data = new FormData(form)
+    const value = (key: string) => String(data.get(key) || '').trim()
+    const type = value('type') as Media['type']
+    const url = value('url')
+    // A watch page is not a video file. Permit only supported YouTube pages or direct media files.
+    if (type === 'فيديو') {
+      try { const path = new URL(url).pathname; if (!/\.(mp4|webm)$/i.test(path) && !youtubeEmbed(url)) { setMessage('استخدم رابط YouTube صالحًا أو رابط ملف MP4/WebM مباشر.'); return } } catch { setMessage('رابط الفيديو غير صالح.'); return }
+    }
+    const next: Media = { id: editingMedia?.id ?? crypto.randomUUID(), type, title: value('title'), url, purpose: type === 'صورة' ? 'حكمة بصرية' : 'درس مرئي', description: value('description'), ...(value('source') ? { source: value('source') } : {}), ...(value('thumbnail') ? { thumbnail: value('thumbnail') } : {}), ...(value('uploadedAt') ? { uploadedAt: `${value('uploadedAt')}T12:00:00+03:00` } : {}) }
+    if (commit({ ...content, media: editingMedia ? content.media.map(m => m.id === editingMedia.id ? next : m) : [...content.media, next] }, form)) setEditingMedia(null)
+  }
+  function addSession(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault(); const form = e.currentTarget; const data = new FormData(form)
+    const value = (key: string) => String(data.get(key) || '').trim()
+    const session: Session = { id: editingSession?.id ?? crypto.randomUUID(), title: value('title'), question: value('question'), startsAt: `${value('startsAt')}:00+03:00`, durationMinutes: Number(value('durationMinutes')), joinUrl: value('joinUrl'), notes: value('notes'), cancelled: data.get('cancelled') === 'on' }
+    if (!editingSession && Date.parse(session.startsAt) <= Date.now()) { setMessage('اختر موعدًا مستقبليًا للجلسة.'); return }
+    const sessions = content.sessions ?? []
+    if (commit({ ...content, sessions: editingSession ? sessions.map(s => s.id === editingSession.id ? session : s) : [...sessions, session] }, form)) setEditingSession(null)
+  }
+  return <section className="thought-editor"><h3>مرصد الأفكار</h3><p>هذه النماذج نقطة بداية. راجعها بصوتك، وميّز الاقتباس عن رأيك، وأضف مصدر المادة عند الحاجة.</p><div className="editor-item-list">{ideas.map(i => <button key={i.id} onClick={() => { setEditing(i); setMessage('') }}>{i.sample ? 'نموذج · ' : ''}{i.title} — تعديل</button>)}</div>
+    <form key={editing?.id ?? 'new-idea'} onSubmit={addIdea}><h4>{editing ? 'تحرير الفكرة' : 'أضف فكرة'}</h4><label>النوع<select name="kind" defaultValue={editing?.kind ?? 'حكمة'}><option>حكمة</option><option>درس</option><option>تجربة فكرية</option></select></label><label>العنوان<input name="title" required maxLength={150} defaultValue={editing?.title} /></label><label>الفكرة أو نص الحكمة<textarea name="text" required maxLength={50000} defaultValue={editing?.text} /></label><label>السؤال الذي تتركه للقارئ<textarea name="question" required maxLength={1000} defaultValue={editing?.question} /></label><label>اعتراض يستحق الإنصاف<textarea name="counterpoint" maxLength={10000} defaultValue={editing?.counterpoint} /></label><label>المصدر أو اسم صاحب الاقتباس<input name="source" maxLength={1000} defaultValue={editing?.source} /></label><label>رابط المصدر<input type="url" name="sourceUrl" placeholder="https://" maxLength={2000} defaultValue={editing?.sourceUrl} /></label><label className="check-label"><input name="sample" type="checkbox" defaultChecked={editing?.sample ?? false} /> نموذج تحريري تجريبي، لا يُنسب إلى كميل ولا يُفهرس</label><div className="editor-inline-actions"><button className="primary">{editing ? 'حفظ الفكرة' : 'إضافة الفكرة'}</button>{editing && <button type="button" onClick={() => setEditing(null)}>إلغاء التعديل</button>}</div></form>
+    <h3>الحكمة البصرية والدرس المرئي</h3><p>ارفع الملف عبر المكتبة السحابية أعلاه، ثم اختره هنا لإضافة عنوانه وفكرته. يقبل الدرس أيضًا رابط YouTube.</p><div className="editor-item-list">{content.media.map(m => <button key={m.id} onClick={() => setEditingMedia(m)}>{m.title} — {m.purpose ? 'تعديل' : 'إضافة سياق'}</button>)}</div>
+    <form key={editingMedia?.id ?? 'new-media'} onSubmit={addMedia}><label>نوع المادة<select name="type" defaultValue={editingMedia?.type ?? 'صورة'}><option>صورة</option><option>فيديو</option></select></label><label>العنوان<input name="title" required maxLength={150} defaultValue={editingMedia?.title} /></label><label>رابط الملف أو فيديو YouTube<input name="url" required maxLength={2000000} defaultValue={editingMedia?.url} /></label><label>نص الحكمة أو ملخّص الدرس<textarea name="description" required maxLength={10000} defaultValue={editingMedia?.description} /></label><label>المصدر أو صاحب الحكمة<input name="source" maxLength={1000} defaultValue={editingMedia?.source} /></label><label>صورة مصغرة للفيديو (اختياري)<input type="url" name="thumbnail" maxLength={2000} placeholder="https://" defaultValue={editingMedia?.thumbnail} /></label><label>تاريخ نشر الفيديو الأصلي (اختياري)<input type="date" name="uploadedAt" defaultValue={editingMedia?.uploadedAt?.slice(0, 10)} /></label><p className="sample-note">لبيانات الفيديو في البحث: أضف صورة مصغّرة وتاريخ النشر الأصلي. لا نولّد تاريخًا تخمينيًا.</p><div className="editor-inline-actions"><button className="primary">حفظ المادة وسياقها</button>{editingMedia && <button type="button" onClick={() => setEditingMedia(null)}>إلغاء التعديل</button>}</div></form>
+    <h3>إعلان جلسة حوار</h3><p>أنشئ لقاء Google Meet من حسابك، ثم أضف رابطه. الموعد يُكتب بتوقيت الرياض.</p><a className="text-link" href="https://meet.google.com/" target="_blank" rel="noopener noreferrer">افتح Google Meet لإعداد اللقاء ↗</a><div className="editor-item-list">{(content.sessions ?? []).map(s => <button key={s.id} onClick={() => setEditingSession(s)}>{s.title} — تعديل الموعد</button>)}</div><form key={editingSession?.id ?? 'new-session'} onSubmit={addSession}><label>عنوان اللقاء<input name="title" required maxLength={150} defaultValue={editingSession?.title} /></label><label>السؤال المحوري<textarea name="question" required maxLength={1000} defaultValue={editingSession?.question} /></label><label>التاريخ والوقت — الرياض<input type="datetime-local" name="startsAt" required defaultValue={editingSession ? new Date(Date.parse(editingSession.startsAt) + 3 * 3600000).toISOString().slice(0, 16) : undefined} /></label><label>المدة بالدقائق<input type="number" name="durationMinutes" min={5} max={60} defaultValue={editingSession?.durationMinutes ?? 40} required /></label><label>رابط Google Meet أو YouTube<input type="url" name="joinUrl" placeholder="https://meet.google.com/abc-defg-hij" maxLength={2000} required defaultValue={editingSession?.joinUrl} /></label><label>محاور اللقاء أو تعليمات الحضور<textarea name="notes" maxLength={10000} defaultValue={editingSession?.notes} /></label>{editingSession && <label className="check-label"><input type="checkbox" name="cancelled" defaultChecked={editingSession.cancelled ?? false} /> أُلغي هذا الموعد</label>}<div className="editor-inline-actions"><button className="primary">حفظ موعد اللقاء</button>{editingSession && <button type="button" onClick={() => setEditingSession(null)}>إلغاء التعديل</button>}</div></form><p role="status" className="editor-status">{message}</p>
+  </section>
+}
