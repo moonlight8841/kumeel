@@ -1,0 +1,197 @@
+{
+  "scanDate": "2026-10-11",
+  "scanner": "Microsoft Defender Antivirus",
+  "mode": "Custom file scan, DisableRemediation (file exclusions ignored)",
+  "result": "No threats found",
+  "exitCode": 0,
+  "engine": {
+    "AMProductVersion": "4.18.26080.4",
+    "AMEngineVersion": "1.1.26080.3",
+    "AntivirusSignatureVersion": "1.459.664.0",
+    "AntivirusSignatureLastUpdated": "/Date(1791669978000)/"
+  },
+  "pdfInspection": "All 30 PDFs parse; no JavaScript, embedded files, launch actions or XFA found; five internal page navigation OpenActions",
+  "uploadedBytesVerified": true,
+  "files": [
+    {
+      "file": "books/english books/4000 Essential English Words - Book 1.pdf",
+      "bytes": 7490569,
+      "pages": 197,
+      "sha256": "7952ab0f152b74ad6de25162b5fa4179543706808d43a723805a738fc2684743"
+    },
+    {
+      "file": "books/english books/B1 Preliminary Vocabulary List.pdf",
+      "bytes": 1376315,
+      "pages": 53,
+      "sha256": "cde2dd279bfa6c09647c3b7cafd1017c959ab9df9be0db94f3c1087aa289b928"
+    },
+    {
+      "file": "books/english books/Basic English Grammar Book 1.pdf",
+      "bytes": 6198612,
+      "pages": 159,
+      "sha256": "84bd6ffb0ee9d861d677209df10823ce35fc6c1158bbaad3497a019655898e87"
+    },
+    {
+      "file": "books/english books/Basic English Grammar Book 2.pdf",
+      "bytes": 1948553,
+      "pages": 154,
+      "sha256": "b92510a46c88f580b1608036050d39ac83022f5ee211ba23bcce71b6829eba02"
+    },
+    {
+      "file": "books/english books/Basic English Grammar for ESL Students.pdf",
+      "bytes": 1356282,
+      "pages": 100,
+      "sha256": "3051f65efb9fda1b9b768ac08f126fd2295383925234b79651baf2d30e4cef71"
+    },
+    {
+      "file": "books/english books/English for Intermediate Students.pdf",
+      "bytes": 677656,
+      "pages": 216,
+      "sha256": "8eed59320f59a903416670f8a7c982bd696b10ef253b5d1a14f8faf3e28072b1"
+    },
+    {
+      "file": "books/english books/English Grammar.pdf",
+      "bytes": 1140372,
+      "pages": 99,
+      "sha256": "2790a40483578233e3ae1c0d69352a7feb31d0cf4ff797994f2617d73146f0fc"
+    },
+    {
+      "file": "books/english books/Everyday Conversations- Learning American English.pdf",
+      "bytes": 5355299,
+      "pages": 72,
+      "sha256": "641eebf0f56036bb90560903e6f86a0e3fa9a6824c85b80121ce904a7bcc9100"
+    },
+    {
+      "file": "books/english books/Learn English in an easy, fast and fun way.pdf",
+      "bytes": 2987213,
+      "pages": 180,
+      "sha256": "617c328e3e4117c98a75ba8d3b21751ba12cd9aef457a20847b4e92e65ab9168"
+    },
+    {
+      "file": "books/english books/Learn English Now.pdf",
+      "bytes": 3224731,
+      "pages": 361,
+      "sha256": "a71bb1b9df4e84e472ddad0caca7a8c2808a486c6e6d2aa98ee18542c4786a7b"
+    },
+    {
+      "file": "books/english books/Learn English.pdf",
+      "bytes": 2805697,
+      "pages": 64,
+      "sha256": "ded621f5d856b4838d2273417bee2b4120f637b4033e84adfc3647f41abba365"
+    },
+    {
+      "file": "books/english books/Learning Spoken English ...in half the time.pdf",
+      "bytes": 1019324,
+      "pages": 54,
+      "sha256": "3a000eb2414ed560368a2a712f7a8e7ff820a876016814d01ec14f3fc07fac48"
+    },
+    {
+      "file": "books/english books/Let's Learn English Level 1.pdf",
+      "bytes": 16285369,
+      "pages": 601,
+      "sha256": "15c87241c9d70f84873183408b4108eb1d4c89c3ef0f16dfa084f189db0a408c"
+    },
+    {
+      "file": "books/english books/More Dialogs for Everyday Use.pdf",
+      "bytes": 1394976,
+      "pages": 44,
+      "sha256": "83c50debcd6edacbd387cab29c467e6e24554a307b79dc72b642f6faa076784d"
+    },
+    {
+      "file": "books/english books/Practise English on your own.pdf",
+      "bytes": 399276,
+      "pages": 48,
+      "sha256": "7bf2c3823fb8247caf05709007daecd0399468aef3ffc5a7799fe943fc4f7920"
+    },
+    {
+      "file": "books/english books/Pronunciation.pdf",
+      "bytes": 7493015,
+      "pages": 76,
+      "sha256": "b5b86f68430fabe8b0492f51d134c39369b15191a7e7b4dd027be2d427657e58"
+    },
+    {
+      "file": "books/english books/Put English phonetics into practice.pdf",
+      "bytes": 446913,
+      "pages": 94,
+      "sha256": "95d60c1f6d9ed423a89c4dd1abd4101f4b6fcb9e2d273ffb841889cc9b58131d"
+    },
+    {
+      "file": "books/english books/Think English.pdf",
+      "bytes": 8835087,
+      "pages": 306,
+      "sha256": "1ba68c97e0636e70bceaed9f43bd238cabfaea4c22ee32df5379df922aa909d7"
+    },
+    {
+      "file": "books/english books/What, Why, and How- - Grammar.pdf",
+      "bytes": 539916,
+      "pages": 90,
+      "sha256": "ac74b910910750573b096dc27e170dc3ad16f7165037f8b613d37f7ad181e056"
+    },
+    {
+      "file": "books/english books/Writing Skills Practice Book for EFL.pdf",
+      "bytes": 2124379,
+      "pages": 157,
+      "sha256": "fc283db084a57d0b4bc872119876021fea736f19af71bdee9d82a8830331698c"
+    },
+    {
+      "file": "books/Philosophy books/An Introduction to Philosophy.pdf",
+      "bytes": 730659,
+      "pages": 160,
+      "sha256": "9141d46ec8f7e2919075ffe099fc85d3cc204fa23d26505d13864ef899b8cf1b"
+    },
+    {
+      "file": "books/Philosophy books/Beyond Good and Evil.pdf",
+      "bytes": 840486,
+      "pages": 232,
+      "sha256": "c61140eb807dbfb837061c1a498eb89a9d2fadf35ae58319123d21d0559e705d"
+    },
+    {
+      "file": "books/Philosophy books/Critique of Pure Reason.pdf",
+      "bytes": 1774472,
+      "pages": 331,
+      "sha256": "a1c0d1f45c916f08dd04180804ebd437ad02d39e368a756338994fa7737cf380"
+    },
+    {
+      "file": "books/Philosophy books/Introduction to Philosophy- Ethics.pdf",
+      "bytes": 1331187,
+      "pages": 118,
+      "sha256": "48feb7f6aebecf58629691d1b6a14f75ec645abe4d7aef93213534eba1531300"
+    },
+    {
+      "file": "books/Philosophy books/Meditations on First Philosophy.pdf",
+      "bytes": 367448,
+      "pages": 33,
+      "sha256": "d4ae2166800745ef02ed6a653e9ec3cc46906589991456146ce4af3ae3dff9cd"
+    },
+    {
+      "file": "books/Philosophy books/Meditations.pdf",
+      "bytes": 479200,
+      "pages": 125,
+      "sha256": "a190c38ea7977e21adacc959570843e6605ba000ffcd93ce279db007453d1998"
+    },
+    {
+      "file": "books/Philosophy books/Nicomachean Ethics.pdf",
+      "bytes": 311829,
+      "pages": 182,
+      "sha256": "623c2c97b586c0413d5b386c7ea5a6bc40365ed66e1ab4572448a280f9cf6de6"
+    },
+    {
+      "file": "books/Philosophy books/On Liberty.pdf",
+      "bytes": 229775,
+      "pages": 109,
+      "sha256": "e7f3d3fef287073d3cfdd58fa7373e1f0eedd42a924296362c4d6c3977619d29"
+    },
+    {
+      "file": "books/Philosophy books/Republic.pdf",
+      "bytes": 801382,
+      "pages": 309,
+      "sha256": "9fca83e4922fed5e96a0145962ff4008e55103470ec156265c416570e7a76957"
+    },
+    {
+      "file": "books/Philosophy books/Words of Wisdom- Intro to Philosophy.pdf",
+      "bytes": 4631140,
+      "pages": 533,
+      "sha256": "bb1577ed2a0f4e3d782694d654ff5de56be908a607c3826fda97482b7d8b0cba"
+    }
+  ]
+}

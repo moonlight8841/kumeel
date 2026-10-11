@@ -6,7 +6,8 @@ import './platform.css'
 import { ThoughtSpace } from './components/ThoughtSpace'
 import { AdminPanel } from './components/AdminPanel'
 import { ContactLinks } from './components/ContactLinks'
-import { defaultSite, type SectionKey } from './site'
+import { defaultSite, withLibrary, type SectionKey } from './site'
+import {booksFor} from './books'
 import { PublicationPage } from './components/PublicationPage'
 import { pageInfo, structuredData } from './lib/pages'
 import { Explore } from './components/Explore'
@@ -38,7 +39,7 @@ function App({ startingContent = initialContent, startingPath = '/' }: { startin
    schema.textContent = JSON.stringify(structuredData(content, info, origin))
  }, [content, startingPath, draft])
  function save(next: Content) { if (!validContent(next)) { setNotice('المحتوى غير صالح أو تجاوز حدود الدفتر. راجع الحقول والروابط.'); return false } try { localStorage.setItem('kumeel-journal-v1', JSON.stringify(next)); setContent(next); setDraft(true); setNotice('حُفظت المسودة على هذا المتصفح.'); return true } catch { setNotice('لم يتم الحفظ؛ مساحة المتصفح غير كافية. صدّر نسخة من محتواك.'); return false } }
- const site = content.site ?? defaultSite
+ const site = withLibrary(content.site ?? defaultSite)
  if (page.kind === 'admin') return <AdminPanel content={content} revision={revision} onSave={save} onPublish={(next, version) => { setContent(next); setRevision(version); setDraft(false); try { localStorage.removeItem('kumeel-journal-v1') } catch { /* Published state is authoritative. */ } }} />
  if (page.kind !== 'home') return <div className={`site-shell theme-${site.theme}`}><PublicationPage content={content} info={page} />{draft && <div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}</div>
  const sections: Record<SectionKey, ReactNode> = {
@@ -50,12 +51,13 @@ writings: <><section id="writings" className="writing-section"><div className="w
 explore: <><Explore content={content} /></>,
 observatory: <><ThoughtSpace content={content} section="observatory" /></>,
 salon: <><ThoughtSpace content={content} section="salon" /></>,
+library: <section id="library" className="library-preview wrap section"><div><span className="section-label">مكتبة كميل / من القراءة إلى الفهم</span><h2>كتابٌ واحد.<br/>نافذةٌ جديدة.</h2><p>{booksFor(content).length.toLocaleString('ar-SA')} كتابًا في الفلسفة وتعلّم الإنجليزية. اختر بدايةً، وابنِ رفّك الشخصي.</p><a className="primary" href="/library">افتح المكتبة ←</a></div><div className="library-preview-titles">{booksFor(content).filter(b=>b.featured).slice(0,3).map(b=><a key={b.id} href={`/library/${b.id}`}><span>{b.subtitle}</span><strong lang="en" dir="ltr">{b.title}</strong><span dir="auto">{b.author}</span></a>)}</div></section>,
 quote: <><section className="quote"><span>“</span><blockquote className="preserve-lines">{site.quote}</blockquote><p>{site.quoteSource}</p></section></>,
 contact: <><section id="contact" className="contact wrap"><div><div className="section-label">والحكاية مستمرّة</div><h2>{site.contactTitle}</h2></div><div><p>هنا يبدأ سؤالٌ آخر.<br />تجد مواعيد اللقاءات وروابط المشاركة في مجلس الحوار.</p><ContactLinks content={content} /></div></section></>
  }
  return <div className={`site-shell theme-${site.theme}`}>
  <a href="#main" className="skip">انتقل إلى المحتوى</a>
- <header className="header wrap"><a href="#" className="wordmark" aria-label="كميل، الرئيسية">كميل<span>.</span></a><button className="menu-toggle" aria-label="القائمة" aria-expanded={menu} onClick={() => setMenu(!menu)}>☰</button><nav className={menu ? 'open' : ''} aria-label="التنقل الرئيسي">{[['#','الرئيسية'],['/about','من هو كميل؟'],['#writings','كتاباتي'],['#explore','اكتشف'],['#observatory','مرصد الأفكار'],['#salon','مجلس الحوار']].map(([href,label]) => <a key={href} href={href} onClick={() => setMenu(false)}>{label}</a>)}</nav><a href="#contact" className="contact-link">لنتحدث <Arrow /></a></header>
+ <header className="header wrap"><a href="#" className="wordmark" aria-label="كميل، الرئيسية">كميل<span>.</span></a><button className="menu-toggle" aria-label="القائمة" aria-expanded={menu} onClick={() => setMenu(!menu)}>☰</button><nav className={menu ? 'open' : ''} aria-label="التنقل الرئيسي">{[['#','الرئيسية'],['/about','من هو كميل؟'],['#writings','كتاباتي'],['#explore','اكتشف'],['#observatory','مرصد الأفكار'],['/library','\u0627\u0644\u0645\u0643\u062a\u0628\u0629'],['#salon','مجلس الحوار']].map(([href,label]) => <a key={href} href={href} onClick={() => setMenu(false)}>{label}</a>)}</nav><a href="#contact" className="contact-link">لنتحدث <Arrow /></a></header>
  <main id="main">
  {site.sections.filter(s => s.visible).map(s => <div key={s.key}>{sections[s.key]}</div>)}
  </main><footer className="footer wrap"><a href="#" className="wordmark">كميل<span>.</span></a><p>© {new Date().getFullYear()} كميل ال نهاب · مساحة تشبهني</p><a className="editor-link" href="/admin">لوحة الإدارة ↗</a></footer>

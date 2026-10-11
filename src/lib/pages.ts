@@ -1,6 +1,7 @@
 import { initialContent, youtubeEmbed, type Content, type Idea, type Media, type Writing } from '../content'
+import {booksFor,type Book} from '../books'
 
-export type PageInfo = { path: string; kind: 'admin' | 'home' | 'about' | 'observatory' | 'salon' | 'idea' | 'writing' | 'media' | 'missing'; title: string; description: string; noindex: boolean; idea?: Idea; writing?: Writing; media?: Media }
+export type PageInfo = { path: string; kind: 'admin' | 'home' | 'about' | 'observatory' | 'salon' | 'library' | 'book' | 'idea' | 'writing' | 'media' | 'missing'; title: string; description: string; noindex: boolean; idea?: Idea; writing?: Writing; media?: Media; book?:Book }
 export const ownerName = 'كميل ال نهاب'
 const excerpt = (text: string) => text.replace(/\s+/g, ' ').trim().slice(0, 160)
 export function pageInfo(content: Content, pathname = '/'): PageInfo {
@@ -11,6 +12,11 @@ export function pageInfo(content: Content, pathname = '/'): PageInfo {
   if (path === '/about') return page('about', 'من هو كميل ال نهاب؟', content.bio)
   if (path === '/observatory') return page('observatory', 'مرصد الأفكار', 'حكم وتأملات ودروس وتجارب فكرية. ننصف الاعتراض ونبحث عن الدليل مع كميل ال نهاب.')
   if (path === '/salon') return page('salon', 'مجلس الحوار', 'مواعيد لقاءات كميل ال نهاب للنقاش والتعلّم، والأسئلة المحورية وروابط الجلسات.')
+  if (path === '/library') return page('library','مكتبة الكتب','مكتبة كميل ال نهاب: كتب في الفلسفة وتعلّم الإنجليزية، مع البحث ورفّ قراءة شخصي.')
+  if(path.startsWith('/library/')){
+    const book=booksFor(content).find(b=>`/library/${b.id}`===path)
+    if(book)return {...page('book',book.title,`${book.subtitle}. ${book.description} · ${book.author}`),book}
+  }
   const match = /^\/(ideas|writings|media)\/([^/]+)$/.exec(path)
   if (match) {
     let id: string
@@ -32,7 +38,7 @@ export function pageInfo(content: Content, pathname = '/'): PageInfo {
   return page('missing', 'الصفحة غير موجودة', 'تعذّر العثور على الصفحة المطلوبة. يمكنك العودة إلى مرصد الأفكار.', true)
 }
 export function publicPaths(content: Content): string[] {
-  return ['/', '/about', '/observatory', '/salon', ...(content.ideas ?? []).filter(i => !i.sample).map(i => `/ideas/${encodeURIComponent(i.id)}`), ...content.writings.filter(w => !pageInfo(content, `/writings/${encodeURIComponent(w.id)}`).noindex).map(w => `/writings/${encodeURIComponent(w.id)}`), ...content.media.filter(m => m.purpose && m.description?.trim() && !m.url.startsWith('data:')).map(m => `/media/${encodeURIComponent(m.id)}`)]
+  return ['/', '/about', '/observatory', '/salon', '/library', ...booksFor(content).map(b=>`/library/${b.id}`), ...(content.ideas ?? []).filter(i => !i.sample).map(i => `/ideas/${encodeURIComponent(i.id)}`), ...content.writings.filter(w => !pageInfo(content, `/writings/${encodeURIComponent(w.id)}`).noindex).map(w => `/writings/${encodeURIComponent(w.id)}`), ...content.media.filter(m => m.purpose && m.description?.trim() && !m.url.startsWith('data:')).map(m => `/media/${encodeURIComponent(m.id)}`)]
 }
 const htmlEscape = (value: string) => value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!)
 const safeJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
@@ -48,6 +54,8 @@ export function structuredData(_content: Content, info: PageInfo, origin = '') {
     main = { '@type': 'CreativeWork', name: m.title, description: m.description, inLanguage: 'ar', url: canonical, publisher: { '@id': person['@id'] } }
     if (m.type === 'فيديو' && m.thumbnail && m.uploadedAt) main = { ...main, '@type': 'VideoObject', thumbnailUrl: [m.thumbnail], uploadDate: m.uploadedAt, ...(youtubeEmbed(m.url) ? { embedUrl: youtubeEmbed(m.url) } : { contentUrl: m.url }) }
   }
+  if(info.book){const b=info.book;main={'@type':'Book',name:b.title,alternateName:b.subtitle,description:b.description,author:{'@type':'Person',name:b.author},inLanguage:b.language,numberOfPages:b.pages,url:canonical,...(b.fileUrl?{encoding:{'@type':'MediaObject',contentUrl:b.fileUrl,encodingFormat:'application/pdf'}}:{})}}
+  if(info.kind==='library')main={...main,mainEntity:{'@type':'ItemList',numberOfItems:booksFor(_content).length,itemListElement:booksFor(_content).map((b,i)=>({'@type':'ListItem',position:i+1,url:origin?`${origin}/library/${b.id}`:undefined,name:b.title}))}}
   return { '@context': 'https://schema.org', '@graph': [person, main] }
 }
 export function renderHead(content: Content, info: PageInfo, origin = ''): string {

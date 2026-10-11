@@ -1,12 +1,14 @@
 import { defaultSite, validSite, type SiteSettings } from './site'
 import type { Discovery, QuizQuestion } from './learning'
+import {defaultBooks,validBooks,type Book} from './books'
 export const heroImage = '/images/desert.png'
 export type Writing = { id: string; title: string; category: 'تأملات' | 'شعر' | 'فلسفة' | 'علوم' | 'ثقافة'; text: string }
 export type Media = { id: string; title: string; type: 'صورة' | 'فيديو'; url: string; purpose?: 'حكمة بصرية' | 'درس مرئي'; description?: string; source?: string; thumbnail?: string; uploadedAt?: string }
 export type Idea = { id: string; title: string; kind: 'حكمة' | 'درس' | 'تجربة فكرية'; text: string; question: string; counterpoint?: string; source?: string; sourceUrl?: string; sample?: boolean }
 export type Session = { id: string; title: string; question: string; startsAt: string; durationMinutes: number; joinUrl: string; notes?: string; cancelled?: boolean }
-export type Content = { bio: string; writings: Writing[]; media: Media[]; ideas?: Idea[]; sessions?: Session[]; site?: SiteSettings; discoveries?: Discovery[]; quiz?: QuizQuestion[] }
+export type Content = { bio: string; writings: Writing[]; media: Media[]; ideas?: Idea[]; sessions?: Session[]; site?: SiteSettings; discoveries?: Discovery[]; quiz?: QuizQuestion[]; books?:Book[] }
 export const initialContent: Content = {
+  books: defaultBooks,
   site: defaultSite,
   bio: 'أنا كميل ال نهاب. أريد لهذه المساحة أن تكون نافذة للفلسفة والعلم والثقافة؛ أشارك فيها الأفكار التي تستحق التأمل، وأفتح أسئلة للتعلّم والحوار. المعرفة هنا دعوة إلى الفهم، وإلى مراجعة ما نظنه بديهيًا.',
   writings: [
@@ -54,7 +56,7 @@ export function validContent(value: unknown): value is Content {
   const sessionsValid = c.sessions === undefined || (Array.isArray(c.sessions) && c.sessions.length <= 100 && c.sessions.every(s => s && required(s.id, 150) && required(s.title, 150) && required(s.question, 1000) && typeof s.startsAt === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})$/.test(s.startsAt) && Number.isFinite(Date.parse(s.startsAt)) && Number.isInteger(s.durationMinutes) && s.durationMinutes >= 5 && s.durationMinutes <= 180 && meetingUrl(s.joinUrl) && optional(s.notes, 10000) && (s.cancelled === undefined || typeof s.cancelled === 'boolean')) && ids(c.sessions))
   const discoveryValid = c.discoveries === undefined || (Array.isArray(c.discoveries) && c.discoveries.length <= 500 && c.discoveries.every(d => d && required(d.id, 150) && required(d.title, 150) && ['علوم', 'ثقافة', 'تجارب'].includes(d.category) && text(d.time, 50) && text(d.intro, 1000) && required(d.text, 50000)) && ids(c.discoveries))
   const quizValid = c.quiz === undefined || (Array.isArray(c.quiz) && c.quiz.length <= 100 && c.quiz.every(q => q && required(q.title, 300) && required(q.why, 2000) && Array.isArray(q.options) && q.options.length >= 2 && q.options.length <= 6 && q.options.every(o => required(o, 300)) && Number.isInteger(q.answer) && q.answer >= 0 && q.answer < q.options.length))
-  return (c.site === undefined || validSite(c.site)) && discoveryValid && quizValid && ideasValid && sessionsValid && text(c.bio, 10000) && Array.isArray(c.writings) && c.writings.length <= 500 &&
+  return (c.books===undefined||validBooks(c.books)) && (c.site === undefined || validSite(c.site)) && discoveryValid && quizValid && ideasValid && sessionsValid && text(c.bio, 10000) && Array.isArray(c.writings) && c.writings.length <= 500 &&
     c.writings.every(w => w && text(w.id, 150) && text(w.title, 150) && text(w.text, 50000) && ['شعر', 'تأملات', 'فلسفة', 'علوم', 'ثقافة'].includes(w.category)) && ids(c.writings) &&
     Array.isArray(c.media) && c.media.length <= 500 && c.media.every(m => m && text(m.id, 150) && text(m.title, 150) && ['صورة', 'فيديو'].includes(m.type) && typeof m.url === 'string' && (httpsUrl(m.url) || /^\/images\/[^\s]+$/.test(m.url) || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(m.url)) && (m.purpose === undefined || (m.type === 'صورة' ? m.purpose === 'حكمة بصرية' : m.purpose === 'درس مرئي')) && optional(m.description, 10000) && optional(m.source, 1000) && (m.thumbnail === undefined || httpsUrl(m.thumbnail)) && (m.uploadedAt === undefined || (typeof m.uploadedAt === 'string' && Number.isFinite(Date.parse(m.uploadedAt))))) && ids(c.media)
 }
