@@ -1,0 +1,1 @@
+﻿try{var m=localStorage.getItem('kumeel-reading-mode');document.documentElement.dataset.readingMode=m==='dark'||m==='light'?m:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}catch{document.documentElement.dataset.readingMode=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}

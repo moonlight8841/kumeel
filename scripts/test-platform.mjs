@@ -74,6 +74,15 @@ try {
     for(const field of ['registrationUrl','summaryPdfUrl','recordingUrl'])assert.equal(validContent({...initialContent,sessions:[{...session,[field]:'javascript:alert(1)'}]}),false)
     assert.equal(validContent({...initialContent,sessions:[{...session,summaryPdfUrl:'https://example.com/page.html'}]}),false)
   })
+  await test('Newsletter preserves legacy sites and accepts only public HTTPS forms',()=>{
+    assert.equal(validContent(initialContent),true)
+    const content={...initialContent,site:{...initialContent.site,newsletterUrl:'https://example.com/signup'}}
+    assert.equal(validContent(content),true)
+    assert.ok(render(content,'/').includes('https://example.com/signup'))
+    assert.ok(render(content,'/salon').includes('https://example.com/signup'))
+    for(const url of ['javascript:alert(1)','http://example.com','https://user:password@example.com','/images/local.png'])assert.equal(validContent({...content,site:{...content.site,newsletterUrl:url}}),false)
+    assert.ok(!render(initialContent,'/').includes('href="undefined"'))
+  })
   await test('Production prerender uses the production renderer and excludes development controls', async () => {
     const production = await import('../dist-ssr/entry-server.js')
     const markup = production.render(production.initialContent, '/admin')
