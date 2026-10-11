@@ -18,6 +18,21 @@ try {
   const { sessionCalendar } = await server.ssrLoadModule('/src/lib/calendar.ts')
   const {defaultBooks,validBooks} = await server.ssrLoadModule('/src/books.ts')
   const { render } = await server.ssrLoadModule('/src/entry-server.tsx')
+  await test('Notebook formatting remains escaped text and public pages expose a login entry and mind exercises',()=>{
+    const writing={id:'safe-notebook',title:'Notebook',category:'فلسفة',format:'markdown',text:'## Heading\n\n**Evidence**\n\n- First\n- Second\n\n> Reflection\n\n<script>alert(1)</script>'}
+    const content={...initialContent,writings:[writing]}
+    assert.equal(validContent(content),true)
+    assert.equal(validContent({...content,writings:[{...writing,format:'html'}]}),false)
+    const markup=render(content,'/writings/safe-notebook')
+    assert.ok(markup.includes('<h2>Heading</h2>'))
+    assert.ok(markup.includes('<strong>Evidence</strong>'))
+    assert.ok(markup.includes('<li>First</li>'))
+    assert.ok(markup.includes('&lt;script&gt;alert(1)&lt;/script&gt;'))
+    assert.ok(!markup.includes('<script>alert(1)</script>'))
+    assert.ok(render(content,'/').includes('تسجيل الدخول إلى حسابك'))
+    assert.ok(render(content,'/observatory').includes('اكشف زاوية أخرى'))
+    assert.ok(render(content,'/observatory').includes('السؤال التالي'))
+  })
   await test('Library validates PDF links, preserves legacy content, and exposes author-attributed book pages',()=>{
     assert.equal(defaultBooks.length,30)
     assert.equal(validBooks(defaultBooks),true)

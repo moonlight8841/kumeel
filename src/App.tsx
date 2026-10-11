@@ -12,6 +12,7 @@ import { PublicationPage } from './components/PublicationPage'
 import { pageInfo, structuredData } from './lib/pages'
 import { Explore } from './components/Explore'
 import { readPublished } from './lib/cloud'
+import {LoginLink} from './components/LoginLink'
 const Arrow = () => <span aria-hidden="true">↗</span>
 function App({ startingContent = initialContent, startingPath = '/' }: { startingContent?: Content; startingPath?: string }) {
  const [content, setContent] = useState<Content>(startingContent)
@@ -57,7 +58,7 @@ contact: <><section id="contact" className="contact wrap"><div><div className="s
  }
  return <div className={`site-shell theme-${site.theme}`}>
  <a href="#main" className="skip">انتقل إلى المحتوى</a>
- <header className="header wrap"><a href="#" className="wordmark" aria-label="كميل، الرئيسية">كميل<span>.</span></a><button className="menu-toggle" aria-label="القائمة" aria-expanded={menu} onClick={() => setMenu(!menu)}>☰</button><nav className={menu ? 'open' : ''} aria-label="التنقل الرئيسي">{[['#','الرئيسية'],['/about','من هو كميل؟'],['#writings','كتاباتي'],['#explore','اكتشف'],['#observatory','مرصد الأفكار'],['/library','\u0627\u0644\u0645\u0643\u062a\u0628\u0629'],['#salon','مجلس الحوار']].map(([href,label]) => <a key={href} href={href} onClick={() => setMenu(false)}>{label}</a>)}</nav><a href="#contact" className="contact-link">لنتحدث <Arrow /></a></header>
+ <header className="header wrap"><a href="#" className="wordmark" aria-label="كميل، الرئيسية">كميل<span>.</span></a><button className="menu-toggle" aria-label="القائمة" aria-expanded={menu} onClick={() => setMenu(!menu)}>☰</button><nav className={menu ? 'open' : ''} aria-label="التنقل الرئيسي">{[['#','الرئيسية'],['/about','من هو كميل؟'],['#writings','كتاباتي'],['#explore','اكتشف'],['#observatory','مرصد الأفكار'],['/library','\u0627\u0644\u0645\u0643\u062a\u0628\u0629'],['#salon','مجلس الحوار']].map(([href,label]) => <a key={href} href={href} onClick={() => setMenu(false)}>{label}</a>)}</nav><LoginLink/><a href="#contact" className="contact-link">لنتحدث <Arrow /></a></header>
  <main id="main">
  {site.sections.filter(s => s.visible).map(s => <div key={s.key}>{sections[s.key]}</div>)}
  </main><footer className="footer wrap"><a href="#" className="wordmark">كميل<span>.</span></a><p>© {new Date().getFullYear()} كميل ال نهاب · مساحة تشبهني</p><a className="editor-link" href="/admin">لوحة الإدارة ↗</a></footer>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { validContent, type Content, type Writing } from '../content'
+import { validContent, type Content } from '../content'
+import {NotebookEditor} from './NotebookEditor'
 import { defaultSite, withLibrary, type SiteSettings } from '../site'
 import { BookEditor } from './BookEditor'
 import { LearningEditor } from './LearningEditor'
@@ -12,17 +13,17 @@ export function AdminPanel({ content, revision, onSave, onPublish }: Props) {
  const [local, setLocal] = useState(false)
  const [tab, setTab] = useState('settings')
  const [message, setMessage] = useState('')
- const [writing, setWriting] = useState<Writing | null>(null)
+ const [notebookDirty, setNotebookDirty] = useState(false)
  const [undo, setUndo] = useState<Content | null>(null)
  const allowed = authorized || (import.meta.env.DEV && local)
  function commit(next: Content) { if (!allowed || !validContent(next) || !onSave(next)) { setMessage('لم يتم الحفظ. راجع الحقول والروابط وحجم المحتوى.'); return false } setUndo(null); setMessage('حُفظت المسودة. راجعها قبل النشر العام.'); return true }
  const tabs = [['settings','الهوية والتصميم'],['writings','الكتابات'],['thoughts','الأفكار والوسائط واللقاءات'],['learning','المحتوى التعليمي'],['library','ترتيب المكتبة'],['books','\u0645\u0643\u062a\u0628\u0629 \u0627\u0644\u0643\u062a\u0628'],['backup','النسخ الاحتياطية']]
- return <div className="admin-shell" dir="rtl"><header className="admin-header"><a className="wordmark" href="/">كميل<span>.</span></a><a href="/">معاينة الموقع ↗</a></header><div className="admin-layout"><aside><span className="section-label">مساحة المالك</span><h1>لوحة الإدارة</h1><p>من الفكرة إلى أثرها.</p>{allowed && <nav aria-label="أقسام الإدارة">{tabs.map(([key,label]) => <button key={key} aria-pressed={tab===key} onClick={() => setTab(key)}>{label}</button>)}</nav>}</aside><main className="editor admin-main"><CloudPanel content={content} revision={revision} onLoad={commit} onPublish={onPublish} onAuthorizationChange={setAuthorized} />
+ return <div className="admin-shell" dir="rtl"><header className="admin-header"><a className="wordmark" href="/">كميل<span>.</span></a><a href="/">معاينة الموقع ↗</a></header><div className="admin-layout"><aside><span className="section-label">مساحة المالك</span><h1>لوحة الإدارة</h1><p>من الفكرة إلى أثرها.</p>{allowed && <nav aria-label="أقسام الإدارة">{tabs.map(([key,label]) => <button key={key} aria-pressed={tab===key} onClick={() => setTab(key)}>{label}</button>)}</nav>}</aside><main className="editor admin-main"><CloudPanel content={content} revision={revision} onLoad={commit} onPublish={onPublish} onAuthorizationChange={setAuthorized} hasUnsavedChanges={notebookDirty} />
  {!authorized && import.meta.env.DEV && <div className="admin-local"><p>التجربة المحلية تحفظ على هذا المتصفح. النشر السحابي يحتاج حسابًا مخوّلًا.</p><button onClick={() => setLocal(!local)}>{local ? 'إغلاق التجربة المحلية' : 'فتح تجربة الإدارة المحلية'}</button></div>}
  {!allowed ? <p>سجّل الدخول بحساب يملك صلاحية الإدارة لفتح أدوات التحرير. تسجيل الحساب وحده لا يمنح صلاحيات.</p> : <>
  {tab==='settings' && <Settings key={JSON.stringify(content.site)} content={content} save={commit} />}
  {tab==='thoughts' && <ThoughtEditor content={content} onSave={commit} />}
- {tab==='writings' && <><h2>الكتابات</h2><div className="admin-list">{content.writings.map(w => <button key={w.id} onClick={() => setWriting(w)}>{w.title} · تحرير</button>)}</div><form key={writing?.id || 'new'} onSubmit={e => { e.preventDefault(); const f=new FormData(e.currentTarget); const item:Writing={id:writing?.id??crypto.randomUUID(),title:String(f.get('title')).trim(),text:String(f.get('text')).trim(),category:String(f.get('category')) as Writing['category']}; if(commit({...content,writings:writing?content.writings.map(w=>w.id===item.id?item:w):[...content.writings,item]})){setWriting(null);e.currentTarget.reset()} }}><h3>{writing?'تحرير النص':'نص جديد'}</h3><label>العنوان<input name="title" defaultValue={writing?.title} required maxLength={150}/></label><label>التصنيف<select name="category" defaultValue={writing?.category}>{['فلسفة','علوم','ثقافة','تأملات','شعر'].map(c=><option key={c}>{c}</option>)}</select></label><label>النص<textarea name="text" defaultValue={writing?.text} required maxLength={50000}/></label><button className="primary">حفظ النص</button>{writing&&<button type="button" onClick={()=>setWriting(null)}>نص جديد</button>}</form></>}
+ {tab==='writings' && <NotebookEditor content={content} save={commit} onDirtyChange={setNotebookDirty}/>}
  {tab==='learning' && <LearningEditor content={content} save={commit} />}
  {tab==='books' && <BookEditor content={content} save={commit}/>}
  {tab==='library' && <><h2>ترتيب المكتبة</h2><p>إزالة العنصر تزيل صفحته من النسخة التالية. احتفظ بنسخة احتياطية قبل النشر.</p>{(['writings','ideas','media','sessions'] as const).map(key=><section key={key}><h3>{{writings:'الكتابات',ideas:'الأفكار',media:'الوسائط',sessions:'اللقاءات'}[key]}</h3>{(content[key]??[]).map((item,index,items)=><div className="admin-row" key={item.id}><span>{item.title}</span><button disabled={index===0} onClick={()=>{const list=[...items];[list[index-1],list[index]]=[list[index],list[index-1]];commit({...content,[key]:list})}}>↑</button><button disabled={index===items.length-1} onClick={()=>{const list=[...items];[list[index+1],list[index]]=[list[index],list[index+1]];commit({...content,[key]:list})}}>↓</button><button onClick={()=>{if(commit({...content,[key]:items.filter(i=>i.id!==item.id)}))setUndo(content)}}>إزالة</button></div>)}</section>)}{undo&&<button onClick={()=>{if(commit(undo))setUndo(null)}}>تراجع عن آخر إزالة</button>}</>}
