@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import { test } from 'node:test'
 import { createServer } from 'vite'
 const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
@@ -7,6 +8,14 @@ try {
   const { pageInfo, publicPaths, renderHead, replaceHead, structuredData } = await server.ssrLoadModule('/src/lib/pages.ts')
   const { sessionCalendar } = await server.ssrLoadModule('/src/lib/calendar.ts')
   const { render } = await server.ssrLoadModule('/src/entry-server.tsx')
+  await test('Production prerender uses the production renderer and excludes development controls', async () => {
+    const production = await import('../dist-ssr/entry-server.js')
+    const markup = production.render(production.initialContent, '/admin')
+    const html = await readFile('dist/admin/index.html', 'utf8')
+    assert.ok(html.includes(`<div id="root">${markup}</div>`))
+    assert.ok(!html.includes('فتح تجربة الإدارة المحلية'))
+    assert.ok(html.includes('id="login-email"'))
+  })
   const approved = { id: 'approved', title: 'فكرة معتمدة', kind: 'حكمة', text: 'نص مستقل للفكرة.', question: 'كيف نختبرها؟', sample: false }
   const video = { id: 'lesson', type: 'فيديو', title: 'درس مرئي', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', purpose: 'درس مرئي', description: 'ملخص الدرس.', thumbnail: 'https://example.com/poster.jpg', uploadedAt: '2026-10-11T12:00:00+03:00' }
   const session = { id: 'discussion', title: 'حوار, وفكرة', question: 'سؤال\nBEGIN:VEVENT', startsAt: '2026-10-12T17:00:00+03:00', durationMinutes: 40, joinUrl: 'https://meet.google.com/abc-defg-hij' }

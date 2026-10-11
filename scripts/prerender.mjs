@@ -1,8 +1,5 @@
-import { createServer } from 'vite'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
-const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
-try {
- const { render, initialContent, pageInfo, renderHead, replaceHead } = await server.ssrLoadModule('/src/entry-server.tsx')
+import { render, initialContent, pageInfo, renderHead, replaceHead } from '../dist-ssr/entry-server.js'
  const template = await readFile('dist/index.html', 'utf8')
  await writeFile('dist/template.html', template)
  const paths = ['/', '/admin', '/about', '/observatory', '/salon', ...(initialContent.ideas ?? []).map(i => `/ideas/${encodeURIComponent(i.id)}`), ...initialContent.writings.map(w => `/writings/${encodeURIComponent(w.id)}`)]
@@ -14,4 +11,3 @@ try {
    await writeFile(`${dir}/index.html`, html)
  }
  console.log(`Prerendered ${paths.length} Arabic pages with page-specific metadata.`)
-} finally { await server.close() }
