@@ -62,6 +62,18 @@ try {
     assert.ok(publicPaths(initialContent).includes(`/library/${book.id}`))
     assert.ok(!publicPaths({...initialContent,books:[]}).includes(`/library/${book.id}`))
   })
+  await test('Editorial notes and session archive fields validate safely without breaking old content',()=>{
+    const book={...defaultBooks[0],review:'My reading',quote:'<script>unsafe</script>',quoteSource:'Page 10'}
+    assert.equal(validBooks([book]),true)
+    assert.equal(validBooks([{...book,review:123}]),false)
+    const html=render({...initialContent,books:[book]},`/library/${book.id}`)
+    assert.ok(html.includes('My reading'))
+    assert.ok(html.includes('&lt;script&gt;unsafe&lt;/script&gt;'))
+    const session={id:'test-session',title:'Dialogue',question:'Why?',startsAt:'2026-01-01T12:00:00+03:00',durationMinutes:40,joinUrl:'https://meet.google.com/abc-defg-hij',registrationUrl:'https://forms.example/register',summary:'Summary',summaryPdfUrl:'https://example.com/summary.pdf',recordingUrl:'https://youtu.be/abcdefghijk'}
+    assert.equal(validContent({...initialContent,sessions:[session]}),true)
+    for(const field of ['registrationUrl','summaryPdfUrl','recordingUrl'])assert.equal(validContent({...initialContent,sessions:[{...session,[field]:'javascript:alert(1)'}]}),false)
+    assert.equal(validContent({...initialContent,sessions:[{...session,summaryPdfUrl:'https://example.com/page.html'}]}),false)
+  })
   await test('Production prerender uses the production renderer and excludes development controls', async () => {
     const production = await import('../dist-ssr/entry-server.js')
     const markup = production.render(production.initialContent, '/admin')
