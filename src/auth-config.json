@@ -1,3 +1,4 @@
 {
-  "turnstileSiteKey": "0x4AAAAAAFTrC5bcPSEVrVIr"
+  "turnstileSiteKey": "0x4AAAAAAFTrC5bcPSEVrVIr",
+  "requireAdminMfa": false
 }

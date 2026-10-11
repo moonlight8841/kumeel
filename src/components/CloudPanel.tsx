@@ -1,5 +1,6 @@
 import { LoginForm } from './LoginForm'
 import { AdminMfa } from './AdminMfa'
+import authConfig from '../auth-config.json'
 import { useEffect, useState } from 'react'
 import type { Content } from '../content'
 import { supabase, isEditor, loadCloudDraft, saveCloudDraft, publishContent, uploadMedia } from '../lib/cloud'
@@ -33,9 +34,13 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
       if(userError||user.user?.id!==userId)throw new Error('تعذّر التحقق من جلسة الحساب. أعد تسجيل الدخول.')
       const confirmed=Boolean(user.user.email_confirmed_at)
       const ok=confirmed&&await isEditor(userId)
-      const {data:assurance,error}=await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-      if(error)throw new Error('تعذّر التحقق من مستوى حماية الجلسة.')
-      const secure=!sessionExpired&&ok&&assurance.currentLevel==='aal2'
+      let mfaSatisfied = !authConfig.requireAdminMfa
+      if (authConfig.requireAdminMfa && ok) {
+        const {data:assurance,error}=await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+        if(error)throw new Error('تعذّر التحقق من مستوى حماية الجلسة.')
+        mfaSatisfied=assurance.currentLevel==='aal2'
+      }
+      const secure=!sessionExpired&&ok&&mfaSatisfied
       if(current){setVerifiedEmail(confirmed);setMember(ok&&!sessionExpired);setAuthorized(secure);onAuthorizationChange(secure);setChecking(false)}
     })().catch(error=>{if(current){setChecking(false);setMessage(error instanceof Error?error.message:'تعذّر التحقق من صلاحيات الحساب.')}})
     return () => { current = false }
@@ -60,8 +65,8 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
   }
   return <section className={userId ? "cloud-panel" : "login-panel"}>{userId && <><h3>النشر السحابي</h3><p>حساب المالك يحفظ مسودات خاصة وينشر نسخة عامة للموقع.</p></>}
     {!userId ? <LoginForm /> : <>
-      <p>{checking ? 'جارٍ التحقق من صلاحيات الحساب…' : authorized ? 'حساب مخوّل بالنشر · مصادقة ثنائية مؤكدة' : !verifiedEmail ? 'أكّد بريدك الإلكتروني قبل المتابعة.' : member ? 'أكمل المصادقة الثنائية لفتح أدوات الإدارة.' : 'حساب قارئ · لا يملك صلاحيات الإدارة.'}</p>
-      {member && !authorized && !checking && <AdminMfa key={userId} onVerified={()=>{setChecking(true);setAuthVersion(v=>v+1)}}/>}
+      <p>{checking ? 'جارٍ التحقق من صلاحيات الحساب…' : authorized ? (authConfig.requireAdminMfa ? 'حساب مخوّل بالنشر · مصادقة ثنائية مؤكدة' : 'حساب مخوّل بالنشر · بريد مؤكّد') : !verifiedEmail ? 'أكّد بريدك الإلكتروني قبل المتابعة.' : member ? 'أكمل المصادقة الثنائية لفتح أدوات الإدارة.' : 'حساب قارئ · لا يملك صلاحيات الإدارة.'}</p>
+      {authConfig.requireAdminMfa && member && !authorized && !checking && <AdminMfa key={userId} onVerified={()=>{setChecking(true);setAuthVersion(v=>v+1)}}/>}
       <button disabled={busy} onClick={() => void run(async () => { const { error } = await supabase.auth.signOut({scope:'local'}); if (error) throw error })}>تسجيل الخروج</button>
       <button disabled={busy} onClick={() => void run(async () => { const {error}=await supabase.auth.signOut({scope:'global'});if(error)throw error })}>تسجيل الخروج من جميع الأجهزة</button>
       {!authorized && !checking && <button disabled={busy} onClick={() => { setChecking(true); setAuthVersion(v => v + 1) }}>إعادة التحقق من الصلاحية</button>}
