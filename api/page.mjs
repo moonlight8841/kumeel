@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises'
-import { render, pageInfo, renderHead, replaceHead } from '../dist-ssr/entry-server.js'
+import { render, contentForPage, pageInfo, renderHead, replaceHead } from '../dist-ssr/entry-server.js'
 import { publicContent, siteOrigin } from './public-content.mjs'
 const template = await readFile(new URL('../dist/template.html', import.meta.url), 'utf8')
 const safeJson = value => JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
@@ -9,7 +9,8 @@ export default async function handler(req, res) {
   const requested = req.query?.path
   const pathname = typeof requested === 'string' && requested.startsWith('/') && requested.length <= 2000 ? requested : '/'
   const info = pageInfo(content, pathname)
-  const markup = `<div id="root">${render(content, pathname)}</div><script type="application/json" id="kumeel-content">${safeJson(content)}</script>`
+  const scoped = contentForPage(content, pathname)
+  const markup = `<div id="root">${render(scoped, pathname)}</div><script type="application/json" id="kumeel-content">${safeJson(scoped)}</script>`
   const html = replaceHead(template, renderHead(content, info, siteOrigin())).replace('<div id="root"></div>', () => markup)
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
   res.setHeader('Cache-Control', info.kind === 'admin' ? 'no-store' : fresh ? 'public, s-maxage=60, stale-while-revalidate=300' : 'no-store')

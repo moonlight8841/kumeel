@@ -9,6 +9,8 @@
     "api/robots.mjs": { "includeFiles": "{dist-ssr/**,src/supabase-config.json}" }
   },
   "rewrites": [
+    { "source": "/explore", "destination": "/api/page?path=/explore" },
+    { "source": "/writings", "destination": "/api/page?path=/writings" },
     { "source": "/library", "destination": "/api/page?path=/library" },
     { "source": "/library/:id", "destination": "/api/page?path=/library/:id" },
     { "source": "/admin", "destination": "/api/page?path=/admin" },

@@ -1,4 +1,6 @@
-import {ReadingMode} from './ReadingMode'
+import {Explore} from './Explore'
+import {SiteHeader} from './SiteHeader'
+import {WritingsIndex} from './WritingsIndex'
 import {Newsletter} from './Newsletter'
 import { ContactLinks } from './ContactLinks'
 import { useState } from 'react'
@@ -6,7 +8,6 @@ import { youtubeEmbed, type Content } from '../content'
 import type { PageInfo } from '../lib/pages'
 import { ThoughtSpace } from './ThoughtSpace'
 import { BookLibrary } from './BookLibrary'
-import {LoginLink} from './LoginLink'
 import {TextDocument} from './TextDocument'
 
 function Video({ url, title }: { url: string; title: string }) {
@@ -20,12 +21,14 @@ export function PublicationPage({ content, info }: { content: Content; info: Pag
   async function copyLink() { try { await navigator.clipboard.writeText(location.href); setMessage('نُسخ رابط الصفحة.') } catch { setMessage('تعذّر النسخ. يمكنك نسخ الرابط من شريط المتصفح.') } }
   const isArticle = Boolean(info.idea || info.writing || info.media)
   const text = info.idea?.text ?? info.writing?.text
-  return <><a className="skip" href="#publication">انتقل إلى المحتوى</a><header className="header wrap publication-header"><a className="wordmark" href="/" aria-label="كميل ال نهاب، الرئيسية">كميل<span>.</span></a><nav aria-label="التنقل الرئيسي"><a href="/about">من هو كميل؟</a><a href="/observatory">مرصد الأفكار</a><a href="/library">المكتبة</a><a href="/salon">مجلس الحوار</a></nav><ReadingMode/><LoginLink/><a className="contact-link" href="/">الرئيسية ↗</a></header><main id="publication">
+  return <><a className="skip" href="#publication">انتقل إلى المحتوى</a><SiteHeader/><main id="publication">
+    {info.kind==='explore'&&<Explore content={content}/>}
+    {info.kind==='writings'&&<WritingsIndex content={content}/>}
     {info.kind === 'observatory' && <ThoughtSpace content={content} section="observatory" />}
     {info.kind === 'salon' && <ThoughtSpace content={content} section="salon" />}
     {(info.kind === 'library' || info.kind === 'book') && <BookLibrary content={content} book={info.book}/>}
     {info.kind === 'about' && <article className="about-page wrap section"><h1>من هو كميل ال نهاب؟</h1><p className="publication-lead">{content.bio}</p><div className="about-purpose"><h2>لماذا هذه المساحة؟</h2><p>لأن الفكرة تستحق أكثر من مرور عابر. هنا تتجاور الفلسفة والعلم والثقافة: نقرأ، ونختبر الافتراضات، ونتعلّم من اختلاف وجهات النظر.</p><h2>كيف تقرأ هذه المنصة؟</h2><p>ابدأ بسؤال في المرصد، اقرأ الفكرة واعتراضها، ثم جرّب صياغة موقفك في مختبر الافتراضات. وحين يُعلن لقاء، شارك في الحوار عبر منصة الجلسة.</p><a className="primary" href="/observatory">ابدأ من مرصد الأفكار ←</a></div></article>}
-    {isArticle && <article className="publication-article wrap section"><nav className="breadcrumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a><span aria-hidden="true">/</span><a href={info.writing ? '/#writings' : '/observatory'}>{info.writing ? 'الكتابات' : 'مرصد الأفكار'}</a></nav><div className="publication-category">{info.idea?.kind ?? info.writing?.category ?? info.media?.purpose}</div><h1>{info.idea?.title ?? info.writing?.title ?? info.media?.title}</h1><p className="publication-byline">{info.noindex ? 'نموذج تحريري تجريبي · غير منسوب إلى كميل ال نهاب' : 'من مساحة كميل ال نهاب'}</p>
+    {isArticle && <article className="publication-article wrap section"><nav className="breadcrumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a><span aria-hidden="true">/</span><a href={info.writing ? '/writings' : '/observatory'}>{info.writing ? 'الكتابات' : 'مرصد الأفكار'}</a></nav>{info.writing?.publishedAt&&<time dateTime={info.writing.publishedAt}>{info.writing.publishedAt}</time>}<div className="publication-category">{info.idea?.kind ?? info.writing?.category ?? info.media?.purpose}</div><h1>{info.idea?.title ?? info.writing?.title ?? info.media?.title}</h1><p className="publication-byline">{info.noindex ? 'نموذج تحريري تجريبي · غير منسوب إلى كميل ال نهاب' : 'من مساحة كميل ال نهاب'}</p>
       {info.media && <div className="publication-media">{info.media.type === 'صورة' ? <img src={info.media.url} alt={info.media.description || info.media.title} /> : <Video url={info.media.url} title={info.media.title} />}<p className="publication-lead">{info.media.description}</p>{info.media.source && <p className="publication-source">المصدر / صاحب الحكمة: {info.media.source}</p>}</div>}
       {text && <div className="publication-text"><TextDocument text={text} format={info.writing?.format}/></div>}
       {info.idea?.counterpoint && <aside className="publication-counterpoint"><h2>اعتراض يستحق الإنصاف</h2><p>{info.idea.counterpoint}</p></aside>}
