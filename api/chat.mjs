@@ -2,7 +2,7 @@
 // and stores nothing. Rate limits live in Supabase (supabase/chat.sql).
 import {createHmac} from 'node:crypto'
 import {GoogleGenerativeAI,SchemaType} from '@google/generative-ai'
-import {jsonResponder,parseBody,providerFailure,supabaseConfig,withModelFallback,jsonInstruction,parseModelJson,thinkingFor} from './_shared/owner-ai.mjs'
+import {jsonResponder,parseBody,providerFailure,supabaseConfig,withModelFallback,jsonInstruction,parseModelJson,thinkingFor,generateWithProviders,cloudflareConfigured} from './_shared/owner-ai.mjs'
 
 export const LIMITS={message:600,historyText:800,turns:8,corpus:60000,sources:3}
 const CORPUS_TTL=5*60*1000
@@ -56,14 +56,24 @@ const system=`أنت «محاور كتابات كميل»، دليل قراءة 
 
 const schema={type:SchemaType.OBJECT,properties:{answer:{type:SchemaType.STRING},sources:{type:SchemaType.ARRAY,items:{type:SchemaType.STRING}},followUp:{type:SchemaType.STRING}},required:['answer','sources']}
 
-async function geminiAnswer({messages,corpus,env}){
+const chatSystem=corpus=>jsonInstruction(`${system}
+
+وثائق المنصة (JSON):
+${JSON.stringify(corpus.map(({id,title,body})=>({id,title,body})))}`,schema)
+
+function geminiAnswer({messages,corpus,env}){
+ if(!env.GEMINI_API_KEY)return Promise.reject(Object.assign(new Error('gemini-off'),{status:503}))
  const contents=messages.map(m=>({role:m.role,parts:[{text:m.text}]}))
- // A reader is waiting: give up after ~20s with a clear 'busy' message.
+ // A reader is waiting: give up after ~20s, then the backup provider answers.
  return withModelFallback(env,async name=>{
- const model=new GoogleGenerativeAI(env.GEMINI_API_KEY).getGenerativeModel({model:name,systemInstruction:jsonInstruction(`${system}\n\nوثائق المنصة (JSON):\n${JSON.stringify(corpus.map(({id,title,body})=>({id,title,body})))}`,schema),generationConfig:{...thinkingFor(name),responseMimeType:'application/json',maxOutputTokens:1024,temperature:.4}})
+ const model=new GoogleGenerativeAI(env.GEMINI_API_KEY).getGenerativeModel({model:name,systemInstruction:chatSystem(corpus),generationConfig:{...thinkingFor(name),responseMimeType:'application/json',maxOutputTokens:1024,temperature:.4}})
  const result=await model.generateContent({contents},{timeout:12000})
  return parseModelJson(result.response.text())
  },{budgetMs:20_000})
+}
+
+export function answer({messages,corpus,env}){
+ return generateWithProviders({env,gemini:()=>geminiAnswer({messages,corpus,env}),cloudflare:{system:chatSystem(corpus),messages,maxTokens:800,temperature:.4,timeoutMs:15_000}})
 }
 
 async function defaultCorpus(clock){
@@ -74,9 +84,9 @@ async function defaultCorpus(clock){
  return cache.corpus
 }
 
-export function createHandler({env=process.env,fetcher=fetch,generate=geminiAnswer,loadCorpus=defaultCorpus,quota=takeQuota,clock=Date.now}={}){return async(req,res)=>{
+export function createHandler({env=process.env,fetcher=fetch,generate=answer,loadCorpus=defaultCorpus,quota=takeQuota,clock=Date.now}={}){return async(req,res)=>{
  const fail=jsonResponder(res)
- const enabled=Boolean(env.GEMINI_API_KEY&&env.CHAT_RATE_SECRET&&env.CHAT_RATE_SECRET.length>=32)
+ const enabled=Boolean((env.GEMINI_API_KEY||cloudflareConfigured(env))&&env.CHAT_RATE_SECRET&&env.CHAT_RATE_SECRET.length>=32)
  if(req.method==='GET'){res.setHeader('Cache-Control','public, max-age=300');return res.status(200).json({success:true,enabled})}
  if(req.method!=='POST'){res.setHeader('Allow','GET, POST');return fail(405,'استخدم طلب POST.')}
  if(Number(req.headers?.['content-length']||0)>24000)return fail(413,'المحادثة أطول من المسموح.')

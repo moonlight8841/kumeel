@@ -51,7 +51,7 @@ function describe(schema,depth=0){
  return String(schema.type).toLowerCase()==='integer'?'integer':'string'
 }
 // Tolerates ```json fences some models add despite JSON mode.
-export function parseModelJson(text){return JSON.parse(String(text).trim().replace(/^```(?:json)?s*/i,'').replace(/s*```$/,''))}
+export function parseModelJson(text){return JSON.parse(String(text).trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''))}
 export function jsonInstruction(system,schema){return `${system}\n\nأعد كائن JSON واحدًا فقط بهذا الشكل بالضبط، دون أي نص قبله أو بعده: ${describe(schema)}`}
 
 // Gemini 3 models think before answering; at the default level a short chat reply
@@ -98,6 +98,56 @@ export async function withModelFallback(env,attempt,{now=Date.now,health=unhealt
   }
  }
  throw finalError()
+}
+
+// ---------- Providers ----------
+// Gemini first, Cloudflare Workers AI second. A provider that just failed is put
+// aside (1 min for overload, 10 min for exhausted quota) so readers do not wait on
+// it. Image tasks stay on Gemini: pass cloudflare:null.
+export const DEFAULT_CLOUDFLARE_MODELS='@cf/meta/llama-3.3-70b-instruct-fp8-fast,@cf/meta/llama-4-scout-17b-16e-instruct'
+const providerHealth=new Map()
+// Between providers any HTTP failure or timeout justifies trying the other service
+// (a rejected Gemini key, quota or outage says nothing about Workers AI).
+const providerSwitch=error=>Number.isInteger(error?.status)||retriable(error)||error?.message==='overloaded'
+
+export function cloudflareConfigured(env){return /^[0-9a-f]{32}$/.test(env.CLOUDFLARE_ACCOUNT_ID??'')&&typeof env.CLOUDFLARE_AI_TOKEN==='string'&&env.CLOUDFLARE_AI_TOKEN.length>=20}
+
+export function cloudflareModels(env){return [...new Set(String(env.CLOUDFLARE_AI_MODELS??DEFAULT_CLOUDFLARE_MODELS).split(',').map(m=>m.trim()).filter(m=>/^@cf\/[a-z0-9._/-]{3,100}$/.test(m)))]}
+
+// OpenAI-compatible Workers AI endpoint; returns parsed JSON or throws {status}.
+export async function cloudflareJson({env,model,system,messages,maxTokens=1024,temperature=.4,timeoutMs=20_000,fetcher=fetch}){
+ const response=await fetcher(`https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/ai/v1/chat/completions`,{method:'POST',headers:{Authorization:`Bearer ${env.CLOUDFLARE_AI_TOKEN}`,'Content-Type':'application/json'},body:JSON.stringify({model,max_tokens:maxTokens,temperature,messages:[{role:'system',content:system},...messages.map(m=>({role:m.role==='model'?'assistant':m.role,content:m.text}))]}),signal:AbortSignal.timeout(timeoutMs)})
+ if(!response.ok)throw Object.assign(new Error('cloudflare'),{status:response.status})
+ const body=await response.json().catch(()=>null)
+ const text=body?.choices?.[0]?.message?.content
+ // An empty or non-JSON reply is a provider fault: let the next model try.
+ try{return parseModelJson(text)}catch{throw Object.assign(new Error('cloudflare-format'),{status:502})}
+}
+
+export async function withCloudflare(env,request,{fetcher=fetch,cloudflare=cloudflareJson}={}){
+ let last
+ for(const model of cloudflareModels(env)){
+  try{return await cloudflare({env,model,fetcher,...request})}
+  catch(error){last=error;if(!providerSwitch(error))throw error;console.warn('model_fallback',{model,status:Number.isInteger(error?.status)?error.status:error?.name})}
+ }
+ throw last
+}
+
+// gemini: () => Promise<result>; cloudflare: {system,messages,maxTokens,temperature,timeoutMs} | null
+export async function generateWithProviders({env,gemini,cloudflare,now=Date.now,health=providerHealth,fetcher=fetch,cloudflareCall=cloudflareJson}){
+ const hasBackup=Boolean(cloudflare&&cloudflareConfigured(env))
+ const runBackup=()=>withCloudflare(env,cloudflare,{fetcher,cloudflare:cloudflareCall})
+ // Gemini recently failed: go straight to the backup while it recovers.
+ if(hasBackup&&health.get('gemini')>now()){
+  try{return await runBackup()}catch(error){if(!providerSwitch(error))throw error}
+ }
+ try{const result=await gemini();health.delete('gemini');return result}
+ catch(error){
+  if(!hasBackup||!providerSwitch(error))throw error
+  health.set('gemini',now()+(error?.status===429?600_000:60_000))
+  console.warn('provider_fallback',{from:'gemini',status:Number.isInteger(error?.status)?error.status:error?.name})
+  return runBackup()
+ }
 }
 
 export function parseBody(req){try{return typeof req.body==='string'?JSON.parse(req.body):req.body}catch{return undefined}}

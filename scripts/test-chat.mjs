@@ -112,3 +112,50 @@ await test('Models: overloads retry once then fall back, quota errors stop, fail
  const mixed=[];let m2=0
  await assert.rejects(withModelFallback(env,async m=>{mixed.push(m);m2++;throw m2===1?overloaded:hung},{now:()=>clock,health:new Map(),sleep}),e=>e.status===503)
 })
+
+const {cloudflareConfigured,cloudflareModels,cloudflareJson,generateWithProviders}=await import('../api/_shared/owner-ai.mjs')
+const cfEnv={CLOUDFLARE_ACCOUNT_ID:'a'.repeat(32),CLOUDFLARE_AI_TOKEN:'t'.repeat(40)}
+await test('Providers: Cloudflare configuration and model list are validated',()=>{
+ assert.equal(cloudflareConfigured(cfEnv),true)
+ for(const bad of [{},{...cfEnv,CLOUDFLARE_ACCOUNT_ID:'../x'},{...cfEnv,CLOUDFLARE_AI_TOKEN:'short'}])assert.equal(cloudflareConfigured(bad),false)
+ assert.deepEqual(cloudflareModels({CLOUDFLARE_AI_MODELS:'@cf/meta/a, https://evil.example ,@cf/meta/a,@cf/x/b'}),['@cf/meta/a','@cf/x/b'])
+ assert.ok(cloudflareModels({})[0].startsWith('@cf/meta/llama-3.3'))
+})
+
+await test('Providers: Workers AI request maps roles, parses fenced JSON and fails with a status',async()=>{
+ let sent
+ const ok=async(url,opts)=>{sent={url,opts};return {ok:true,json:async()=>({choices:[{message:{content:'```json\n{"answer":"نعم","sources":[]}\n```'}}]})}}
+ const data=await cloudflareJson({env:cfEnv,model:'@cf/meta/a',system:'S',messages:[{role:'user',text:'س'},{role:'model',text:'ج'},{role:'user',text:'س٢'}],fetcher:ok})
+ assert.equal(data.answer,'نعم')
+ const body=JSON.parse(sent.opts.body)
+ assert.ok(sent.url.endsWith(`/accounts/${'a'.repeat(32)}/ai/v1/chat/completions`))
+ assert.equal(sent.opts.headers.Authorization,`Bearer ${'t'.repeat(40)}`)
+ assert.deepEqual(body.messages.map(m=>m.role),['system','user','assistant','user'])
+ await assert.rejects(cloudflareJson({env:cfEnv,model:'m',system:'S',messages:[],fetcher:async()=>({ok:false,status:429})}),e=>e.status===429)
+ await assert.rejects(cloudflareJson({env:cfEnv,model:'m',system:'S',messages:[],fetcher:async()=>({ok:true,json:async()=>({choices:[{message:{content:''}}]})})}),e=>e.status===502)
+})
+
+await test('Providers: Gemini failures switch to Workers AI and Gemini is skipped while it recovers',async()=>{
+ const health=new Map();let clock=0,geminiCalls=0,cfCalls=0
+ const cloudflareCall=async()=>{cfCalls++;return {from:'cf'}}
+ const request={system:'S',messages:[{role:'user',text:'س'}]}
+ const call=gemini=>generateWithProviders({env:cfEnv,gemini:async()=>{geminiCalls++;return gemini()},cloudflare:request,now:()=>clock,health,cloudflareCall})
+ assert.deepEqual(await call(async()=>({from:'gemini'})),{from:'gemini'});assert.equal(cfCalls,0)
+ assert.deepEqual(await call(async()=>{throw Object.assign(new Error('o'),{status:503})}),{from:'cf'})
+ const before=geminiCalls
+ assert.deepEqual(await call(async()=>({from:'gemini'})),{from:'cf'});assert.equal(geminiCalls,before,'gemini skipped during cooldown')
+ clock=61_000
+ assert.deepEqual(await call(async()=>({from:'gemini'})),{from:'gemini'})
+ await call(async()=>{throw Object.assign(new Error('q'),{status:429})})
+ clock+=300_000;assert.deepEqual(await call(async()=>({from:'gemini'})),{from:'cf'},'quota keeps gemini aside for 10 minutes')
+ const fresh=()=>new Map()
+ assert.deepEqual(await generateWithProviders({env:cfEnv,gemini:async()=>{throw Object.assign(new Error('bad key'),{status:400})},cloudflare:request,health:fresh(),cloudflareCall}),{from:'cf'},'a rejected Gemini key falls back')
+ await assert.rejects(generateWithProviders({env:cfEnv,gemini:async()=>{throw new TypeError('bug')},cloudflare:request,health:fresh(),cloudflareCall}),e=>e instanceof TypeError,'programming errors are not masked')
+ await assert.rejects(generateWithProviders({env:{},gemini:async()=>{throw Object.assign(new Error('o'),{status:503})},cloudflare:request,health:fresh(),cloudflareCall}),e=>e.status===503)
+ await assert.rejects(generateWithProviders({env:cfEnv,gemini:async()=>{throw Object.assign(new Error('o'),{status:503})},cloudflare:null,health:fresh(),cloudflareCall}),e=>e.status===503)
+})
+
+await test('Chat: enabled with Workers AI alone',async()=>{
+ const r=await run({method:'GET',environment:{CHAT_RATE_SECRET:secret,...cfEnv}})
+ assert.equal(r.data.enabled,true)
+})

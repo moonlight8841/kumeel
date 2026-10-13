@@ -1,7 +1,7 @@
 // Owner-only editing assistant: proofreading, image alt text, session summaries
 // and quiz drafts. Every result is a suggestion the owner reviews before saving.
 import {GoogleGenerativeAI,SchemaType} from '@google/generative-ai'
-import {jsonResponder,parseBody,providerFailure,supabaseConfig,verifyOwner,withModelFallback,jsonInstruction,parseModelJson,thinkingFor} from './_shared/owner-ai.mjs'
+import {jsonResponder,parseBody,providerFailure,supabaseConfig,verifyOwner,withModelFallback,jsonInstruction,parseModelJson,thinkingFor,generateWithProviders,cloudflareConfigured} from './_shared/owner-ai.mjs'
 
 const MAX_TEXT=12000
 const MAX_IMAGE=4_000_000
@@ -75,6 +75,7 @@ export async function fetchImage(url,fetcher=fetch){
 }
 
 async function geminiGenerate({task,payload,image,env}){
+ if(!env.GEMINI_API_KEY)throw Object.assign(new Error('gemini-off'),{status:503})
  const spec=tasks[task]
  const parts=[{text:JSON.stringify(spec.input(payload))},...(image?[{inlineData:image}]:[])]
  return withModelFallback(env,async name=>{
@@ -84,7 +85,13 @@ async function geminiGenerate({task,payload,image,env}){
  })
 }
 
-export function createHandler({fetcher=fetch,env=process.env,generate=geminiGenerate,imageFetcher=fetchImage,clock=Date.now,limits=recent}={}){return async(req,res)=>{
+// Text tasks fall back to Workers AI; image description needs Gemini's vision.
+export function assist({task,payload,image,env}){
+ const spec=tasks[task]
+ return generateWithProviders({env,gemini:()=>geminiGenerate({task,payload,image,env}),cloudflare:spec.image?null:{system:jsonInstruction(spec.system,spec.schema),messages:[{role:'user',text:JSON.stringify(spec.input(payload))}],maxTokens:task==='proofread'?6000:1500,temperature:task==='proofread'?.1:.4,timeoutMs:40_000}})
+}
+
+export function createHandler({fetcher=fetch,env=process.env,generate=assist,imageFetcher=fetchImage,clock=Date.now,limits=recent}={}){return async(req,res)=>{
  const fail=jsonResponder(res)
  if(req.method!=='POST'){res.setHeader('Allow','POST');return fail(405,'استخدم طلب POST.')}
  if(Number(req.headers?.['content-length']||0)>40000)return fail(413,'النص أطول من المسموح.')
@@ -95,7 +102,7 @@ export function createHandler({fetcher=fetch,env=process.env,generate=geminiGene
   const spec=body&&typeof body.task==='string'&&Object.hasOwn(tasks,body.task)?tasks[body.task]:null
   const payload=body?.payload
   if(!spec||!payload||typeof payload!=='object'||Array.isArray(payload)||!spec.validate(payload))return fail(400,`مدخلات غير صالحة. الحد الأقصى ${MAX_TEXT.toLocaleString('ar-SA')} حرف.`)
-  if(!env.GEMINI_API_KEY)return fail(503,'لم يُفعّل مفتاح Gemini على الخادم بعد.')
+  if(!env.GEMINI_API_KEY&&!cloudflareConfigured(env))return fail(503,'لم يُفعّل مزوّد الذكاء الاصطناعي على الخادم بعد.')
   const time=clock(),last=limits.get(owner.user.id)
   if(last!==undefined&&time-last<COOLDOWN){res.setHeader('Retry-After',String(Math.ceil(COOLDOWN/1000)));return fail(429,'انتظر ثوانيَ قليلة قبل الطلب التالي.')}
   limits.set(owner.user.id,time)

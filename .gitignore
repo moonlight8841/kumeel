@@ -36,3 +36,6 @@ artifacts/
 
 # Local book PDFs: large and not redistributable.
 books/
+
+# Local credentials kept out of the app tree.
+.secrets/
