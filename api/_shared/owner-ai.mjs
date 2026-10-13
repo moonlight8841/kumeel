@@ -39,6 +39,24 @@ export function providerFailure(error,label){
  return {status:502,error:'تعذّر التوليد أو الاتصال. أعد المحاولة لاحقًا.'}
 }
 
+// ---------- Structured output ----------
+// gemini-3.5-flash returns 503 when systemInstruction is combined with
+// responseSchema (reproduced repeatedly; each feature alone succeeds). We ask for
+// JSON mode, describe the shape in the instructions, and rely on the strict
+// server-side validation every endpoint already performs on the result.
+function describe(schema,depth=0){
+ if(schema.type==='OBJECT'||schema.type==='object')return `{${Object.entries(schema.properties).map(([k,v])=>`"${k}"${(schema.required??[]).includes(k)?'':'?'}: ${describe(v,depth+1)}`).join(', ')}}`
+ if(schema.type==='ARRAY'||schema.type==='array')return `[${describe(schema.items,depth+1)}, …]`
+ return String(schema.type).toLowerCase()==='integer'?'integer':'string'
+}
+// Tolerates ```json fences some models add despite JSON mode.
+export function parseModelJson(text){return JSON.parse(String(text).trim().replace(/^```(?:json)?s*/i,'').replace(/s*```$/,''))}
+export function jsonInstruction(system,schema){return `${system}\n\nأعد كائن JSON واحدًا فقط بهذا الشكل بالضبط، دون أي نص قبله أو بعده: ${describe(schema)}`}
+
+// Gemini 3 models think before answering; at the default level a short chat reply
+// took >20s, at 'low' about 3s. Older models reject the field, so scope it.
+export function thinkingFor(model){return /^gemini-3/.test(model)?{thinkingConfig:{thinkingLevel:'low'}}:{}}
+
 // ---------- Model fallback ----------
 // Aliases such as gemini-flash-latest can be overloaded for long stretches (503).
 // Try GEMINI_MODEL first, then GEMINI_FALLBACK_MODELS (comma-separated), skipping
