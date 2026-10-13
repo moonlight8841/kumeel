@@ -8,12 +8,14 @@ import './identity.css'
 import './styles/system.css'
 import './styles/admin.css'
 import './styles/lab.css'
+import './styles/chat.css'
 import { AdminPanel } from './components/AdminPanel'
 import { defaultSite, withLibrary } from './site'
 import { PublicationPage } from './components/PublicationPage'
 import { pageInfo, structuredData } from './lib/pages'
 import { readPublished } from './lib/cloud'
 import {HomeShowcase} from './components/HomeShowcase'
+import {ReaderChat} from './components/ReaderChat'
 function App({ startingContent = initialContent, startingPath = '/' }: { startingContent?: Content; startingPath?: string }) {
  const [content, setContent] = useState<Content>(startingContent)
  const [notice, setNotice] = useState('')
@@ -40,7 +42,7 @@ function App({ startingContent = initialContent, startingPath = '/' }: { startin
  function save(next: Content) { if (!validContent(next)) { setNotice('المحتوى غير صالح أو تجاوز حدود الدفتر. راجع الحقول والروابط.'); return false } try { localStorage.setItem('kumeel-journal-v1', JSON.stringify(next)); setContent(next); setDraft(true); setNotice('حُفظت المسودة على هذا المتصفح.'); return true } catch { setNotice('لم يتم الحفظ؛ مساحة المتصفح غير كافية. صدّر نسخة من محتواك.'); return false } }
  const site = withLibrary(content.site ?? defaultSite)
  if (page.kind === 'admin') return <AdminPanel content={content} revision={revision} draft={draft} onSave={save} onPublish={(next, version) => { setContent(next); setRevision(version); setDraft(false); try { localStorage.removeItem('kumeel-journal-v1') } catch { /* Published state is authoritative. */ } }} />
- if (page.kind !== 'home') return <div className={`site-shell theme-${site.theme}`}><PublicationPage content={content} info={page} />{draft && <div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}</div>
- return <div className={`site-shell theme-${site.theme}`}><HomeShowcase content={content}/>{draft&&<div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}<div role="status" className={notice?'toast':''} onClick={()=>setNotice('')}>{notice}</div></div>
+ if (page.kind !== 'home') return <div className={`site-shell theme-${site.theme}`}><PublicationPage content={content} info={page} /><ReaderChat/>{draft && <div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}</div>
+ return <div className={`site-shell theme-${site.theme}`}><HomeShowcase content={content}/><ReaderChat/>{draft&&<div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}<div role="status" className={notice?'toast':''} onClick={()=>setNotice('')}>{notice}</div></div>
 }
 export default App

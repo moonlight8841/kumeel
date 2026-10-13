@@ -1,6 +1,6 @@
 import {loadEnv} from 'vite'
 // Serves the owner-only AI endpoints during `vite dev` with the same handlers Vercel runs.
-const routes={'/api/generate-idea':{module:'../api/generate-idea.mjs',maxBytes:6000},'/api/edit-assist':{module:'../api/edit-assist.mjs',maxBytes:40000}}
+const routes={'/api/generate-idea':{module:'../api/generate-idea.mjs',maxBytes:6000},'/api/edit-assist':{module:'../api/edit-assist.mjs',maxBytes:40000},'/api/chat':{module:'../api/chat.mjs',maxBytes:24000}}
 export default function geminiApiPlugin(mode){return {
  name:'local-gemini-api',
  configureServer(server){for(const [path,route] of Object.entries(routes))server.middlewares.use(path,async(req,res)=>{
