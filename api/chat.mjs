@@ -58,12 +58,12 @@ const schema={type:SchemaType.OBJECT,properties:{answer:{type:SchemaType.STRING}
 
 async function geminiAnswer({messages,corpus,env}){
  const contents=messages.map(m=>({role:m.role,parts:[{text:m.text}]}))
- // 12s per attempt keeps the 45s fallback budget inside the 60s function limit.
+ // A reader is waiting: give up after ~20s with a clear 'busy' message.
  return withModelFallback(env,async name=>{
  const model=new GoogleGenerativeAI(env.GEMINI_API_KEY).getGenerativeModel({model:name,systemInstruction:jsonInstruction(`${system}\n\nوثائق المنصة (JSON):\n${JSON.stringify(corpus.map(({id,title,body})=>({id,title,body})))}`,schema),generationConfig:{...thinkingFor(name),responseMimeType:'application/json',maxOutputTokens:1024,temperature:.4}})
  const result=await model.generateContent({contents},{timeout:12000})
  return parseModelJson(result.response.text())
- })
+ },{budgetMs:20_000})
 }
 
 async function defaultCorpus(clock){

@@ -109,4 +109,6 @@ await test('Models: overloads retry once then fall back, quota errors stop, fail
  let t=0,budgetCalls=0
  await assert.rejects(withModelFallback(env,async()=>{budgetCalls++;t+=30_000;throw overloaded},{now:()=>t,health:new Map(),sleep,budgetMs:45_000}),e=>e.status===503)
  assert.equal(budgetCalls,2)
+ const mixed=[];let m2=0
+ await assert.rejects(withModelFallback(env,async m=>{mixed.push(m);m2++;throw m2===1?overloaded:hung},{now:()=>clock,health:new Map(),sleep}),e=>e.status===503)
 })

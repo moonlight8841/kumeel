@@ -80,21 +80,24 @@ export function modelChain(env,now=Date.now(),health=unhealthy){
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms))
 export async function withModelFallback(env,attempt,{now=Date.now,health=unhealthy,budgetMs=45_000,sleep=wait}={}){
  const started=now()
- let last
+ let last,overloaded=false
+ // If any model was overloaded, report overload rather than a later timeout.
+ const finalError=()=>overloaded?Object.assign(new Error('overloaded'),{status:503}):last
  for(const model of modelChain(env,now(),health)){
   for(let tryNo=1;tryNo<=2;tryNo++){
-   if(now()-started>budgetMs)throw last??Object.assign(new Error('budget'),{status:503})
+   if(now()-started>budgetMs)throw last?finalError():Object.assign(new Error('budget'),{status:503})
    try{const result=await attempt(model);health.delete(model);return result}
    catch(error){
     last=error
     if(!retriable(error))throw error
+    if(error?.status===503)overloaded=true
     console.warn('model_fallback',{model,try:tryNo,status:Number.isInteger(error?.status)?error.status:error?.name})
     if(error?.status===503&&tryNo===1){await sleep(RETRY_DELAY_MS);continue}
     health.set(model,now()+SKIP_MS);break
    }
   }
  }
- throw last
+ throw finalError()
 }
 
 export function parseBody(req){try{return typeof req.body==='string'?JSON.parse(req.body):req.body}catch{return undefined}}
