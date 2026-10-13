@@ -84,3 +84,22 @@ await test('Chat: provider failures stay redacted',async()=>{
  const busy=await run({generate:async()=>{throw Object.assign(new Error('x'),{status:429})}})
  assert.equal(busy.statusCode,429);assert.ok(busy.data.error.includes('اليومي'))
 })
+
+const {modelChain,withModelFallback}=await import('../api/_shared/owner-ai.mjs')
+await test('Models: overloaded models fall back, quota errors do not, failures are skipped for a minute',async()=>{
+ const env={GEMINI_MODEL:'primary',GEMINI_FALLBACK_MODELS:'backup, primary ,bad model!,third'}
+ assert.deepEqual(modelChain(env,0,new Map()),['primary','backup','third'])
+ assert.deepEqual(modelChain({},0,new Map()),['gemini-flash-latest','gemini-3.5-flash'])
+ const health=new Map();let clock=1000;const tried=[]
+ const overloaded=Object.assign(new Error('x'),{status:503})
+ const result=await withModelFallback(env,async m=>{tried.push(m);if(m==='primary')throw overloaded;return m},{now:()=>clock,health})
+ assert.equal(result,'backup');assert.deepEqual(tried,['primary','backup'])
+ assert.deepEqual(modelChain(env,clock,health),['backup','third','primary'])
+ assert.deepEqual(modelChain(env,clock+61_000,health),['primary','backup','third'])
+ const hung=Object.assign(new Error('t'),{name:'AbortError'})
+ assert.equal(await withModelFallback(env,async m=>{if(m!=='third')throw hung;return m},{now:()=>clock,health:new Map()}),'third')
+ let calls=0
+ await assert.rejects(withModelFallback(env,async()=>{calls++;throw Object.assign(new Error('q'),{status:429})},{now:()=>clock,health:new Map()}),e=>e.status===429)
+ assert.equal(calls,1)
+ await assert.rejects(withModelFallback(env,async()=>{throw overloaded},{now:()=>clock,health:new Map()}),e=>e.status===503)
+})

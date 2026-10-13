@@ -2,7 +2,7 @@
 // and stores nothing. Rate limits live in Supabase (supabase/chat.sql).
 import {createHmac} from 'node:crypto'
 import {GoogleGenerativeAI,SchemaType} from '@google/generative-ai'
-import {jsonResponder,parseBody,providerFailure,supabaseConfig} from './_shared/owner-ai.mjs'
+import {jsonResponder,parseBody,providerFailure,supabaseConfig,withModelFallback} from './_shared/owner-ai.mjs'
 
 export const LIMITS={message:600,historyText:800,turns:8,corpus:60000,sources:3}
 const CORPUS_TTL=5*60*1000
@@ -57,10 +57,13 @@ const system=`أنت «محاور كتابات كميل»، دليل قراءة 
 const schema={type:SchemaType.OBJECT,properties:{answer:{type:SchemaType.STRING},sources:{type:SchemaType.ARRAY,items:{type:SchemaType.STRING}},followUp:{type:SchemaType.STRING}},required:['answer','sources']}
 
 async function geminiAnswer({messages,corpus,env}){
- const model=new GoogleGenerativeAI(env.GEMINI_API_KEY).getGenerativeModel({model:env.GEMINI_MODEL||'gemini-flash-latest',systemInstruction:`${system}\n\nوثائق المنصة (JSON):\n${JSON.stringify(corpus.map(({id,title,body})=>({id,title,body})))}`,generationConfig:{responseMimeType:'application/json',responseSchema:schema,maxOutputTokens:1024,temperature:.4}})
  const contents=messages.map(m=>({role:m.role,parts:[{text:m.text}]}))
- const result=await model.generateContent({contents},{timeout:30000})
+ // 20s per model keeps two attempts inside the 60s function limit.
+ return withModelFallback(env,async name=>{
+ const model=new GoogleGenerativeAI(env.GEMINI_API_KEY).getGenerativeModel({model:name,systemInstruction:`${system}\n\nوثائق المنصة (JSON):\n${JSON.stringify(corpus.map(({id,title,body})=>({id,title,body})))}`,generationConfig:{responseMimeType:'application/json',responseSchema:schema,maxOutputTokens:1024,temperature:.4}})
+ const result=await model.generateContent({contents},{timeout:20000})
  return JSON.parse(result.response.text())
+ })
 }
 
 async function defaultCorpus(clock){

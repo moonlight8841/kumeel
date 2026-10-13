@@ -1,7 +1,7 @@
 // Owner-only editing assistant: proofreading, image alt text, session summaries
 // and quiz drafts. Every result is a suggestion the owner reviews before saving.
 import {GoogleGenerativeAI,SchemaType} from '@google/generative-ai'
-import {jsonResponder,parseBody,providerFailure,supabaseConfig,verifyOwner} from './_shared/owner-ai.mjs'
+import {jsonResponder,parseBody,providerFailure,supabaseConfig,verifyOwner,withModelFallback} from './_shared/owner-ai.mjs'
 
 const MAX_TEXT=12000
 const MAX_IMAGE=4_000_000
@@ -76,10 +76,12 @@ export async function fetchImage(url,fetcher=fetch){
 
 async function geminiGenerate({task,payload,image,env}){
  const spec=tasks[task]
- const model=new GoogleGenerativeAI(env.GEMINI_API_KEY).getGenerativeModel({model:env.GEMINI_MODEL||'gemini-flash-latest',systemInstruction:spec.system,generationConfig:{responseMimeType:'application/json',responseSchema:spec.schema,maxOutputTokens:task==='proofread'?8192:2048,temperature:task==='proofread'?.1:.4}})
  const parts=[{text:JSON.stringify(spec.input(payload))},...(image?[{inlineData:image}]:[])]
- const result=await model.generateContent({contents:[{role:'user',parts}]},{timeout:60000})
+ return withModelFallback(env,async name=>{
+ const model=new GoogleGenerativeAI(env.GEMINI_API_KEY).getGenerativeModel({model:name,systemInstruction:spec.system,generationConfig:{responseMimeType:'application/json',responseSchema:spec.schema,maxOutputTokens:task==='proofread'?8192:2048,temperature:task==='proofread'?.1:.4}})
+ const result=await model.generateContent({contents:[{role:'user',parts}]},{timeout:40000})
  return JSON.parse(result.response.text())
+ })
 }
 
 export function createHandler({fetcher=fetch,env=process.env,generate=geminiGenerate,imageFetcher=fetchImage,clock=Date.now,limits=recent}={}){return async(req,res)=>{

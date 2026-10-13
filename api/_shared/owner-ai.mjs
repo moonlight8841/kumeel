@@ -39,4 +39,29 @@ export function providerFailure(error,label){
  return {status:502,error:'تعذّر التوليد أو الاتصال. أعد المحاولة لاحقًا.'}
 }
 
+// ---------- Model fallback ----------
+// Aliases such as gemini-flash-latest can be overloaded for long stretches (503).
+// Try GEMINI_MODEL first, then GEMINI_FALLBACK_MODELS (comma-separated), skipping
+// models that failed in the last minute so visitors do not wait on them each time.
+export const DEFAULT_FALLBACK_MODELS='gemini-3.5-flash,gemini-flash-latest'
+const SKIP_MS=60_000
+const unhealthy=new Map()
+// Overload, outage, unknown model or a hung request: try the next model.
+const retriable=error=>[404,500,502,503,504].includes(error?.status)||error instanceof GoogleGenerativeAIAbortError||['AbortError','TimeoutError'].includes(error?.name)
+
+export function modelChain(env,now=Date.now(),health=unhealthy){
+ const list=[...new Set([env.GEMINI_MODEL||'gemini-flash-latest',...String(env.GEMINI_FALLBACK_MODELS??DEFAULT_FALLBACK_MODELS).split(',')].map(m=>m.trim()).filter(m=>/^[a-z0-9.-]{3,60}$/.test(m)))]
+ const healthy=list.filter(m=>!(health.get(m)>now))
+ return [...healthy,...list.filter(m=>!healthy.includes(m))]
+}
+
+export async function withModelFallback(env,attempt,{now=Date.now,health=unhealthy}={}){
+ let last
+ for(const model of modelChain(env,now(),health)){
+  try{const result=await attempt(model);health.delete(model);return result}
+  catch(error){last=error;if(!retriable(error))throw error;health.set(model,now()+SKIP_MS)}
+ }
+ throw last
+}
+
 export function parseBody(req){try{return typeof req.body==='string'?JSON.parse(req.body):req.body}catch{return undefined}}
