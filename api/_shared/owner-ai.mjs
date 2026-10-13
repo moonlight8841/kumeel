@@ -59,7 +59,7 @@ export async function withModelFallback(env,attempt,{now=Date.now,health=unhealt
  let last
  for(const model of modelChain(env,now(),health)){
   try{const result=await attempt(model);health.delete(model);return result}
-  catch(error){last=error;if(!retriable(error))throw error;health.set(model,now()+SKIP_MS)}
+  catch(error){last=error;if(!retriable(error))throw error;health.set(model,now()+SKIP_MS);console.warn('model_fallback',{model,status:Number.isInteger(error?.status)?error.status:error?.name})}
  }
  throw last
 }
