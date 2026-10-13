@@ -35,6 +35,7 @@ export function providerFailure(error,label){
  if(error?.status===429)return {status:429,error:'بلغت خدمة Gemini حد الاستخدام المتاح. جرّب لاحقًا؛ لم نفعّل أي ترقية مدفوعة.'}
  if([400,401,403].includes(error?.status))return {status:503,error:'رفض Gemini الطلب. تحقّق من صلاحية المفتاح وإعداداته في Vercel.'}
  if(error?.status===404)return {status:503,error:'نموذج Gemini المحدد غير متاح. راجع GEMINI_MODEL على الخادم.'}
+ if([500,503].includes(error?.status))return {status:503,error:'خدمة Gemini مزدحمة الآن. أعد المحاولة بعد دقيقة.'}
  if(error instanceof SyntaxError)return {status:502,error:'عادت نتيجة غير مكتملة. جرّب نصًا أقصر.'}
  return {status:502,error:'تعذّر التوليد أو الاتصال. أعد المحاولة لاحقًا.'}
 }
@@ -58,11 +59,14 @@ export function jsonInstruction(system,schema){return `${system}\n\nأعد كا�
 export function thinkingFor(model){return /^gemini-3/.test(model)?{thinkingConfig:{thinkingLevel:'low'}}:{}}
 
 // ---------- Model fallback ----------
-// Aliases such as gemini-flash-latest can be overloaded for long stretches (503).
-// Try GEMINI_MODEL first, then GEMINI_FALLBACK_MODELS (comma-separated), skipping
-// models that failed in the last minute so visitors do not wait on them each time.
-export const DEFAULT_FALLBACK_MODELS='gemini-3.5-flash,gemini-flash-latest'
+// Gemini models return 503 ("overloaded") in bursts, sometimes for every model of a
+// family at once. Strategy: try GEMINI_MODEL, then GEMINI_FALLBACK_MODELS; give each
+// model one quick retry on 503 (bursts often clear in seconds); include lite models,
+// which run on separate capacity; skip models that just failed; never exceed a time
+// budget below the function's maxDuration.
+export const DEFAULT_FALLBACK_MODELS='gemini-3.5-flash,gemini-3.5-flash-lite,gemini-flash-latest,gemini-flash-lite-latest'
 const SKIP_MS=60_000
+const RETRY_DELAY_MS=1500
 const unhealthy=new Map()
 // Overload, outage, unknown model or a hung request: try the next model.
 const retriable=error=>[404,500,502,503,504].includes(error?.status)||error instanceof GoogleGenerativeAIAbortError||['AbortError','TimeoutError'].includes(error?.name)
@@ -73,11 +77,22 @@ export function modelChain(env,now=Date.now(),health=unhealthy){
  return [...healthy,...list.filter(m=>!healthy.includes(m))]
 }
 
-export async function withModelFallback(env,attempt,{now=Date.now,health=unhealthy}={}){
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms))
+export async function withModelFallback(env,attempt,{now=Date.now,health=unhealthy,budgetMs=45_000,sleep=wait}={}){
+ const started=now()
  let last
  for(const model of modelChain(env,now(),health)){
-  try{const result=await attempt(model);health.delete(model);return result}
-  catch(error){last=error;if(!retriable(error))throw error;health.set(model,now()+SKIP_MS);console.warn('model_fallback',{model,status:Number.isInteger(error?.status)?error.status:error?.name})}
+  for(let tryNo=1;tryNo<=2;tryNo++){
+   if(now()-started>budgetMs)throw last??Object.assign(new Error('budget'),{status:503})
+   try{const result=await attempt(model);health.delete(model);return result}
+   catch(error){
+    last=error
+    if(!retriable(error))throw error
+    console.warn('model_fallback',{model,try:tryNo,status:Number.isInteger(error?.status)?error.status:error?.name})
+    if(error?.status===503&&tryNo===1){await sleep(RETRY_DELAY_MS);continue}
+    health.set(model,now()+SKIP_MS);break
+   }
+  }
  }
  throw last
 }

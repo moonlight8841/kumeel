@@ -86,20 +86,27 @@ await test('Chat: provider failures stay redacted',async()=>{
 })
 
 const {modelChain,withModelFallback}=await import('../api/_shared/owner-ai.mjs')
-await test('Models: overloaded models fall back, quota errors do not, failures are skipped for a minute',async()=>{
+await test('Models: overloads retry once then fall back, quota errors stop, failures are skipped, budget is enforced',async()=>{
  const env={GEMINI_MODEL:'primary',GEMINI_FALLBACK_MODELS:'backup, primary ,bad model!,third'}
  assert.deepEqual(modelChain(env,0,new Map()),['primary','backup','third'])
- assert.deepEqual(modelChain({},0,new Map()),['gemini-flash-latest','gemini-3.5-flash'])
- const health=new Map();let clock=1000;const tried=[]
+ assert.deepEqual(modelChain({},0,new Map()),['gemini-flash-latest','gemini-3.5-flash','gemini-3.5-flash-lite','gemini-flash-lite-latest'])
+ const sleep=async()=>{}
  const overloaded=Object.assign(new Error('x'),{status:503})
- const result=await withModelFallback(env,async m=>{tried.push(m);if(m==='primary')throw overloaded;return m},{now:()=>clock,health})
- assert.equal(result,'backup');assert.deepEqual(tried,['primary','backup'])
+ const health=new Map();let clock=1000;const tried=[]
+ const result=await withModelFallback(env,async m=>{tried.push(m);if(m==='primary')throw overloaded;return m},{now:()=>clock,health,sleep})
+ assert.equal(result,'backup');assert.deepEqual(tried,['primary','primary','backup'])
  assert.deepEqual(modelChain(env,clock,health),['backup','third','primary'])
  assert.deepEqual(modelChain(env,clock+61_000,health),['primary','backup','third'])
+ let flaky=0
+ assert.equal(await withModelFallback(env,async m=>{if(m==='primary'&&flaky++===0)throw overloaded;return m},{now:()=>clock,health:new Map(),sleep}),'primary')
+ const missing=[];await withModelFallback(env,async m=>{missing.push(m);if(m==='primary')throw Object.assign(new Error('n'),{status:404});return m},{now:()=>clock,health:new Map(),sleep})
+ assert.deepEqual(missing,['primary','backup'])
  const hung=Object.assign(new Error('t'),{name:'AbortError'})
- assert.equal(await withModelFallback(env,async m=>{if(m!=='third')throw hung;return m},{now:()=>clock,health:new Map()}),'third')
+ assert.equal(await withModelFallback(env,async m=>{if(m!=='third')throw hung;return m},{now:()=>clock,health:new Map(),sleep}),'third')
  let calls=0
- await assert.rejects(withModelFallback(env,async()=>{calls++;throw Object.assign(new Error('q'),{status:429})},{now:()=>clock,health:new Map()}),e=>e.status===429)
+ await assert.rejects(withModelFallback(env,async()=>{calls++;throw Object.assign(new Error('q'),{status:429})},{now:()=>clock,health:new Map(),sleep}),e=>e.status===429)
  assert.equal(calls,1)
- await assert.rejects(withModelFallback(env,async()=>{throw overloaded},{now:()=>clock,health:new Map()}),e=>e.status===503)
+ let t=0,budgetCalls=0
+ await assert.rejects(withModelFallback(env,async()=>{budgetCalls++;t+=30_000;throw overloaded},{now:()=>t,health:new Map(),sleep,budgetMs:45_000}),e=>e.status===503)
+ assert.equal(budgetCalls,2)
 })
