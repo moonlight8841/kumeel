@@ -1,3 +1,4 @@
+import {TeacherReview} from './Teachers'
 import {CommunityReview} from './CommunityReview'
 import {IdeaEngine} from './IdeaEngine'
 import {useCallback,useEffect,useState} from 'react'
@@ -80,7 +81,8 @@ export function AdminPanel({content,revision,draft=false,onSave,onPublish}:Props
     {!authorized&&import.meta.env.DEV&&<div className="admin-local"><p>التجربة المحلية تحفظ على هذا المتصفح. النشر السحابي يحتاج حسابًا مخوّلًا.</p><button className="admin-btn" onClick={()=>setLocal(!local)}>{local?'إغلاق التجربة المحلية':'فتح تجربة الإدارة المحلية'}</button></div>}
     {!allowed?<p className="admin-gate">سجّل الدخول بحساب يملك صلاحية الإدارة لفتح أدوات التحرير. تسجيل الحساب وحده لا يمنح صلاحيات.</p>:<div className="admin-panel-body">
      {tab==='overview'&&<AdminOverview content={content} revision={revision} draft={draft} go={go}/>}
-     {tab==='community'&&authorized&&<CommunityReview/>}
+     {tab==='teachers'&&authorized&&<TeacherReview/>}
+ {tab==='community'&&authorized&&<CommunityReview/>}
      {tab==='engine'&&<IdeaEngine content={content} save={commit}/>}
      {tab==='assist'&&<AdminAssist content={content} save={commit}/>}
      {tab==='settings'&&<AdminSettings key={JSON.stringify([content.site,content.bio])} content={content} save={commit} onDirtyChange={setSettingsDirty}/>}

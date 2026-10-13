@@ -1,3 +1,4 @@
+import {Teachers} from './Teachers'
 import {CommunityPage} from './CommunityPage'
 import {MemberSpace} from './MemberSpace'
 import {ReaderQuestion} from './ReaderQuestion'
@@ -26,6 +27,7 @@ export function PublicationPage({ content, info }: { content: Content; info: Pag
   const isArticle = Boolean(info.idea || info.writing || info.media)
   const text = info.idea?.text ?? info.writing?.text
   return <><a className="skip" href="#publication">انتقل إلى المحتوى</a><SiteHeader current={info.path}/><main id="publication">
+    {info.kind==='teachers'&&<Teachers/>}
     {info.kind==='community'&&<CommunityPage/>}
     {info.kind==='member'&&<MemberSpace/>}
     {info.kind==='explore'&&<Explore content={content}/>}

@@ -28,6 +28,10 @@
   },
   "rewrites": [
     {
+      "source": "/teachers",
+      "destination": "/api/page?path=/teachers"
+    },
+    {
       "source": "/community",
       "destination": "/api/page?path=/community"
     },

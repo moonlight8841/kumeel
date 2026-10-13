@@ -3,7 +3,7 @@ import {defaultSite} from '../site'
 import {booksFor} from '../books'
 
 const n=(value:number)=>value.toLocaleString('ar-SA')
-export type AdminTab='overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'assist'|'settings'|'arrange'|'publish'|'backup'
+export type AdminTab='teachers'|'overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'assist'|'settings'|'arrange'|'publish'|'backup'
 export type AdminNavItem={key:AdminTab;label:string;icon:string;hint:string;ownerOnly?:boolean}
 export type AdminNavGroup={label:string;items:AdminNavItem[]}
 
@@ -17,6 +17,7 @@ export const adminNav:AdminNavGroup[]=[
   {key:'books',label:'مكتبة الكتب',icon:'▤',hint:'الكتب وملفاتها وترتيبها'},
  ]},
  {label:'الإبداع والمجتمع',items:[
+  {key:'teachers',label:'اعتماد المعلمين',icon:'◈',hint:'طلبات التدريس والصفحات العامة',ownerOnly:true},
   {key:'community',label:'مراجعة المجتمع',icon:'☰',hint:'مساهمات الأعضاء قبل النشر',ownerOnly:true},
   {key:'engine',label:'مصنع الأفكار',icon:'✦',hint:'توليد مسودات أفكار جديدة'},
   {key:'assist',label:'مساعد التحرير',icon:'✧',hint:'تدقيق ووصف صور وملخصات وأسئلة — اقتراحات تراجعها قبل الحفظ'},
