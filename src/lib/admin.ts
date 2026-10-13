@@ -3,7 +3,7 @@ import {defaultSite} from '../site'
 import {booksFor} from '../books'
 
 const n=(value:number)=>value.toLocaleString('ar-SA')
-export type AdminTab='overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'settings'|'arrange'|'publish'|'backup'
+export type AdminTab='overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'assist'|'settings'|'arrange'|'publish'|'backup'
 export type AdminNavItem={key:AdminTab;label:string;icon:string;hint:string;ownerOnly?:boolean}
 export type AdminNavGroup={label:string;items:AdminNavItem[]}
 
@@ -16,9 +16,10 @@ export const adminNav:AdminNavGroup[]=[
   {key:'learning',label:'المحتوى التعليمي',icon:'◈',hint:'مقالات الاكتشاف وأسئلة التحدّي'},
   {key:'books',label:'مكتبة الكتب',icon:'▤',hint:'الكتب وملفاتها وترتيبها'},
  ]},
- {label:'المجتمع والإبداع',items:[
+ {label:'الإبداع والمجتمع',items:[
   {key:'community',label:'مراجعة المجتمع',icon:'☰',hint:'مساهمات الأعضاء قبل النشر',ownerOnly:true},
   {key:'engine',label:'مصنع الأفكار',icon:'✦',hint:'توليد مسودات أفكار جديدة'},
+  {key:'assist',label:'مساعد التحرير',icon:'✧',hint:'تدقيق ووصف صور وملخصات وأسئلة — اقتراحات تراجعها قبل الحفظ'},
  ]},
  {label:'الموقع',items:[
   {key:'settings',label:'الهوية والتصميم',icon:'◐',hint:'الواجهة والمظهر وأقسام الرئيسية'},
@@ -63,14 +64,14 @@ export function contentHealth(content:Content,now:number):HealthIssue[]{
  const add=(issue:HealthIssue)=>issues.push(issue)
  if(!site.heroImageAlt.trim())add({id:'hero-alt',level:'warning',title:'صورة الواجهة بلا وصف',detail:'أضف وصفًا نصيًا لقرّاء الشاشة ومحركات البحث.',tab:'settings'})
  const images=content.media.filter(m=>m.type==='صورة'&&!m.description?.trim())
- if(images.length)add({id:'media-alt',level:'warning',title:`${n(images.length)} صور بلا وصف`,detail:'الوصف يجعل الصور مفهومة لمن لا يراها.',tab:'thoughts'})
+ if(images.length)add({id:'media-alt',level:'warning',title:`${n(images.length)} صور بلا وصف`,detail:'الوصف يجعل الصور مفهومة لمن لا يراها. يقترح مساعد التحرير وصفًا تراجعه.',tab:'assist'})
  const unsourced=(content.ideas??[]).filter(i=>!i.sample&&!i.source?.trim()&&!i.sourceUrl?.trim())
  if(unsourced.length)add({id:'idea-source',level:'warning',title:`${n(unsourced.length)} أفكار بلا مصدر`,detail:'ذكر المصدر أو السياق يعزّز ثقة القارئ.',tab:'thoughts'})
  const samples=(content.ideas??[]).filter(i=>i.sample)
  if(samples.length)add({id:'idea-sample',level:'info',title:`${n(samples.length)} أفكار تجريبية ما زالت ظاهرة`,detail:'استبدلها بأفكارك أو أزلها قبل النشر.',tab:'arrange'})
  if(![site.showEmail&&site.email,site.showTiktok&&site.tiktok,site.showWhatsapp&&site.whatsapp].some(Boolean))add({id:'contact',level:'warning',title:'لا توجد وسيلة تواصل ظاهرة',detail:'فعّل وسيلة واحدة على الأقل ليصل إليك القرّاء.',tab:'settings'})
  const pastNoSummary=(content.sessions??[]).filter(s=>!s.cancelled&&Date.parse(s.startsAt)+s.durationMinutes*60000<=now&&!s.summary?.trim()&&!s.recordingUrl?.trim())
- if(pastNoSummary.length)add({id:'session-summary',level:'info',title:`${n(pastNoSummary.length)} لقاءات منتهية بلا ملخص أو تسجيل`,detail:'الملخص يحوّل اللقاء إلى أثر يقرؤه من فاته.',tab:'thoughts'})
+ if(pastNoSummary.length)add({id:'session-summary',level:'info',title:`${n(pastNoSummary.length)} لقاءات منتهية بلا ملخص أو تسجيل`,detail:'الملخص يحوّل اللقاء إلى أثر يقرؤه من فاته. يلخّص المساعد ملاحظاتك.',tab:'assist'})
  const undated=content.writings.filter(w=>!w.publishedAt)
  if(undated.length)add({id:'writing-date',level:'info',title:`${n(undated.length)} كتابات بلا تاريخ نشر`,detail:'التاريخ يرتّب الكتابات من الأحدث إلى الأقدم.',tab:'writings'})
  if(!site.newsletterUrl)add({id:'newsletter',level:'info',title:'النشرة البريدية غير مفعّلة',detail:'أضف رابط نموذج الاشتراك ليصل جديدك إلى القرّاء.',tab:'settings'})

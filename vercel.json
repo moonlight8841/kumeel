@@ -16,6 +16,10 @@
     },
     "api/robots.mjs": {
       "includeFiles": "{dist-ssr/**,src/supabase-config.json}"
+    },
+    "api/edit-assist.mjs": {
+      "includeFiles": "{src/supabase-config.json,src/auth-config.json}",
+      "maxDuration": 90
     }
   },
   "rewrites": [

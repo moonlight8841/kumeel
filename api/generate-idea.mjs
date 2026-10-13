@@ -1,7 +1,5 @@
-﻿import {readFile} from 'node:fs/promises'
-import {GoogleGenerativeAI,SchemaType,GoogleGenerativeAIAbortError,GoogleGenerativeAIResponseError} from '@google/generative-ai'
-const config=JSON.parse(await readFile(new URL('../src/supabase-config.json',import.meta.url),'utf8'))
-const authConfig=JSON.parse(await readFile(new URL('../src/auth-config.json',import.meta.url),'utf8'))
+﻿import {GoogleGenerativeAI,SchemaType} from '@google/generative-ai'
+import {jsonResponder,parseBody,providerFailure,verifyOwner} from './_shared/owner-ai.mjs'
 const recent=new Map()
 const methods=['inversion','experiment','concept','reading','audience']
 export function validGeneratedIdea(value){return value&&typeof value==='object'&&!Array.isArray(value)&&[['title',150],['text',10000],['question',1000],['counterpoint',10000]].every(([k,max])=>typeof value[k]==='string'&&value[k].trim()&&value[k].length<=max)}
@@ -10,22 +8,14 @@ export function createHandler({fetcher=fetch,env=process.env,generate=async(topi
  const result=await model.generateContent(JSON.stringify({topic,method}),{timeout:40000})
  return JSON.parse(result.response.text())
 },clock=Date.now,limits=recent}={}){return async(req,res)=>{
- res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff')
- const fail=(status,error)=>res.status(status).json({success:false,error})
+ const fail=jsonResponder(res)
  if(req.method!=='POST'){res.setHeader('Allow','POST');return fail(405,'استخدم طلب POST.')}
- const authorization=req.headers?.authorization
- if(typeof authorization!=='string'||!/^Bearer [A-Za-z0-9_.-]{20,6000}$/.test(authorization))return fail(401,'سجّل الدخول بحساب الإدارة.')
  if(Number(req.headers?.['content-length']||0)>6000)return fail(413,'الموضوع أطول من المسموح.')
  try{
- const userResponse=await fetcher(`${config.url}/auth/v1/user`,{headers:{apikey:config.publishableKey,Authorization:authorization},signal:AbortSignal.timeout(8000)})
- if(!userResponse.ok)return fail(401,'انتهت جلسة الدخول. سجّل الدخول مجددًا.')
- const user=await userResponse.json()
- if(!user.email_confirmed_at||user.email?.toLowerCase()!=='komeil9060@gmail.com'||typeof user.id!=='string')return fail(403,'التوليد متاح للمالك فقط.')
- if(authConfig.requireAdminMfa){const payload=JSON.parse(Buffer.from(authorization.slice(7).split('.')[1],'base64url').toString());if(payload.aal!=='aal2')return fail(403,'أكمل التحقق الثنائي.')}
- const memberResponse=await fetcher(`${config.url}/rest/v1/kumeel_editors?user_id=eq.${encodeURIComponent(user.id)}&select=user_id`,{headers:{apikey:config.publishableKey,Authorization:authorization},signal:AbortSignal.timeout(8000)})
- if(!memberResponse.ok)return fail(503,'تعذّر التحقق من صلاحيات الإدارة.')
- const members=await memberResponse.json();if(!Array.isArray(members)||!members.some(m=>m.user_id===user.id))return fail(403,'لا توجد صلاحية إدارة.')
- let body;try{body=typeof req.body==='string'?JSON.parse(req.body):req.body}catch{return fail(400,'بيانات الطلب غير صالحة.')}
+ const owner=await verifyOwner({authorization:req.headers?.authorization,fetcher,forbidden:'التوليد متاح للمالك فقط.'})
+ if(!owner.user)return fail(owner.status,owner.error)
+ const user=owner.user
+ const body=parseBody(req)
  if(!body||typeof body.topic!=='string'||!body.topic.trim()||body.topic.length>1000||!methods.includes(body.method??'inversion'))return fail(400,'اكتب موضوعًا من ١ إلى ١٠٠٠ حرف واختر مسارًا صالحًا.')
  if(!env.GEMINI_API_KEY)return fail(503,'لم يُفعّل مفتاح Gemini على الخادم بعد.')
  const time=clock();const last=limits.get(user.id);if(last!==undefined&&time-last<30000){res.setHeader('Retry-After','30');return fail(429,'انتظر نصف دقيقة قبل طلب اقتراح آخر.')}
@@ -33,6 +23,6 @@ export function createHandler({fetcher=fetch,env=process.env,generate=async(topi
  const data=await generate(body.topic.trim(),body.method??'inversion')
  if(!validGeneratedIdea(data))return fail(502,'نتيجة التوليد غير مكتملة. أعد المحاولة لاحقًا.')
  return res.status(200).json({success:true,data:Object.fromEntries(['title','text','question','counterpoint'].map(k=>[k,data[k].trim()]))})
- }catch(error){console.error('idea_generation_failed',{type:error instanceof GoogleGenerativeAIAbortError?'ProviderTimeout':error instanceof GoogleGenerativeAIResponseError?'ProviderResponse':error instanceof SyntaxError?'InvalidJson':'ProviderError',status:Number.isInteger(error?.status)?error.status:undefined});if(error instanceof GoogleGenerativeAIAbortError||['AbortError','TimeoutError'].includes(error?.name))return fail(504,'استغرق Gemini وقتًا أطول من المهلة. أعد المحاولة بموضوع أقصر.');if(error?.status===429)return fail(429,'بلغت خدمة Gemini حد الاستخدام المتاح. جرّب لاحقًا؛ لم نفعّل أي ترقية مدفوعة.');if([400,401,403].includes(error?.status))return fail(503,'رفض Gemini الطلب. تحقّق من صلاحية المفتاح وإعداداته في Vercel.');if(error?.status===404)return fail(503,'نموذج Gemini المحدد غير متاح. راجع GEMINI_MODEL على الخادم.');if(error instanceof SyntaxError)return fail(502,'عاد اقتراح غير مكتمل. جرّب موضوعًا أقصر.');return fail(502,'تعذّر التوليد أو الاتصال. أعد المحاولة لاحقًا.')}
+ }catch(error){const failure=providerFailure(error,'idea_generation_failed');return fail(failure.status,failure.error)}
 }}
 export default createHandler()
