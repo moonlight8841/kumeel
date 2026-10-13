@@ -17,8 +17,8 @@ export const adminNav:AdminNavGroup[]=[
   {key:'books',label:'مكتبة الكتب',icon:'▤',hint:'الكتب وملفاتها وترتيبها'},
  ]},
  {label:'الإبداع والمجتمع',items:[
-  {key:'teachers',label:'اعتماد المعلمين',icon:'◈',hint:'طلبات التدريس والصفحات العامة',ownerOnly:true},
   {key:'community',label:'مراجعة المجتمع',icon:'☰',hint:'مساهمات الأعضاء قبل النشر',ownerOnly:true},
+  {key:'teachers',label:'مجلس التعلّم',icon:'❖',hint:'مراجعة طلبات المعلمين واعتماد صفحاتهم',ownerOnly:true},
   {key:'engine',label:'مصنع الأفكار',icon:'✦',hint:'توليد مسودات أفكار جديدة'},
   {key:'assist',label:'مساعد التحرير',icon:'✧',hint:'تدقيق ووصف صور وملخصات وأسئلة — اقتراحات تراجعها قبل الحفظ'},
  ]},

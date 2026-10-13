@@ -1,5 +1,5 @@
-// Reading journey: write → think → discuss → share → keep → who.
-export const siteNav=[['/','الرئيسية'],['/writings','الكتابات'],['/observatory','مرصد الأفكار'],['/salon','مجلس الحوار'],['/community','المجتمع'],['/library','المكتبة'],['/about','عن كميل']] as const
+// Reading journey: write → think → discuss → learn → share → keep → who.
+export const siteNav=[['/','الرئيسية'],['/writings','الكتابات'],['/observatory','مرصد الأفكار'],['/salon','مجلس الحوار'],['/teachers','مجلس التعلّم'],['/community','المجتمع'],['/library','المكتبة'],['/about','عن كميل']] as const
 
 export function isCurrentPath(href:string,current?:string){
  if(!current)return false

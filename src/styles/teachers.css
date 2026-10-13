@@ -1,0 +1,107 @@
+/* Learning council (مجلس التعلّم) — built on tokens.css. */
+
+.teachers { display: flex; flex-direction: column; gap: var(--space-5); }
+
+/* ---------- Hero ---------- */
+.teachers-hero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); gap: var(--space-7); align-items: end; padding-bottom: var(--space-5); border-bottom: 1px solid var(--color-line); }
+.teachers-hero h1 { font-size: var(--text-3xl); margin-block: var(--space-2) var(--space-4); }
+.teachers-hero p { font-size: var(--text-md); line-height: var(--leading-relaxed); color: var(--color-text-muted); max-width: 38rem; }
+.teachers-join { padding: var(--space-5); border-radius: var(--radius-lg); background: var(--color-strong); color: var(--color-on-strong); }
+.teachers-join h2 { font-size: var(--text-xl); }
+.teachers-join p { margin-block: var(--space-2) var(--space-4); font-size: var(--text-sm); color: var(--color-on-strong-muted) !important; }
+.teachers-join .primary { background: var(--color-surface); border-color: var(--color-surface); color: var(--color-text); }
+.teachers-join .primary:hover { background: var(--color-accent-soft); color: var(--color-text); }
+
+/* ---------- Toolbar ---------- */
+.teachers-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); }
+.teachers-search { flex: 1 1 320px; }
+.teachers-search input { width: 100%; min-height: 48px; padding: 10px 16px; border-radius: var(--radius-pill); font-size: var(--text-base); }
+.teachers-toolbar .tabs { flex-wrap: wrap; margin: 0; }
+.teachers-count { min-height: 1.5em; font-size: var(--text-sm); color: var(--color-text-muted); }
+
+/* ---------- Cards ---------- */
+.teachers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
+.teacher-card { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-5); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-lg); transition: border-color var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out); min-width: 0; }
+.teacher-card:hover { border-color: var(--color-line-strong); box-shadow: var(--shadow-md); }
+.teacher-card.is-preview { box-shadow: var(--shadow-md); }
+.teacher-card.is-preview:hover { border-color: var(--color-line); }
+.teacher-card-head { display: flex; align-items: center; gap: var(--space-3); }
+.teacher-card h2 { font-size: var(--text-lg); line-height: var(--leading-snug); overflow-wrap: anywhere; }
+.teacher-card h2 a:hover { color: var(--color-accent); }
+.teacher-avatar { display: inline-grid; place-items: center; flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%; background: var(--color-accent-soft); color: var(--color-accent); font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; }
+.teacher-avatar.is-large { width: 96px; height: 96px; font-size: 2.3rem; }
+.teacher-specialty { font-size: var(--text-sm); color: var(--color-accent); font-weight: 500; overflow-wrap: anywhere; }
+.teacher-bio { font-size: var(--text-sm); line-height: var(--leading-normal); color: var(--color-text-muted); flex: 1; overflow-wrap: anywhere; }
+.teacher-facts { margin: 0; display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-xs); }
+.teacher-facts > div { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: var(--space-2); align-items: baseline; }
+.teacher-facts dt { color: var(--color-text-muted); }
+.teacher-facts dd { margin: 0; overflow-wrap: anywhere; }
+.teacher-langs { display: flex; flex-wrap: wrap; gap: 4px; }
+.teacher-langs span { padding: 1px 10px; border-radius: var(--radius-pill); background: var(--color-sunken); border: 1px solid var(--color-line); }
+.teacher-card .text-link { align-self: flex-start; margin-top: 0; font-size: var(--text-sm); }
+
+.teachers-empty, .teachers-state { padding: var(--space-7) var(--space-5); text-align: center; border: 1px dashed var(--color-line-strong); border-radius: var(--radius-lg); background: var(--color-surface); }
+.teachers-empty h2 { font-size: var(--text-xl); }
+.teachers-empty p { margin-block: var(--space-2) var(--space-4); color: var(--color-text-muted); }
+.teachers-more { display: flex; justify-content: center; }
+
+/* ---------- Profile ---------- */
+.teacher-profile .breadcrumbs { margin-bottom: var(--space-5); }
+.teacher-profile-grid { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
+.teacher-identity { position: sticky; top: var(--space-5); display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); padding: var(--space-5); background: var(--color-surface); border: 1px solid var(--color-line); border-radius: var(--radius-lg); }
+.teacher-identity h1 { font-size: var(--text-2xl); overflow-wrap: anywhere; }
+.teacher-identity .teacher-facts { width: 100%; font-size: var(--text-sm); padding-top: var(--space-3); border-top: 1px solid var(--color-line); }
+.teacher-note { font-size: var(--text-xs); line-height: 1.8; color: var(--color-text-muted); }
+.teacher-content { display: flex; flex-direction: column; gap: var(--space-6); max-width: var(--container-reading); }
+.teacher-content h2 { font-size: var(--text-xl); margin-bottom: var(--space-2); }
+.teacher-content p { font-family: var(--font-reading); font-size: var(--text-md); line-height: var(--leading-relaxed); overflow-wrap: anywhere; }
+.teacher-next { padding: var(--space-5); border-radius: var(--radius-lg); background: var(--color-sunken); }
+.teacher-next p { font-family: var(--font-ui); font-size: var(--text-sm); }
+.teacher-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); margin-top: var(--space-4); }
+.teacher-actions .text-link { margin: 0; }
+
+/* ---------- Application (member area) ---------- */
+.teacher-apply { display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-7); padding-top: var(--space-6); border-top: 1px solid var(--color-line); }
+.teacher-apply header h2 { font-size: var(--text-2xl); margin-block: var(--space-2); }
+.teacher-apply header p { font-size: var(--text-sm); color: var(--color-text-muted); max-width: 42rem; }
+.teacher-apply header a { color: var(--color-accent); border-bottom: 1px solid currentColor; }
+.teacher-status { padding: var(--space-4); border-radius: var(--radius-md); border-inline-start: 4px solid var(--color-line-strong); background: var(--color-surface); }
+.teacher-status strong { display: block; }
+.teacher-status p { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: 2px; }
+.teacher-status blockquote { margin: var(--space-3) 0 0; padding: var(--space-3); border-radius: var(--radius-sm); background: var(--color-sunken); font-size: var(--text-sm); }
+.teacher-status.is-warning { border-inline-start-color: var(--color-warning); background: var(--color-warning-soft); }
+.teacher-status.is-success { border-inline-start-color: var(--color-success); background: var(--color-success-soft); }
+.teacher-status.is-danger { border-inline-start-color: var(--color-danger); background: var(--color-danger-soft); }
+.teacher-apply-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr); gap: var(--space-6); align-items: start; }
+.teacher-apply-form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.teacher-apply-form fieldset:disabled { opacity: .7; }
+.teacher-field { display: flex; flex-direction: column; gap: 6px; margin: 0 !important; }
+.teacher-field.is-private { padding: var(--space-3); border: 1px dashed var(--color-line-strong); border-radius: var(--radius-md); }
+.teacher-field-label { font-size: var(--text-sm); font-weight: 600; }
+.teacher-field-label i { color: var(--color-danger); font-style: normal; }
+.teacher-field-label small { font-weight: 400; color: var(--color-text-muted); }
+.teacher-field-label em { margin-inline-start: var(--space-2); padding: 0 8px; border-radius: var(--radius-pill); background: var(--color-sunken); font-style: normal; font-size: var(--text-xs); font-weight: 500; color: var(--color-text-muted); }
+.teacher-field input, .teacher-field textarea { width: 100%; padding: 10px 12px; font-size: var(--text-base); line-height: var(--leading-normal); }
+.teacher-field textarea { resize: vertical; }
+.teacher-field [aria-invalid=true] { border-color: var(--color-danger); }
+.teacher-field-hint { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--text-xs); color: var(--color-text-muted); }
+.teacher-field-hint .is-error { color: var(--color-danger); font-weight: 500; }
+.teacher-count { flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.teacher-apply-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); font-size: var(--text-sm); }
+.teacher-apply-preview { position: sticky; top: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); }
+.teacher-preview-label { font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); }
+
+/* ---------- Admin review ---------- */
+.teacher-review-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.teacher-review-bar .tabs { flex-wrap: wrap; margin: 0; }
+.teacher-review-grid { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.teacher-review-fields { margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.teacher-review-fields dt { font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); }
+.teacher-review-fields dd { margin: 2px 0 0; font-size: var(--text-sm); line-height: var(--leading-normal); overflow-wrap: anywhere; }
+.teacher-review-decide { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
+
+@media (max-width: 900px) {
+  .teachers-hero, .teacher-profile-grid, .teacher-apply-grid, .teacher-review-grid { grid-template-columns: 1fr; }
+  .teacher-identity, .teacher-apply-preview { position: static; }
+  .teacher-apply-preview { order: -1; }
+}
