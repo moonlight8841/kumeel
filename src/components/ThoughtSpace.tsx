@@ -1,22 +1,14 @@
-import { useEffect, useState } from 'react'
-import { initialContent, type Content, type Session, type Idea } from '../content'
-import { downloadCalendar } from '../lib/calendar'
+import { useState } from 'react'
+import { initialContent, type Content, type Idea } from '../content'
+import {Salon} from './Salon'
 import {AssumptionLab} from './AssumptionLab'
 import {MindPlay} from './MindPlay'
 
 export function ThoughtSpace({ content, section = 'all' }: { content: Content; section?: 'all' | 'observatory' | 'salon' }) {
   const [filter, setFilter] = useState('الكل')
   const [practice,setPractice]=useState<Idea|null>(null)
-  const [now, setNow] = useState<number | null>(null)
-  useEffect(() => {
-    setNow(Date.now())
-    const timer = setInterval(() => setNow(Date.now()), 60000)
-    return () => clearInterval(timer)
-  }, [])
   const ideas = content.ideas ?? initialContent.ideas ?? []
   const media = content.media.filter(m => m.purpose && m.description?.trim())
-  const sessions = [...(content.sessions ?? [])].sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))
-  const sessionEnded = (s: Session) => now !== null && now > Date.parse(s.startsAt) + s.durationMinutes * 60000
   return <>
     {section !== 'salon' && <section id="observatory" className="observatory wrap section">
       <div className="section-heading"><div><div className="section-label">مرصد الأفكار</div><h2>فكرة تستحق أن نختلف حولها.</h2><p className="explore-intro">حكمة نختبرها، ودرس نفهمه، وسؤال يبقى مفتوحًا.</p></div><a className="text-link" href="/observatory">المرصد كاملًا <span aria-hidden="true">↗</span></a></div>
@@ -28,10 +20,6 @@ export function ThoughtSpace({ content, section = 'all' }: { content: Content; s
       <AssumptionLab ideas={ideas} selected={practice}/>
 
     </section>}
-    {section !== 'observatory' && <section id="salon" className="salon-section"><div className="wrap section"><div className="section-heading"><div><div className="section-label">مجلس الحوار</div><h2>سؤال واحد.<br />وأكثر من زاوية للنظر.</h2><p className="explore-intro">لقاء مع كميل ال نهاب، نبدأ فيه بفكرة ونمنح الاعتراض مكانه.</p></div><a className="text-link" href="/salon">صفحة المجلس <span aria-hidden="true">↗</span></a></div><div className="salon-format"><p><b>١٠ دقائق</b><span>لتقديم الفكرة</span></p><p><b>٢٠ دقيقة</b><span>للأسئلة والاعتراضات</span></p><p><b>١٠ دقائق</b><span>لما تعلّمناه معًا</span></p></div>
-      {sessions.length ? <div className="session-list">{sessions.map(s => <article className="session-item" key={s.id}><div className="category">{s.cancelled ? 'موعد ملغى' : sessionEnded(s) ? 'انتهى الموعد المعلن' : 'موعد معلن'} · {new URL(s.joinUrl).hostname === 'meet.google.com' ? 'Google Meet' : 'YouTube'}</div><h3>{s.title}</h3><p>{s.question}</p><time dateTime={s.startsAt}>{new Intl.DateTimeFormat('ar-SA', { dateStyle: 'full', timeStyle: 'short', timeZone: 'Asia/Riyadh', calendar: 'gregory' }).format(new Date(s.startsAt))} · توقيت الرياض</time>{s.notes && <p>{s.notes}</p>}<div className="session-actions">{!s.cancelled && !sessionEnded(s) && <><a className="primary" href={s.joinUrl} target="_blank" rel="noopener noreferrer">افتح منصة اللقاء <span aria-hidden="true">↗</span></a>{s.registrationUrl&&<a className="text-link" href={s.registrationUrl} target="_blank" rel="noopener noreferrer">???? ????? ?????? ?</a>}<button className="text-link" onClick={() => downloadCalendar(s)}>أضف الموعد إلى تقويمك</button></>}{!s.cancelled && sessionEnded(s) && <p className="sample-note">لا يعني انتهاء الموعد توفر تسجيل. تُضاف التسجيلات المعتمدة إلى الدروس المرئية.</p>}</div></article>)}</div> : <div className="salon-empty"><h3>المجلس يبدأ حين يستحق السؤال.</h3><p>لم يُعلن موعد بعد. سيظهر رابط اللقاء وموعده هنا بعد إعداد الجلسة.</p></div>}
-      <section className="session-archive"><h3>????? ?????? / ?? ???? ??? ??????</h3><div className="session-list">{sessions.filter(s=>!s.cancelled&&sessionEnded(s)&&(s.recordingUrl||s.summary||s.summaryPdfUrl)).map(s=><article className="session-item" key={s.id}><h4>{s.title}</h4>{s.summary&&<p className="preserve-lines">{s.summary}</p>}<div className="session-actions">{s.recordingUrl&&<a className="primary" href={s.recordingUrl} target="_blank" rel="noopener noreferrer">???? ??????? ?? ?????? ?</a>}{s.summaryPdfUrl&&<a className="text-link" href={s.summaryPdfUrl} target="_blank" rel="noopener noreferrer">???? ?????? PDF ?</a>}</div></article>)}</div>{!sessions.some(s=>!s.cancelled&&sessionEnded(s)&&(s.recordingUrl||s.summary||s.summaryPdfUrl))&&<p>????? ??? ???? ??????? ??????? ??? ???????? ??????.</p>}</section>
-      <div className="dialogue-principles"><p>نناقش الفكرة باحترام.</p><p>نطلب الدليل ونذكر المصدر.</p><p>نغادر بسؤال أفضل.</p></div><p className="sample-note">اللقاءات عبر Google Meet أو YouTube. يظل قبول المشاركين وإدارة اللقاء بيد المضيف على منصة اللقاء.</p>
-    </div></section>}
+    {section !== 'observatory' && <Salon content={content} />}
   </>
 }

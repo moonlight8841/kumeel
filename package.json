@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "npm run build && node scripts/test-platform.mjs && node scripts/test-design.mjs && node scripts/test-lab.mjs && node scripts/test-generate-idea.mjs && node scripts/test-edit-assist.mjs && node scripts/test-chat.mjs"
+    "test": "npm run build && node scripts/test-platform.mjs && node scripts/test-design.mjs && node scripts/test-lab.mjs && node scripts/test-salon.mjs && node scripts/test-generate-idea.mjs && node scripts/test-edit-assist.mjs && node scripts/test-chat.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
