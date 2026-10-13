@@ -1,10 +1,16 @@
 export type SectionKey = 'hero' | 'story' | 'writings' | 'explore' | 'observatory' | 'salon' | 'library' | 'quote' | 'contact'
+export const siteThemes = [
+  { key: 'olive', label: 'ورقي دافئ', note: 'الهوية الأصلية: ورق عتيق وحبر طيني', swatches: ['#f7f1e6', '#944b38', '#42352e'] },
+  { key: 'ink', label: 'حبر أزرق', note: 'هادئ وأكاديمي لقراءة طويلة', swatches: ['#f2f4f6', '#2f5d86', '#243746'] },
+  { key: 'sage', label: 'زيتوني', note: 'أخضر زيتوني متوازن وقريب من الطبيعة', swatches: ['#f3f3ec', '#546a2e', '#343a2a'] },
+] as const
+export type SiteTheme = typeof siteThemes[number]['key']
 export type SiteSettings = {
   heroTitle: string; heroSubtitle: string; heroImage: string; heroImageAlt: string;
   quote: string; quoteSource: string; contactTitle: string;
   email: string; tiktok: string; whatsapp: string;
   showEmail: boolean; showTiktok: boolean; showWhatsapp: boolean;
-  newsletterUrl?:string; theme: 'olive' | 'ink'; sections: { key: SectionKey; label: string; visible: boolean }[];
+  newsletterUrl?:string; theme: SiteTheme; sections: { key: SectionKey; label: string; visible: boolean }[];
 }
 export const defaultSite: SiteSettings = {
   heroTitle: 'سؤالٌ يوقظ الفكر،\nوحوارٌ يفتح الأفق.', heroSubtitle: 'مساحة للفلسفة والعلم والثقافة.\nنختبر الأفكار، وننصف الأسئلة، ونتعلّم معًا.',
@@ -32,5 +38,5 @@ export function validSite(value: unknown): value is SiteSettings {
   const s = value as SiteSettings
   const str = (v: unknown, max: number) => typeof v === 'string' && v.length <= max
   const image = (v: unknown) => typeof v === 'string' && (/^\/images\/[^\s]+$/.test(v) || (() => { try { const url = new URL(v); return v.length <= 2000 && url.protocol === 'https:' && !url.username && !url.password && ![...v].some(c => c.charCodeAt(0) <= 32) } catch { return false } })())
-  return (s.newsletterUrl===undefined||s.newsletterUrl===''||(/^https:\/\//.test(s.newsletterUrl)&&image(s.newsletterUrl))) && str(s.heroTitle, 300) && Boolean(s.heroTitle.trim()) && str(s.heroSubtitle, 1000) && image(s.heroImage) && str(s.heroImageAlt, 500) && str(s.quote, 1500) && str(s.quoteSource, 500) && str(s.contactTitle, 300) && str(s.email, 254) && (!s.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.email)) && str(s.tiktok, 24) && (!s.tiktok || /^[a-zA-Z0-9_.]{1,24}$/.test(s.tiktok)) && str(s.whatsapp, 15) && (!s.whatsapp || /^[1-9][0-9]{6,14}$/.test(s.whatsapp)) && [s.showEmail, s.showTiktok, s.showWhatsapp].every(v => typeof v === 'boolean') && ['olive', 'ink'].includes(s.theme) && Array.isArray(s.sections) && (s.sections.length === defaultSite.sections.length || s.sections.length === defaultSite.sections.length-1) && defaultSite.sections.filter(d=>d.key!=='library').every(d=>s.sections.some(v=>v?.key===d.key)) && s.sections.every(v => v && defaultSite.sections.some(d => d.key === v.key) && str(v.label, 60) && typeof v.visible === 'boolean') && new Set(s.sections.map(v => v.key)).size === s.sections.length && s.sections.some(v => v.visible)
+  return (s.newsletterUrl===undefined||s.newsletterUrl===''||(/^https:\/\//.test(s.newsletterUrl)&&image(s.newsletterUrl))) && str(s.heroTitle, 300) && Boolean(s.heroTitle.trim()) && str(s.heroSubtitle, 1000) && image(s.heroImage) && str(s.heroImageAlt, 500) && str(s.quote, 1500) && str(s.quoteSource, 500) && str(s.contactTitle, 300) && str(s.email, 254) && (!s.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.email)) && str(s.tiktok, 24) && (!s.tiktok || /^[a-zA-Z0-9_.]{1,24}$/.test(s.tiktok)) && str(s.whatsapp, 15) && (!s.whatsapp || /^[1-9][0-9]{6,14}$/.test(s.whatsapp)) && [s.showEmail, s.showTiktok, s.showWhatsapp].every(v => typeof v === 'boolean') && siteThemes.some(t => t.key === s.theme) && Array.isArray(s.sections) && (s.sections.length === defaultSite.sections.length || s.sections.length === defaultSite.sections.length-1) && defaultSite.sections.filter(d=>d.key!=='library').every(d=>s.sections.some(v=>v?.key===d.key)) && s.sections.every(v => v && defaultSite.sections.some(d => d.key === v.key) && str(v.label, 60) && typeof v.visible === 'boolean') && new Set(s.sections.map(v => v.key)).size === s.sections.length && s.sections.some(v => v.visible)
 }

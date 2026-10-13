@@ -1,42 +1,96 @@
 import {CommunityReview} from './CommunityReview'
 import {IdeaEngine} from './IdeaEngine'
-import { useState } from 'react'
-import { validContent, type Content } from '../content'
+import {useCallback,useEffect,useState} from 'react'
+import {validContent,type Content} from '../content'
 import {NotebookEditor} from './NotebookEditor'
-import { defaultSite, withLibrary, type SiteSettings } from '../site'
-import { BookEditor } from './BookEditor'
-import { LearningEditor } from './LearningEditor'
-import { CloudPanel } from './CloudPanel'
+import {defaultSite} from '../site'
+import {BookEditor} from './BookEditor'
+import {LearningEditor} from './LearningEditor'
+import {CloudPanel} from './CloudPanel'
 import {ReadingMode} from './ReadingMode'
-import { ThoughtEditor } from './ThoughtEditor'
+import {ThoughtEditor} from './ThoughtEditor'
+import {adminNav,adminTabs,parseAdminTab,type AdminTab} from '../lib/admin'
+import {AdminOverview} from './admin/AdminOverview'
+import {AdminSettings} from './admin/AdminSettings'
+import {AdminArrange} from './admin/AdminArrange'
+import {AdminBackup} from './admin/AdminBackup'
 
-type Props = { content: Content; revision: number | null; onSave: (content: Content) => boolean; onPublish: (content: Content, revision: number) => void }
-export function AdminPanel({ content, revision, onSave, onPublish }: Props) {
- const [authorized, setAuthorized] = useState(false)
- const [local, setLocal] = useState(false)
- const [tab, setTab] = useState('settings')
- const [message, setMessage] = useState('')
- const [notebookDirty, setNotebookDirty] = useState(false)
- const [undo, setUndo] = useState<Content | null>(null)
- const allowed = authorized || (import.meta.env.DEV && local)
- function commit(next: Content) { if (!allowed || !validContent(next) || !onSave(next)) { setMessage('لم يتم الحفظ. راجع الحقول والروابط وحجم المحتوى.'); return false } setUndo(null); setMessage('حُفظت المسودة. راجعها قبل النشر العام.'); return true }
- const tabs = [['community','مراجعة المجتمع'],['engine','مصنع الأفكار'],['settings','الهوية والتصميم'],['writings','الكتابات'],['thoughts','الأفكار والوسائط واللقاءات'],['learning','المحتوى التعليمي'],['library','ترتيب المكتبة'],['books','\u0645\u0643\u062a\u0628\u0629 \u0627\u0644\u0643\u062a\u0628'],['backup','النسخ الاحتياطية']]
- return <div className="admin-shell" dir="rtl"><header className="admin-header"><ReadingMode/><a className="wordmark" href="/">كميل<span>.</span></a><a href="/">معاينة الموقع ↗</a></header><div className="admin-layout"><aside><span className="section-label">مساحة المالك</span><h1>لوحة الإدارة</h1><p>من الفكرة إلى أثرها.</p>{allowed && <nav aria-label="أقسام الإدارة">{tabs.map(([key,label]) => <button key={key} aria-pressed={tab===key} onClick={() => setTab(key)}>{label}</button>)}</nav>}</aside><main className="editor admin-main"><CloudPanel content={content} revision={revision} onLoad={commit} onPublish={onPublish} onAuthorizationChange={setAuthorized} hasUnsavedChanges={notebookDirty} />
- {!authorized && import.meta.env.DEV && <div className="admin-local"><p>التجربة المحلية تحفظ على هذا المتصفح. النشر السحابي يحتاج حسابًا مخوّلًا.</p><button onClick={() => setLocal(!local)}>{local ? 'إغلاق التجربة المحلية' : 'فتح تجربة الإدارة المحلية'}</button></div>}
- {!allowed ? <p>سجّل الدخول بحساب يملك صلاحية الإدارة لفتح أدوات التحرير. تسجيل الحساب وحده لا يمنح صلاحيات.</p> : <>
- {tab==='community'&&authorized&&<CommunityReview/>}
- {tab==='engine'&&<IdeaEngine content={content} save={commit}/>}
- {tab==='settings' && <Settings key={JSON.stringify(content.site)} content={content} save={commit} />}
- {tab==='thoughts' && <ThoughtEditor content={content} onSave={commit} />}
- {tab==='writings' && <NotebookEditor content={content} save={commit} onDirtyChange={setNotebookDirty}/>}
- {tab==='learning' && <LearningEditor content={content} save={commit} />}
- {tab==='books' && <BookEditor content={content} save={commit}/>}
- {tab==='library' && <><h2>ترتيب المكتبة</h2><p>إزالة العنصر تزيل صفحته من النسخة التالية. احتفظ بنسخة احتياطية قبل النشر.</p>{(['writings','ideas','media','sessions'] as const).map(key=><section key={key}><h3>{{writings:'الكتابات',ideas:'الأفكار',media:'الوسائط',sessions:'اللقاءات'}[key]}</h3>{(content[key]??[]).map((item,index,items)=><div className="admin-row" key={item.id}><span>{item.title}</span><button disabled={index===0} onClick={()=>{const list=[...items];[list[index-1],list[index]]=[list[index],list[index-1]];commit({...content,[key]:list})}}>↑</button><button disabled={index===items.length-1} onClick={()=>{const list=[...items];[list[index+1],list[index]]=[list[index],list[index+1]];commit({...content,[key]:list})}}>↓</button><button onClick={()=>{if(commit({...content,[key]:items.filter(i=>i.id!==item.id)}))setUndo(content)}}>إزالة</button></div>)}</section>)}{undo&&<button onClick={()=>{if(commit(undo))setUndo(null)}}>تراجع عن آخر إزالة</button>}</>}
- {tab==='backup' && <><h2>النسخ الاحتياطية</h2><button onClick={()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(content,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='kumeel-content.json';a.click();URL.revokeObjectURL(url)}}>تصدير النسخة الحالية ↓</button><label>استيراد نسخة<input type="file" accept=".json,application/json" onChange={async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>4000000)throw Error();const next:unknown=JSON.parse(await file.text());if(!validContent(next))throw Error();if(commit(next))setUndo(content)}catch{setMessage('ملف غير صالح أو أكبر من الحد المسموح.')}}}/></label></>}
- </>}<p role="status">{message}</p></main></div></div>
-}
-function Settings({content,save}:{content:Content;save:(next:Content)=>boolean}) {
- const [site,setSite]=useState<SiteSettings>(withLibrary(content.site??defaultSite))
- const textFields:[keyof SiteSettings,string][]=[['heroTitle','عنوان الواجهة'],['heroSubtitle','وصف الواجهة'],['heroImage','رابط صورة الواجهة'],['heroImageAlt','وصف الصورة'],['quote','فكرة للتأمل'],['quoteSource','مصدر الفكرة'],['contactTitle','عنوان التواصل'],['email','البريد العام'],['tiktok','اسم تيك توك'],['whatsapp','واتساب بالصيغة الدولية دون +']]
- return <form onSubmit={e=>{e.preventDefault();save({...content,site,bio:String(new FormData(e.currentTarget).get('bio')).trim()})}}><h2>الهوية والتصميم</h2><label>نبذة كميل<textarea name="bio" defaultValue={content.bio} required maxLength={10000}/></label><label>رابط نموذج الاشتراك البريدي<input type="url" maxLength={2000} placeholder="https://" value={site.newsletterUrl??''} onChange={e=>setSite({...site,newsletterUrl:e.target.value.trim()})}/></label><p className="sample-note">أضف رابط نموذج خدمة تدعم تأكيد البريد وإلغاء الاشتراك. الإرسال والتنبيهات تُضبط لدى خدمة البريد. لا تضع مفاتيح API هنا.</p>{textFields.map(([key,label])=><label key={key}>{label}<textarea value={String(site[key])} onChange={e=>setSite({...site,[key]:e.target.value})}/></label>)}<label>المظهر<select value={site.theme} onChange={e=>setSite({...site,theme:e.target.value as SiteSettings['theme']})}><option value="olive">زيتوني وورقي</option><option value="ink">حبر أزرق</option></select></label>{(['showWhatsapp','showEmail','showTiktok'] as const).map(key=><label className="admin-check" key={key}><input type="checkbox" checked={site[key]} onChange={e=>setSite({...site,[key]:e.target.checked})}/>{{showWhatsapp:'إظهار واتساب',showEmail:'إظهار البريد',showTiktok:'إظهار تيك توك'}[key]}</label>)}<h3>أقسام الرئيسية وترتيبها</h3><p>إخفاء قسم من الرئيسية لا يحذف صفحته المستقلة.</p>{site.sections.map((s,i)=><div className="admin-row" key={s.key}><label className="admin-check"><input type="checkbox" checked={s.visible} onChange={e=>setSite({...site,sections:site.sections.map(v=>v.key===s.key?{...v,visible:e.target.checked}:v)})}/>{s.label}</label><button type="button" disabled={i===0} onClick={()=>{const list=[...site.sections];[list[i-1],list[i]]=[list[i],list[i-1]];setSite({...site,sections:list})}}>↑</button><button type="button" disabled={i===site.sections.length-1} onClick={()=>{const list=[...site.sections];[list[i+1],list[i]]=[list[i],list[i+1]];setSite({...site,sections:list})}}>↓</button></div>)}<button className="primary">حفظ الهوية والتصميم</button></form>
+type Props={content:Content;revision:number|null;draft?:boolean;onSave:(content:Content)=>boolean;onPublish:(content:Content,revision:number)=>void}
+type Notice={text:string;tone:'success'|'error'|'info'}
+
+export function AdminPanel({content,revision,draft=false,onSave,onPublish}:Props){
+ const [authorized,setAuthorized]=useState(false)
+ const [local,setLocal]=useState(false)
+ const [tab,setTab]=useState<AdminTab>('overview')
+ const [notice,setNotice]=useState<Notice|null>(null)
+ const [notebookDirty,setNotebookDirty]=useState(false)
+ const [settingsDirty,setSettingsDirty]=useState(false)
+ const [navOpen,setNavOpen]=useState(false)
+ const allowed=authorized||(import.meta.env.DEV&&local)
+ const dirty=notebookDirty||settingsDirty
+ const site=content.site??defaultSite
+ const onAuthorizationChange=useCallback((value:boolean)=>setAuthorized(value),[])
+
+ // The hash keeps the open section across reloads and makes it linkable.
+ useEffect(()=>{const sync=()=>{const next=parseAdminTab(location.hash);if(next)setTab(next)};sync();window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[])
+ useEffect(()=>{if(!dirty)return;const warn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue=''};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[dirty])
+ useEffect(()=>{if(!notice||notice.tone==='error')return;const t=setTimeout(()=>setNotice(null),6000);return()=>clearTimeout(t)},[notice])
+
+ function go(next:AdminTab){
+  if(next===tab){setNavOpen(false);return}
+  if(dirty&&!window.confirm('لديك تغييرات غير محفوظة في هذا القسم. هل تريد المغادرة دون حفظ؟'))return
+  setNotebookDirty(false);setSettingsDirty(false)
+  setTab(next);setNavOpen(false)
+  history.replaceState(null,'',`#${next}`)
+  document.getElementById('admin-main')?.focus({preventScroll:true})
+  window.scrollTo({top:0})
+ }
+ function commit(next:Content){
+  if(!allowed||!validContent(next)||!onSave(next)){setNotice({tone:'error',text:'لم يتم الحفظ. راجع الحقول والروابط وحجم المحتوى.'});return false}
+  setNotice({tone:'success',text:'حُفظت المسودة. راجعها ثم انشرها من «النشر والحساب».'})
+  return true
+ }
+ const current=adminTabs.find(t=>t.key===tab)
+ const visibleGroups=adminNav.map(g=>({...g,items:g.items.filter(i=>!i.ownerOnly||authorized)})).filter(g=>g.items.length)
+
+ return <div className={`admin-shell theme-${site.theme}`} dir="rtl">
+  <header className="admin-header">
+   <div className="admin-brand"><a className="wordmark" href="/">كميل<span>.</span></a><span className="admin-brand-label">لوحة الإدارة</span></div>
+   <div className="admin-status" aria-label="حالة المحتوى">
+    {allowed&&<span className={`admin-chip ${draft?'is-warning':'is-success'}`}>{draft?'مسودة محلية غير منشورة':'متطابق مع المنشور'}</span>}
+    {revision!==null&&<span className="admin-chip">النسخة المنشورة #{revision.toLocaleString('ar-SA')}</span>}
+    {dirty&&<span className="admin-chip is-danger">تحرير غير محفوظ</span>}
+   </div>
+   <div className="admin-header-tools">
+    {allowed&&draft&&<button className="admin-btn is-primary" onClick={()=>go('publish')}>مراجعة ونشر</button>}
+    <a className="admin-btn" href="/" target="_blank" rel="noopener">معاينة الموقع ↗</a>
+    <ReadingMode/>
+    {allowed&&<button className="admin-btn admin-nav-toggle" aria-expanded={navOpen} aria-controls="admin-nav" onClick={()=>setNavOpen(!navOpen)}>{navOpen?'✕ إغلاق':'☰ الأقسام'}</button>}
+   </div>
+  </header>
+  <div className="admin-layout">
+   <aside className="admin-sidebar">
+    {allowed?<nav id="admin-nav" className={navOpen?'open':''} aria-label="أقسام الإدارة">{visibleGroups.map(group=><div className="admin-nav-group" key={group.label}><span className="admin-nav-label">{group.label}</span>{group.items.map(item=><button key={item.key} className="admin-nav-item" aria-current={tab===item.key?'page':undefined} onClick={()=>go(item.key)}><span className="admin-nav-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span></button>)}</div>)}</nav>
+    :<div className="admin-intro"><span className="section-label">مساحة المالك</span><h1>لوحة الإدارة</h1><p>من الفكرة إلى أثرها.</p></div>}
+   </aside>
+   <main id="admin-main" className="editor admin-main" tabIndex={-1}>
+    {allowed&&current&&<div className="admin-page-head"><span className="admin-page-icon" aria-hidden="true">{current.icon}</span><div><h1>{current.label}</h1><p>{current.hint}</p></div></div>}
+    <div hidden={allowed&&tab!=='publish'}><CloudPanel content={content} revision={revision} onLoad={commit} onPublish={onPublish} onAuthorizationChange={onAuthorizationChange} hasUnsavedChanges={notebookDirty}/></div>
+    {!authorized&&import.meta.env.DEV&&<div className="admin-local"><p>التجربة المحلية تحفظ على هذا المتصفح. النشر السحابي يحتاج حسابًا مخوّلًا.</p><button className="admin-btn" onClick={()=>setLocal(!local)}>{local?'إغلاق التجربة المحلية':'فتح تجربة الإدارة المحلية'}</button></div>}
+    {!allowed?<p className="admin-gate">سجّل الدخول بحساب يملك صلاحية الإدارة لفتح أدوات التحرير. تسجيل الحساب وحده لا يمنح صلاحيات.</p>:<div className="admin-panel-body">
+     {tab==='overview'&&<AdminOverview content={content} revision={revision} draft={draft} go={go}/>}
+     {tab==='community'&&authorized&&<CommunityReview/>}
+     {tab==='engine'&&<IdeaEngine content={content} save={commit}/>}
+     {tab==='settings'&&<AdminSettings key={JSON.stringify([content.site,content.bio])} content={content} save={commit} onDirtyChange={setSettingsDirty}/>}
+     {tab==='thoughts'&&<ThoughtEditor content={content} onSave={commit}/>}
+     {tab==='writings'&&<NotebookEditor content={content} save={commit} onDirtyChange={setNotebookDirty}/>}
+     {tab==='learning'&&<LearningEditor content={content} save={commit}/>}
+     {tab==='books'&&<BookEditor content={content} save={commit}/>}
+     {tab==='arrange'&&<AdminArrange content={content} save={commit}/>}
+     {tab==='backup'&&<AdminBackup content={content} save={commit} onError={text=>setNotice({tone:'error',text})}/>}
+    </div>}
+    <div className={`admin-toast${notice?` is-${notice.tone} is-visible`:''}`} role="status" aria-live="polite">{notice&&<><span>{notice.text}</span><button aria-label="إغلاق الرسالة" onClick={()=>setNotice(null)}>✕</button></>}</div>
+   </main>
+  </div>
+ </div>
 }

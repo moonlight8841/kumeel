@@ -1,0 +1,296 @@
+/*
+ * Kumeel design tokens
+ * ---------------------------------------------------------------
+ * Three layers, consumed in this order:
+ *   1. Semantic colour tokens  (--color-*)  — one set per theme × mode.
+ *   2. Scales                  (--space-*, --text-*, --radius-*, …).
+ *   3. Legacy aliases          (--ink, --paper, --accent, …) so older
+ *      component CSS keeps working while it migrates to semantic names.
+ *
+ * Themes are chosen by the owner (.theme-olive | .theme-ink | .theme-sage
+ * on .site-shell). Light/dark is chosen by the reader
+ * (html[data-reading-mode]). Every theme ships both modes, so components
+ * must never hard-code colours — use the tokens below.
+ */
+
+/* ---------- 1. Semantic colours: warm paper (default, "olive" key) ---------- */
+:root,
+.theme-olive {
+  --color-bg: #f7f1e6;
+  --color-surface: #fffaf2;
+  --color-sunken: #eee4d5;
+  --color-text: #352e29;
+  --color-text-muted: #6b5d50;
+  --color-line: #ddcdb9;
+  --color-line-strong: #b9a58e;
+  --color-accent: #944b38;
+  --color-accent-hover: #763a2c;
+  --color-accent-soft: #f2e0d6;
+  --color-on-accent: #fffaf2;
+  --color-ochre: #8f6a36;
+  --color-strong: #42352e;
+  --color-on-strong: #f7efe3;
+  --color-on-strong-muted: #d8c8b5;
+  --color-on-strong-accent: #ddbd82;
+  --color-success: #3f6233;
+  --color-success-soft: #e1ecd9;
+  --color-warning: #8b542e;
+  --color-warning-soft: #f6e8d4;
+  --color-danger: #9b3829;
+  --color-danger-soft: #f5dfd7;
+  --color-selection: #e5c4a9;
+  --color-backdrop: #20251dc9;
+  --shadow-tint: 53 46 41;
+}
+
+/* ---------- Ink blue ---------- */
+.theme-ink {
+  --color-bg: #f2f4f6;
+  --color-surface: #fbfcfd;
+  --color-sunken: #e5eaef;
+  --color-text: #1f2f3c;
+  --color-text-muted: #4d6070;
+  --color-line: #d2dae2;
+  --color-line-strong: #a7b5c2;
+  --color-accent: #2f5d86;
+  --color-accent-hover: #234a6c;
+  --color-accent-soft: #dde8f2;
+  --color-on-accent: #fbfcfd;
+  --color-ochre: #85663a;
+  --color-strong: #243746;
+  --color-on-strong: #eef3f7;
+  --color-on-strong-muted: #b9c7d3;
+  --color-on-strong-accent: #d9c08d;
+  --color-success: #2f6440;
+  --color-success-soft: #dcebe1;
+  --color-warning: #87561f;
+  --color-warning-soft: #f4e7d2;
+  --color-danger: #a03a2c;
+  --color-danger-soft: #f6e0dc;
+  --color-selection: #bcd2e6;
+  --color-backdrop: #111a22cc;
+  --shadow-tint: 31 47 60;
+}
+
+/* ---------- Sage / true olive ---------- */
+.theme-sage {
+  --color-bg: #f3f3ec;
+  --color-surface: #fbfbf6;
+  --color-sunken: #e6e8da;
+  --color-text: #2a2e22;
+  --color-text-muted: #5a604c;
+  --color-line: #d5d8c6;
+  --color-line-strong: #adb299;
+  --color-accent: #546a2e;
+  --color-accent-hover: #425423;
+  --color-accent-soft: #e3e9d3;
+  --color-on-accent: #fbfbf6;
+  --color-ochre: #8e7136;
+  --color-strong: #343a2a;
+  --color-on-strong: #f1f2e8;
+  --color-on-strong-muted: #c4c9b2;
+  --color-on-strong-accent: #d8c58c;
+  --color-success: #3c6530;
+  --color-success-soft: #dfebd5;
+  --color-warning: #85571f;
+  --color-warning-soft: #f2e8d3;
+  --color-danger: #9a3a2a;
+  --color-danger-soft: #f3e0d8;
+  --color-selection: #d4ddb9;
+  --color-backdrop: #1a1d14cc;
+  --shadow-tint: 42 46 34;
+}
+
+/* ---------- Dark mode (reader preference) — one block per theme ---------- */
+:root[data-reading-mode=dark],
+[data-reading-mode=dark] .theme-olive {
+  --color-bg: #1f1b18;
+  --color-surface: #29241f;
+  --color-sunken: #312a24;
+  --color-text: #ebe1d4;
+  --color-text-muted: #c0b1a0;
+  --color-line: #4a3e35;
+  --color-line-strong: #6b5a4c;
+  --color-accent: #e3a18a;
+  --color-accent-hover: #efb8a3;
+  --color-accent-soft: #46322a;
+  --color-on-accent: #211b17;
+  --color-ochre: #d5b075;
+  --color-strong: #15120f;
+  --color-on-strong: #ebe1d4;
+  --color-on-strong-muted: #b9a993;
+  --color-on-strong-accent: #ddbd82;
+  --color-success: #b7d1a6;
+  --color-success-soft: #2f3a28;
+  --color-warning: #eec393;
+  --color-warning-soft: #44331f;
+  --color-danger: #f0a898;
+  --color-danger-soft: #4a2a24;
+  --color-selection: #76533d;
+  --color-backdrop: #000000cc;
+  --shadow-tint: 0 0 0;
+  color-scheme: dark;
+}
+
+[data-reading-mode=dark] .theme-ink {
+  --color-bg: #121920;
+  --color-surface: #19222b;
+  --color-sunken: #1f2a34;
+  --color-text: #e2e9ef;
+  --color-text-muted: #a8b6c3;
+  --color-line: #32404d;
+  --color-line-strong: #4a5b6b;
+  --color-accent: #8fb8de;
+  --color-accent-hover: #abcbea;
+  --color-accent-soft: #223649;
+  --color-on-accent: #0e151b;
+  --color-ochre: #d4b47c;
+  --color-strong: #0b1015;
+  --color-on-strong: #e2e9ef;
+  --color-on-strong-muted: #a8b6c3;
+  --color-on-strong-accent: #d9c08d;
+  --color-success: #a9d3b5;
+  --color-success-soft: #1f3528;
+  --color-warning: #e9c48f;
+  --color-warning-soft: #3d3020;
+  --color-danger: #f0a497;
+  --color-danger-soft: #45261f;
+  --color-selection: #355a7d;
+  --color-backdrop: #000000cc;
+  --shadow-tint: 0 0 0;
+}
+
+[data-reading-mode=dark] .theme-sage {
+  --color-bg: #181a14;
+  --color-surface: #20231b;
+  --color-sunken: #272b21;
+  --color-text: #e5e7da;
+  --color-text-muted: #b1b6a0;
+  --color-line: #3c4133;
+  --color-line-strong: #575d49;
+  --color-accent: #b9cc8e;
+  --color-accent-hover: #cbdba6;
+  --color-accent-soft: #2f3824;
+  --color-on-accent: #151711;
+  --color-ochre: #d5bb7c;
+  --color-strong: #0f110c;
+  --color-on-strong: #e5e7da;
+  --color-on-strong-muted: #b1b6a0;
+  --color-on-strong-accent: #d8c58c;
+  --color-success: #b8d6a5;
+  --color-success-soft: #2b3a24;
+  --color-warning: #e7c590;
+  --color-warning-soft: #3d331f;
+  --color-danger: #eda696;
+  --color-danger-soft: #45281f;
+  --color-selection: #56663a;
+  --color-backdrop: #000000cc;
+  --shadow-tint: 0 0 0;
+}
+
+:root[data-reading-mode=light] { color-scheme: light; }
+
+/* ---------- 2. Typography: language-aware stacks ---------- */
+:root {
+  /* Arabic UI: IBM Plex Sans Arabic has real weights 400–700 and a matching Latin. */
+  --font-ar-ui: 'IBM Plex Sans Arabic', 'Tajawal', 'Segoe UI', Tahoma, system-ui, sans-serif;
+  /* Arabic display + long reading: Amiri (Naskh, book-grade). */
+  --font-ar-serif: 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', serif;
+  --font-latin-ui: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-latin-serif: 'Lora', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+
+  /* Role tokens — what components use. Switched per language below. */
+  --font-ui: var(--font-ar-ui);
+  --font-display: var(--font-ar-serif);
+  --font-reading: var(--font-ar-serif);
+  --font-numeral: var(--font-latin-serif);
+
+  /* Fluid modular scale (≈1.2 → 1.25), minimum 12px for Arabic legibility. */
+  --text-xs: .75rem;
+  --text-sm: .875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: clamp(1.25rem, 1.15rem + .45vw, 1.5rem);
+  --text-xl: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  --text-2xl: clamp(1.85rem, 1.45rem + 1.7vw, 2.75rem);
+  --text-3xl: clamp(2.2rem, 1.6rem + 2.6vw, 3.6rem);
+  --text-4xl: clamp(2.6rem, 1.7rem + 3.8vw, 4.75rem);
+
+  /* Arabic needs taller lines than Latin: ascenders, dots and harakat. */
+  --leading-tight: 1.35;
+  --leading-snug: 1.55;
+  --leading-normal: 1.85;
+  --leading-relaxed: 2.1;
+  --tracking-latin-caps: .18em;
+
+  /* ---------- Spacing (4px base) ---------- */
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --section-gap: clamp(3.5rem, 2.5rem + 4vw, 6.25rem);
+
+  /* ---------- Layout ---------- */
+  --container: 1220px;
+  --container-reading: 46rem;
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --header-height: 88px;
+
+  /* ---------- Shape & depth ---------- */
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-tint) / .06), 0 1px 1px rgb(var(--shadow-tint) / .04);
+  --shadow-md: 0 6px 18px rgb(var(--shadow-tint) / .08), 0 2px 4px rgb(var(--shadow-tint) / .05);
+  --shadow-lg: 0 18px 48px rgb(var(--shadow-tint) / .14);
+  --focus-ring: 0 0 0 3px var(--color-accent-soft), 0 0 0 5px var(--color-accent);
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(.2, .7, .2, 1);
+  --duration-fast: .15s;
+  --duration-base: .25s;
+
+  /* ---------- Layers ---------- */
+  --z-header: 20;
+  --z-menu: 30;
+  --z-toast: 100;
+}
+
+/* Latin passages switch every role token to the Latin families. */
+:lang(en),
+[dir=ltr] {
+  --font-ui: var(--font-latin-ui);
+  --font-display: var(--font-latin-serif);
+  --font-reading: var(--font-latin-serif);
+  --leading-normal: 1.65;
+  --leading-relaxed: 1.8;
+}
+
+/* ---------- 3. Legacy aliases ----------
+ * Declared on every element that can carry a theme class so the alias
+ * re-resolves against that theme's semantic tokens. */
+:root,
+.site-shell,
+.admin-shell,
+[class*='theme-'] {
+  --ink: var(--color-text);
+  --paper: var(--color-bg);
+  --surface: var(--color-surface);
+  --sand: var(--color-sunken);
+  --umber: var(--color-strong);
+  --accent: var(--color-accent);
+  --accent-hover: var(--color-accent-hover);
+  --ochre: var(--color-ochre);
+  --muted: var(--color-text-muted);
+  --line: var(--color-line);
+  --olive: var(--color-accent);
+  --font-latin: var(--font-latin-serif);
+}

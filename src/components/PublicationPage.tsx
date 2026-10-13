@@ -3,6 +3,7 @@ import {MemberSpace} from './MemberSpace'
 import {ReaderQuestion} from './ReaderQuestion'
 import {Explore} from './Explore'
 import {SiteHeader} from './SiteHeader'
+import {SiteFooter} from './SiteFooter'
 import {WritingsIndex} from './WritingsIndex'
 import {Newsletter} from './Newsletter'
 import { ContactLinks } from './ContactLinks'
@@ -24,7 +25,7 @@ export function PublicationPage({ content, info }: { content: Content; info: Pag
   async function copyLink() { try { await navigator.clipboard.writeText(location.href); setMessage('نُسخ رابط الصفحة.') } catch { setMessage('تعذّر النسخ. يمكنك نسخ الرابط من شريط المتصفح.') } }
   const isArticle = Boolean(info.idea || info.writing || info.media)
   const text = info.idea?.text ?? info.writing?.text
-  return <><a className="skip" href="#publication">انتقل إلى المحتوى</a><SiteHeader/><main id="publication">
+  return <><a className="skip" href="#publication">انتقل إلى المحتوى</a><SiteHeader current={info.path}/><main id="publication">
     {info.kind==='community'&&<CommunityPage/>}
     {info.kind==='member'&&<MemberSpace/>}
     {info.kind==='explore'&&<Explore content={content}/>}
@@ -42,5 +43,5 @@ export function PublicationPage({ content, info }: { content: Content; info: Pag
       <div className="publication-actions"><button className="text-link" onClick={copyLink}>انسخ رابط الفكرة</button><a className="text-link" href="/salon">أكمل السؤال في مجلس الحوار ←</a></div><p role="status" className="sample-note">{message}</p>
     </article>}
     {info.kind === 'missing' && <section className="wrap section missing-page"><h1>لم نجد هذه الصفحة.</h1><p>ربما تغيّر الرابط أو لم تُنشر المادة بعد.</p><a className="primary" href="/observatory">عد إلى مرصد الأفكار</a></section>}
-  </main><ReaderQuestion content={content}/><Newsletter content={content}/><div className="wrap publication-contact"><ContactLinks content={content} /></div><footer className="footer wrap"><a href="/" className="wordmark">كميل<span>.</span></a><p>كميل ال نهاب · مساحة للفكر والعلم والحوار</p><a className="editor-link" href="/about">تعرّف على صاحب المساحة ↗</a></footer></>
+  </main><ReaderQuestion content={content}/><Newsletter content={content}/><div className="wrap publication-contact"><ContactLinks content={content} /></div><SiteFooter/></>
 }
