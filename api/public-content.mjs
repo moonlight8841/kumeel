@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises'
-import { initialContent, validContent, adoptApprovedWritings } from '../dist-ssr/entry-server.js'
+import { initialContent, validContent, adoptApprovedWritings,resolvePublishedTranslations } from '../dist-ssr/entry-server.js'
 const config = JSON.parse(await readFile(new URL('../src/supabase-config.json', import.meta.url), 'utf8'))
 
 export function siteOrigin(env = process.env) {
@@ -15,6 +15,6 @@ export async function publicContent() {
     if (!response.ok) throw new Error('Public content unavailable')
     const rows = await response.json()
     if (!validContent(rows[0]?.content)) throw new Error('Invalid public content')
-    return { content: adoptApprovedWritings(rows[0].content), fresh: true }
+    return { content: await resolvePublishedTranslations(adoptApprovedWritings(rows[0].content)), fresh: true }
   } catch { console.error('Public content unavailable; serving bundled content'); return { content: initialContent, fresh: false } }
 }

@@ -26,7 +26,7 @@ export function PublicationPage({ content, info }: { content: Content; info: Pag
   async function copyLink() { try { await navigator.clipboard.writeText(location.href); setMessage('نُسخ رابط الصفحة.') } catch { setMessage('تعذّر النسخ. يمكنك نسخ الرابط من شريط المتصفح.') } }
   const isArticle = Boolean(info.idea || info.writing || info.media)
   const text = info.idea?.text ?? info.writing?.text
-  return <><a className="skip" href="#publication">انتقل إلى المحتوى</a><SiteHeader current={info.path}/><main id="publication">
+  return <><a className="skip" href="#publication">انتقل إلى المحتوى</a><SiteHeader current={info.path} content={content}/><main id="publication">
     {info.kind==='teachers'&&<Teachers/>}
     {info.kind==='community'&&<CommunityPage/>}
     {info.kind==='member'&&<MemberSpace/>}

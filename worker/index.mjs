@@ -1,5 +1,5 @@
 import template from '../dist/template.html'
-import {render,initialContent,validContent,readerContent,contentForPage,pageInfo,renderHead,replaceHead,publicPaths} from '../dist-ssr/entry-server.js'
+import {render,initialContent,validContent,readerContent,contentForPage,pageInfo,renderHead,replaceHead,publicPaths,documentLanguage,resolvePublishedTranslations} from '../dist-ssr/entry-server.js'
 import config from '../src/supabase-config.json' with {type:'json'}
 import deploymentConfig from '../vercel.json' with {type:'json'}
 import {createHandler as createChat,buildCorpus} from '../api/chat.mjs'
@@ -14,7 +14,7 @@ async function loadContent(){
   if(!response.ok)throw new Error('unavailable')
   const rows=await response.json()
   if(!validContent(rows[0]?.content))throw new Error('invalid')
-  return {content:rows[0].content,fresh:true}
+  return {content:await resolvePublishedTranslations(rows[0].content),fresh:true}
  }catch{
   console.warn(JSON.stringify({event:'published_content_unavailable'}))
   return {content:initialContent,fresh:false}
@@ -65,7 +65,7 @@ export async function handleRequest(request,env){
  const info=pageInfo(edition,pathname)
  const scoped=contentForPage(edition,pathname)
  const markup=`<div id="root">${render(scoped,pathname)}</div><script type="application/json" id="kumeel-content">${safeJson(scoped)}</script>`
- const html=replaceHead(template,renderHead(edition,info,origin)).replace('<div id="root"></div>',()=>markup)
+ const html=documentLanguage(replaceHead(template,renderHead(edition,info,origin)).replace('<div id="root"></div>',()=>markup),pathname)
  const headers={'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}
  if(info.noindex)headers['X-Robots-Tag']='noindex, follow'
  return new Response(request.method==='HEAD'?null:html,{status:info.kind==='missing'?404:200,headers})

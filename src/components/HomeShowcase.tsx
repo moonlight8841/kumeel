@@ -47,5 +47,5 @@ export function HomeShowcase({content}:{content:Content}){
   flush();rows.push(<div key={section.key} className="home-section">{node}</div>)
  }
  flush()
- return <><a className="skip" href="#main">انتقل إلى المحتوى</a><SiteHeader current="/"/><main id="main" className="home-showcase">{rows}</main><ReaderQuestion content={content}/><Newsletter content={content}/><SiteFooter/></>
+ return <><a className="skip" href="#main">انتقل إلى المحتوى</a><SiteHeader current="/" content={content}/><main id="main" className="home-showcase">{rows}</main><ReaderQuestion content={content}/><Newsletter content={content}/><SiteFooter/></>
 }

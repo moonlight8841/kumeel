@@ -2,7 +2,18 @@ import type {Content} from '../content'
 import {booksFor} from '../books'
 import {sortedWritings} from './writings'
 import {readerContent,adoptApprovedWritings} from './publication'
+import {resolveLocalePath} from './i18n'
+import type {TranslationCatalogue} from './translation-records'
 export function contentForPage(content:Content,path:string,now=Date.now()):Content{
+ const route=resolveLocalePath(path)
+ const scoped=scopeArabicContent(content,route.locale==='en'&&route.path==='/'?'/writings':route.path,now)
+ if(path==='/admin')return scoped
+ const translations:TranslationCatalogue={}
+ if(content.translations?.bio)translations.bio=content.translations.bio
+ for(const w of scoped.writings){const key=`writing:${w.id}` as const;if(content.translations?.[key])translations[key]=content.translations[key]}
+ return {...scoped,...(Object.keys(translations).length?{translations}:{})}
+}
+function scopeArabicContent(content:Content,path:string,now=Date.now()):Content{
  const p=path.replace(/\/+$/,'')||'/'
  if(p==='/admin')return adoptApprovedWritings(content)
  content=readerContent(content)
