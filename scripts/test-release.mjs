@@ -28,6 +28,25 @@ if(process.env.WORKER_TEST_URL){
   if(path==='/sitemap.xml')assert.ok(!body.includes('/ideas/certainty'))
   console.log(`Workers runtime: ${status} ${path}`)
  }
+ const origin=process.env.WORKER_EXPECTED_ORIGIN||'https://kumeelalnahab.com'
+ for(const [path,status] of [['/en/',200],['/en/writings',200],['/en/about',200],['/en/admin',404],['/en/library',404],['/en/en/about',404],['/en/writings/not-a-translation',404]]){
+  const response=await fetch(base+path,{signal:AbortSignal.timeout(20000)})
+  const body=await response.text()
+  assert.equal(response.status,status,path)
+  assert.match(body,/<html[^>]*lang="en"[^>]*dir="ltr"/,path)
+  assert.ok(!body.includes('translationDrafts'),path)
+  if(status===404)assert.equal(response.headers.get('x-robots-tag'),'noindex, follow',path)
+  console.log(`Workers runtime: ${status} ${path}`)
+ }
+ const arabicHome=await (await fetch(base+'/')).text()
+ assert.match(arabicHome,/<html[^>]*lang="ar"[^>]*dir="rtl"/)
+ assert.ok(arabicHome.includes(`hreflang="en" href="${origin}/en/"`))
+ const sitemap=await (await fetch(base+'/sitemap.xml')).text()
+ assert.ok(sitemap.includes(`<loc>${origin}/en/</loc>`)&&sitemap.includes(`<loc>${origin}/en/writings</loc>`))
+ assert.ok(!sitemap.includes('/en/admin'))
+ const translate=await fetch(base+'/api/edit-assist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:'translate',payload:{title:'س',text:'نص',sourceLanguage:'ar',targetLanguage:'en'}})})
+ assert.equal(translate.status,401)
+ console.log('Workers runtime: English routes, alternates, sitemap and owner-only translation verified.')
  const unauth=await fetch(base+'/api/generate-idea',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
  assert.equal(unauth.status,401)
  const oversized=await fetch(base+'/api/chat',{method:'POST',body:'x'.repeat(31000)})
