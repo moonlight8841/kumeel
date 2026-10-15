@@ -46,3 +46,4 @@ books/
 .playwright-cli/
 output/playwright/
 .worktrees/
+supabase/.temp/
