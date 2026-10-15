@@ -39,3 +39,4 @@ books/
 
 # Local credentials kept out of the app tree.
 .secrets/
+.worktrees/
