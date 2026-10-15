@@ -39,4 +39,10 @@ books/
 
 # Local credentials kept out of the app tree.
 .secrets/
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.playwright-cli/
+output/playwright/
 .worktrees/

@@ -6,7 +6,7 @@ export function validNewPassword(password: string): boolean {
 }
 export function safeAuthReturnUrl(origin: string): string {
  const url = new URL(origin)
- if (url.origin !== 'https://kumeel-nine.vercel.app' && !(url.protocol === 'http:' && ['127.0.0.1', 'localhost'].includes(url.hostname) && url.port === '5173')) throw new Error('هذا العنوان غير معتمد لتسجيل الدخول.')
+ if (url.origin !== 'https://kumeel-nine.vercel.app' && url.origin !== 'https://kumeel-platform.kumeel9060.workers.dev' && url.origin !== 'https://kumeelalnahab.com' && url.origin !== 'https://www.kumeelalnahab.com' && !(url.protocol === 'http:' && ['127.0.0.1', 'localhost'].includes(url.hostname) && url.port === '5173')) throw new Error('هذا العنوان غير معتمد لتسجيل الدخول.')
  return `${url.origin}/admin`
 }
 const memory = new Map<string, string>()

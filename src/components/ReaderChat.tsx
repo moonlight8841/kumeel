@@ -4,7 +4,7 @@ type Source={title:string;href:string}
 type Message={role:'user'|'model';text:string;sources?:Source[];followUp?:string}
 const STORAGE='kumeel-reader-chat'
 const MAX=600
-const starters=['ما الفكرة التي تتكرر في كتابات كميل؟','ما الذي يعنيه «أن تمضي على مهل»؟','بماذا أبدأ إن كنت جديدًا على المنصة؟']
+const starters=['ما الفكرة التي تتكرر في المواد المنشورة؟','ما أحدث موضوع منشور يمكنني قراءته؟','بماذا أبدأ إن كنت جديدًا على المنصة؟']
 
 function restore():Message[]{try{const v:unknown=JSON.parse(sessionStorage.getItem(STORAGE)||'[]');return Array.isArray(v)?v.filter((m):m is Message=>m&&typeof m==='object'&&['user','model'].includes(m.role)&&typeof m.text==='string').slice(-16):[]}catch{return []}}
 

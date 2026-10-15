@@ -1,4 +1,5 @@
 import { LoginForm } from './LoginForm'
+import {PasswordResetForm} from './PasswordResetForm'
 import { AdminMfa } from './AdminMfa'
 import authConfig from '../auth-config.json'
 import { useEffect, useState } from 'react'
@@ -8,6 +9,7 @@ import { supabase, isEditor, loadCloudDraft, saveCloudDraft, publishContent, upl
 type Props = { content: Content; revision: number | null; onLoad: (content: Content) => boolean; onPublish: (content: Content, revision: number) => void; onAuthorizationChange: (authorized: boolean) => void; hasUnsavedChanges?:boolean }
 export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizationChange,hasUnsavedChanges=false }: Props) {
   const [userId, setUserId] = useState<string | null>(null)
+  const [recovering,setRecovering]=useState(false)
   const [authorized, setAuthorized] = useState(false)
   const [sessionExpired, setSessionExpired] = useState(false)
   const [member, setMember] = useState(false)
@@ -19,8 +21,10 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
   const [confirmPublish, setConfirmPublish] = useState(false)
   useEffect(() => {
     let current = true
+    if(new URLSearchParams(window.location.search).get('reset')==='1')setRecovering(true)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!current) return
+      if(_event==='PASSWORD_RECOVERY')setRecovering(true)
       if (_event === 'SIGNED_IN' && session) { setSessionExpired(false); try { sessionStorage.setItem(`kumeel-idle-${session.user.id}`, String(Date.now())) } catch { /* Optional idle persistence. */ } }
       setUserId(session?.user.id ?? null); setAuthVersion(v => v + 1); setChecking(Boolean(session)); setConfirmPublish(false)
       setAuthorized(false); setMember(false); setVerifiedEmail(false); onAuthorizationChange(false)
@@ -40,11 +44,11 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
         if(error)throw new Error('تعذّر التحقق من مستوى حماية الجلسة.')
         mfaSatisfied=assurance.currentLevel==='aal2'
       }
-      const secure=!sessionExpired&&ok&&mfaSatisfied
+      const secure=!recovering&&!sessionExpired&&ok&&mfaSatisfied
       if(current){setVerifiedEmail(confirmed);setMember(ok&&!sessionExpired);setAuthorized(secure);onAuthorizationChange(secure);setChecking(false)}
     })().catch(error=>{if(current){setChecking(false);setMessage(error instanceof Error?error.message:'تعذّر التحقق من صلاحيات الحساب.')}})
     return () => { current = false }
-  }, [userId, authVersion, sessionExpired, onAuthorizationChange])
+  }, [userId, authVersion, sessionExpired, recovering, onAuthorizationChange])
   useEffect(()=>{
     if(!userId)return
     const storageKey=`kumeel-idle-${userId}`
@@ -63,10 +67,12 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
     setBusy(true); setMessage('')
     try { await task() } catch (error) { setMessage(error instanceof Error ? error.message : 'تعذّرت العملية. تحقق من الاتصال والصلاحيات ثم أعد المحاولة.') } finally { setBusy(false) }
   }
+  if(recovering&&userId)return <PasswordResetForm onDone={()=>{setRecovering(false);setMessage('حُفظت كلمة المرور الجديدة. سجّل الدخول بها الآن.')}}/>
   return <section className={userId ? "cloud-panel" : "login-panel"}>{userId && <><a className="text-link" href="/member">مساحة العضو ومساهماتي ←</a><h3>النشر السحابي</h3><p>حساب المالك يحفظ مسودات خاصة وينشر نسخة عامة للموقع.</p></>}
     {!userId ? <LoginForm /> : <>
       <p>{checking ? 'جارٍ التحقق من صلاحيات الحساب…' : authorized ? (authConfig.requireAdminMfa ? 'حساب مخوّل بالنشر · مصادقة ثنائية مؤكدة' : 'حساب مخوّل بالنشر · بريد مؤكّد') : !verifiedEmail ? 'أكّد بريدك الإلكتروني قبل المتابعة.' : member ? 'أكمل المصادقة الثنائية لفتح أدوات الإدارة.' : 'حساب قارئ · لا يملك صلاحيات الإدارة.'}</p>
       {authConfig.requireAdminMfa && member && !authorized && !checking && <AdminMfa key={userId} onVerified={()=>{setChecking(true);setAuthVersion(v=>v+1)}}/>}
+      <button disabled={busy||checking} onClick={()=>{setAuthorized(false);onAuthorizationChange(false);setRecovering(true)}}>تغيير كلمة المرور</button>
       <button disabled={busy} onClick={() => void run(async () => { const { error } = await supabase.auth.signOut({scope:'local'}); if (error) throw error })}>تسجيل الخروج</button>
       <button disabled={busy} onClick={() => void run(async () => { const {error}=await supabase.auth.signOut({scope:'global'});if(error)throw error })}>تسجيل الخروج من جميع الأجهزة</button>
       {!authorized && !checking && <button disabled={busy} onClick={() => { setChecking(true); setAuthVersion(v => v + 1) }}>إعادة التحقق من الصلاحية</button>}

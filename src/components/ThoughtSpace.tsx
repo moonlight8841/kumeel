@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { initialContent, type Content, type Idea } from '../content'
+import { type Content, type Idea } from '../content'
 import {Salon} from './Salon'
 import {AssumptionLab} from './AssumptionLab'
 import {MindPlay} from './MindPlay'
@@ -7,7 +7,7 @@ import {MindPlay} from './MindPlay'
 export function ThoughtSpace({ content, section = 'all' }: { content: Content; section?: 'all' | 'observatory' | 'salon' }) {
   const [filter, setFilter] = useState('الكل')
   const [practice,setPractice]=useState<Idea|null>(null)
-  const ideas = content.ideas ?? initialContent.ideas ?? []
+  const ideas = content.ideas ?? []
   const media = content.media.filter(m => m.purpose && m.description?.trim())
   return <>
     {section !== 'salon' && <section id="observatory" className="observatory wrap section">

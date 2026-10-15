@@ -5,7 +5,7 @@ import { captchaConfigured } from '../lib/auth-security'
 type Turnstile = { render: (element: HTMLElement, options: Record<string, unknown>) => string; remove: (id: string) => void }
 declare global { interface Window { turnstile?: Turnstile } }
 function failureMessage(code: string) {
- if(code==='110200')return 'عنوان الصفحة غير مسموح للتحقق. افتح الموقع من kumeel-nine.vercel.app.'
+ if(code==='110200')return 'عنوان الصفحة غير مسموح للتحقق. افتح الموقع من kumeelalnahab.com.'
  if(['110100','110110','400020','400070'].includes(code))return 'تعذّر تشغيل مفتاح التحقق. تواصل مع إدارة الموقع.'
  if(['110600','110620'].includes(code))return 'انتهت مهلة التحقق. أعد المحاولة.'
  if(code==='200100')return 'تحقق من ضبط وقت جهازك تلقائيًا، ثم أعد المحاولة.'

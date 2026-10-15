@@ -1,9 +1,11 @@
-﻿import type {Content} from '../content'
+import type {Content} from '../content'
 import {booksFor} from '../books'
 import {sortedWritings} from './writings'
+import {readerContent,adoptApprovedWritings} from './publication'
 export function contentForPage(content:Content,path:string,now=Date.now()):Content{
  const p=path.replace(/\/+$/,'')||'/'
- if(p==='/admin')return content
+ if(p==='/admin')return adoptApprovedWritings(content)
+ content=readerContent(content)
  const base:Content={bio:content.bio,site:content.site,writings:[],media:[],ideas:[],sessions:[],books:[]}
  if(p==='/')return {...base,writings:sortedWritings(content.writings).slice(0,2),ideas:(content.ideas??[]).slice(0,1),sessions:[...(content.sessions??[])].filter(s=>!s.cancelled&&Date.parse(s.startsAt)+s.durationMinutes*60000>now).sort((a,b)=>Date.parse(a.startsAt)-Date.parse(b.startsAt)).slice(0,1)}
  if(p==='/writings')return {...base,writings:content.writings}

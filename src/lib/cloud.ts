@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import config from '../supabase-config.json'
 import { validContent, type Content } from '../content'
 import { tabAuthStorage } from './auth-security'
+import {adoptApprovedWritings} from './publication'
 
 if (typeof window !== 'undefined') {
   try { localStorage.removeItem('sb-jigypvbqiuakdatkzoul-auth-token') } catch { /* Old persistent sessions are no longer used. */ }
@@ -14,7 +15,7 @@ export async function readPublished() {
   const { data, error } = await supabase.from('kumeel_published').select('content,revision').eq('id', 'main').single()
   if (error) throw error
   if (!validContent(data.content)) throw new Error('المحتوى المنشور غير صالح.')
-  return { content: data.content, revision: data.revision as number }
+  return { content: adoptApprovedWritings(data.content), revision: data.revision as number }
 }
 export async function isEditor(id: string) {
   const { data, error } = await supabase.from('kumeel_editors').select('user_id').eq('user_id', id).maybeSingle()

@@ -1,10 +1,11 @@
 // Shared by owner-only AI endpoints. The leading underscore keeps Vercel from
 // deploying this file as its own function.
-import {readFile} from 'node:fs/promises'
+import supabaseSettings from '../../src/supabase-config.json' with {type:'json'}
+import authSettings from '../../src/auth-config.json' with {type:'json'}
 import {GoogleGenerativeAIAbortError,GoogleGenerativeAIResponseError} from '@google/generative-ai'
 
-export const supabaseConfig=JSON.parse(await readFile(new URL('../../src/supabase-config.json',import.meta.url),'utf8'))
-export const authConfig=JSON.parse(await readFile(new URL('../../src/auth-config.json',import.meta.url),'utf8'))
+export const supabaseConfig=supabaseSettings
+export const authConfig=authSettings
 export const OWNER_EMAIL='komeil9060@gmail.com'
 
 export function jsonResponder(res){

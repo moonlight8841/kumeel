@@ -1,13 +1,14 @@
 import { defaultSite, validSite, type SiteSettings } from './site'
 import type { Discovery, QuizQuestion } from './learning'
 import {defaultBooks,validBooks,type Book} from './books'
+import {approvedWritings} from './approved-writings'
 export const heroImage = '/images/desert.png'
 export type Writing = { id: string; title: string; category: 'تأملات' | 'شعر' | 'فلسفة' | 'علوم' | 'ثقافة'; text: string; format?:'plain'|'markdown'; publishedAt?:string }
 export type Media = { id: string; title: string; type: 'صورة' | 'فيديو'; url: string; purpose?: 'حكمة بصرية' | 'درس مرئي'; description?: string; source?: string; thumbnail?: string; uploadedAt?: string }
 export type Idea = { id: string; title: string; kind: 'حكمة' | 'درس' | 'تجربة فكرية'; text: string; question: string; counterpoint?: string; source?: string; sourceUrl?: string; sample?: boolean }
 export type Session = { id: string; title: string; question: string; startsAt: string; durationMinutes: number; joinUrl: string; notes?: string; cancelled?: boolean; registrationUrl?:string; recordingUrl?:string; summary?:string; summaryPdfUrl?:string; prepare?: string; relatedIds?: string[] }
 export type Content = { bio: string; writings: Writing[]; media: Media[]; ideas?: Idea[]; sessions?: Session[]; site?: SiteSettings; discoveries?: Discovery[]; quiz?: QuizQuestion[]; books?:Book[] }
-export const initialContent: Content = {
+export const legacyContent: Content = {
   books: defaultBooks,
   site: defaultSite,
   bio: 'أنا كميل ال نهاب. أريد لهذه المساحة أن تكون نافذة للفلسفة والعلم والثقافة؛ أشارك فيها الأفكار التي تستحق التأمل، وأفتح أسئلة للتعلّم والحوار. المعرفة هنا دعوة إلى الفهم، وإلى مراجعة ما نظنه بديهيًا.',
@@ -24,6 +25,7 @@ export const initialContent: Content = {
   ],
   sessions: [],
 }
+export const initialContent:Content={...legacyContent,writings:approvedWritings}
 export function httpsUrl(value: unknown): value is string {
   if (typeof value !== 'string' || value.length > 2000 || [...value].some(char => char.charCodeAt(0) <= 32 || char.charCodeAt(0) === 127)) return false
   try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password } catch { return false }

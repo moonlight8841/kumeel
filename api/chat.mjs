@@ -79,8 +79,9 @@ export function answer({messages,corpus,env}){
 async function defaultCorpus(clock){
  if(cache.corpus&&clock()-cache.at<CORPUS_TTL)return cache.corpus
  const {publicContent}=await import('./public-content.mjs')
+ const {readerContent}=await import('../dist-ssr/entry-server.js')
  const {content}=await publicContent()
- cache={at:clock(),corpus:buildCorpus(content)}
+ cache={at:clock(),corpus:buildCorpus(readerContent(content))}
  return cache.corpus
 }
 

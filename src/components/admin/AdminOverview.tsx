@@ -14,7 +14,7 @@ export function AdminOverview({content,revision,draft,go}:Props){
  const warnings=issues.filter(i=>i.level==='warning').length
  return <div className="admin-overview">
   <section className={`admin-card admin-publish-state ${draft?'is-warning':'is-success'}`} aria-labelledby="publish-state">
-   <div><span className="admin-eyebrow">حالة النشر</span><h2 id="publish-state">{draft?'لديك مسودة لم تُنشر بعد.':'الموقع متطابق مع آخر نسخة منشورة.'}</h2><p>{draft?'التغييرات محفوظة على هذا المتصفح فقط. راجعها ثم انشرها ليراها الزوار.':revision===null?'تعذّر التحقق من النسخة المنشورة. أعد تحميل الصفحة بعد استعادة الاتصال.':`النسخة المنشورة الحالية رقم ${revision.toLocaleString('ar-SA')}.`}</p></div>
+   <div><span className="admin-eyebrow">حالة النشر</span><h2 id="publish-state">{draft?'لديك مسودة لم تُنشر بعد.':revision===null?'لم يتم التحقق من النسخة المنشورة.':'الموقع متطابق مع آخر نسخة منشورة.'}</h2><p>{draft?'التغييرات محفوظة على هذا المتصفح فقط. راجعها ثم انشرها ليراها الزوار.':revision===null?'أعد تحميل الصفحة بعد استعادة الاتصال.':`النسخة المنشورة الحالية رقم ${revision.toLocaleString('ar-SA')}.`}</p></div>
    <button className={`admin-btn${draft?' is-primary':''}`} onClick={()=>go('publish')}>{draft?'مراجعة ونشر ←':'إدارة النشر ←'}</button>
   </section>
 
