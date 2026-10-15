@@ -1,5 +1,5 @@
 import {useState} from 'react'
-import {validContent,type Content} from '../../content'
+import {validOwnerDraft as validContent,type OwnerDraft as Content} from '../../lib/translations'
 import {backupFileName} from '../../lib/admin'
 
 const maxBytes=4_000_000

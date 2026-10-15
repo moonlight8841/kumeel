@@ -1,11 +1,12 @@
 import {useState,type ReactNode} from 'react'
-import type {Content} from '../../content'
+import type {OwnerDraft as Content} from '../../lib/translations'
 import type {QuizQuestion} from '../../learning'
 import {ASSIST_MAX_TEXT,describableImage,paragraphDiff,requestAssist} from '../../lib/ai-assist'
+import {AdminTranslations} from './AdminTranslations'
 
 type Props={content:Content;save:(next:Content)=>boolean}
-type Mode='proofread'|'alt'|'summary'|'quiz'
-const modes:[Mode,string,string][]=[['proofread','التدقيق اللغوي','إملاء ونحو وترقيم دون تغيير الأسلوب'],['alt','وصف الصور','نص بديل لقرّاء الشاشة'],['summary','ملخص اللقاءات','من ملاحظاتك إلى أرشيف منظّم'],['quiz','أسئلة الفهم','مسودات أسئلة من مقال']]
+type Mode='proofread'|'alt'|'summary'|'quiz'|'translate'
+const modes:[Mode,string,string][]=[['proofread','التدقيق اللغوي','إملاء ونحو وترقيم دون تغيير الأسلوب'],['alt','وصف الصور','نص بديل لقرّاء الشاشة'],['summary','ملخص اللقاءات','من ملاحظاتك إلى أرشيف منظّم'],['quiz','أسئلة الفهم','مسودات أسئلة من مقال'],['translate','الترجمة الإنجليزية','مسودة خاصة تراجعها وتعتمدها قبل النشر']]
 const n=(v:number)=>v.toLocaleString('ar-SA')
 
 // One request at a time per panel, with a uniform error surface.
@@ -111,7 +112,7 @@ function QuizDrafts({content,save}:Props){
 
 export function AdminAssist({content,save}:Props){
  const [mode,setMode]=useState<Mode>('proofread')
- const panels:Record<Mode,ReactNode>={proofread:<Proofread content={content} save={save}/>,alt:<AltText content={content} save={save}/>,summary:<SessionSummary content={content} save={save}/>,quiz:<QuizDrafts content={content} save={save}/>}
+ const panels:Record<Mode,ReactNode>={proofread:<Proofread content={content} save={save}/>,alt:<AltText content={content} save={save}/>,summary:<SessionSummary content={content} save={save}/>,quiz:<QuizDrafts content={content} save={save}/>,translate:<AdminTranslations content={content} save={save}/>}
  return <div className="admin-assist">
   <p className="assist-disclosure"><strong>اقتراحات آلية من Gemini.</strong> لا يُحفظ شيء قبل أن تراجعه وتعتمده. النص أو الصورة المختارة تُرسل إلى Google لمعالجة الطلب، فلا ترسل ما لا تريد مشاركته.</p>
   <div className="assist-modes" role="tablist" aria-label="مهام المساعد">{modes.map(([key,label,hint])=><button key={key} role="tab" aria-selected={mode===key} onClick={()=>setMode(key)}><strong>{label}</strong><small>{hint}</small></button>)}</div>
