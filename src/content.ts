@@ -2,12 +2,13 @@ import { defaultSite, validSite, type SiteSettings } from './site'
 import type { Discovery, QuizQuestion } from './learning'
 import {defaultBooks,validBooks,type Book} from './books'
 import {approvedWritings} from './approved-writings'
+import {validTranslationCatalogue,type TranslationCatalogue} from './lib/translation-records'
 export const heroImage = '/images/desert.png'
 export type Writing = { id: string; title: string; category: 'تأملات' | 'شعر' | 'فلسفة' | 'علوم' | 'ثقافة'; text: string; format?:'plain'|'markdown'; publishedAt?:string }
 export type Media = { id: string; title: string; type: 'صورة' | 'فيديو'; url: string; purpose?: 'حكمة بصرية' | 'درس مرئي'; description?: string; source?: string; thumbnail?: string; uploadedAt?: string }
 export type Idea = { id: string; title: string; kind: 'حكمة' | 'درس' | 'تجربة فكرية'; text: string; question: string; counterpoint?: string; source?: string; sourceUrl?: string; sample?: boolean }
 export type Session = { id: string; title: string; question: string; startsAt: string; durationMinutes: number; joinUrl: string; notes?: string; cancelled?: boolean; registrationUrl?:string; recordingUrl?:string; summary?:string; summaryPdfUrl?:string; prepare?: string; relatedIds?: string[] }
-export type Content = { bio: string; writings: Writing[]; media: Media[]; ideas?: Idea[]; sessions?: Session[]; site?: SiteSettings; discoveries?: Discovery[]; quiz?: QuizQuestion[]; books?:Book[] }
+export type Content = { bio: string; writings: Writing[]; media: Media[]; ideas?: Idea[]; sessions?: Session[]; site?: SiteSettings; discoveries?: Discovery[]; quiz?: QuizQuestion[]; books?:Book[]; translations?:TranslationCatalogue }
 export const legacyContent: Content = {
   books: defaultBooks,
   site: defaultSite,
@@ -49,7 +50,9 @@ export function meetingUrl(value: unknown): value is string {
 }
 export function validContent(value: unknown): value is Content {
   if (!value || typeof value !== 'object') return false
+  if(Object.prototype.hasOwnProperty.call(value,'translationDrafts'))return false
   const c = value as Content
+  if(c.translations!==undefined&&!validTranslationCatalogue(c.translations))return false
   const text = (v: unknown, max: number) => typeof v === 'string' && v.length <= max
   const ids = (items: { id: string }[]) => new Set(items.map(i => i.id)).size === items.length
   const optional = (v: unknown, max: number) => v === undefined || text(v, max)

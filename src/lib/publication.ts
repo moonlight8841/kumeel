@@ -21,5 +21,7 @@ export function adoptApprovedWritings(content:Content):Content{
 // Keep editorial templates in the owner's notebook, outside the reader's edition.
 export function readerContent(content:Content):Content{
  content=adoptApprovedWritings(content)
- return {...content,writings:content.writings.filter(w=>!isStarterWriting(w)),ideas:(content.ideas??[]).filter(i=>!i.sample)}
+ const clean={...content} as Content&{translationDrafts?:unknown}
+ delete clean.translationDrafts
+ return {...clean,writings:content.writings.filter(w=>!isStarterWriting(w)),ideas:(content.ideas??[]).filter(i=>!i.sample)}
 }
