@@ -36,6 +36,26 @@ await test('Edit assist: proofreading that rewrites the text is refused',async()
  assert.equal((await run({generate:async()=>({corrected:'نص مختلف تمامًا',notes:[]})})).statusCode,502)
  assert.equal((await run({generate:async()=>({corrected:text+text,notes:[]})})).statusCode,502)
 })
+await test('Translation is owner-only, bounded, structured and never accepts publish metadata',async()=>{
+ const payload={title:'سؤال',text:'لماذا نبحث؟',format:'plain',sourceLanguage:'ar',targetLanguage:'en'}
+ const body={task:'translate',payload}
+ const result=await run({body,generate:async()=>({title:'A question',text:'Why do we search?'})})
+ assert.equal(result.statusCode,200);assert.deepEqual(result.data.data,{title:'A question',text:'Why do we search?'})
+ const anonymous=await run({body,headers:{}});assert.equal(anonymous.statusCode,401);assert.equal(anonymous.calls,0)
+ for(const bad of [{...payload,targetLanguage:'fr'},{...payload,text:'a'.repeat(12001)},{...payload,publish:true},{...payload,format:'html'}]){
+  const r=await run({body:{task:'translate',payload:bad}});assert.equal(r.statusCode,400);assert.equal(r.calls,0)
+ }
+ assert.equal((await run({body:{task:'translate',payload:{...payload,text:'a'.repeat(12000)}},generate:async()=>({title:'A question',text:'Translated.'})})).statusCode,200)
+ assert.equal((await run({body,key:''})).statusCode,503)
+ for(const error of [Object.assign(new Error('busy'),{status:429}),Object.assign(new Error('timeout'),{name:'TimeoutError'}),new SyntaxError('Unexpected end of JSON input')]){
+  const r=await run({body,generate:async()=>{throw error}});assert.ok(r.statusCode>=500||r.statusCode===429,String(r.statusCode));assert.equal(r.data.success,false);assert.equal(r.data.data,undefined)
+ }
+ assert.equal((await run({body:{task:'translate',payload:{...payload,title:''}},generate:async()=>({title:'',text:'Biography.'})})).statusCode,200)
+ assert.equal((await run({body,generate:async()=>({title:'',text:'Untitled.'})})).statusCode,502)
+ const markdown=await run({body:{task:'translate',payload:{...payload,format:'markdown',text:'## سؤال\n\n- أولًا'}},generate:async()=>({title:'Q',text:'## Question\n\n- First'})})
+ assert.equal(markdown.data.data.text,'## Question\n\n- First')
+ for(const invalid of [{title:'OK',text:''},{title:'OK',text:'x'.repeat(60001)},{title:'OK',text:'Text',approved:true},{title:'OK',text:'<script>alert(1)</script>'}])assert.equal((await run({body,generate:async()=>invalid})).statusCode,502)
+})
 
 await test('Edit assist: images are read only from the platform bucket',async()=>{
  assert.equal(mediaUrl(bucket+'a/photo.png'),true)
