@@ -90,3 +90,19 @@ await test('Edit assist: cooldown and provider errors stay safe',async()=>{
  assert.equal(leak.statusCode,502);assert.ok(!JSON.stringify(leak.data).includes('secret'))
  assert.equal((await run({generate:async()=>{throw Object.assign(new Error('x'),{status:429})}})).statusCode,429)
 })
+
+await test('Edit assist: objection stays bounded and its quote is grounded in the writing',async()=>{
+ const writing='الحرية أن تختار ما تريد. ومن لا يختار لا يعيش حقًا.'
+ const payload={title:'الحرية',text:writing,style:'logic',turns:[]}
+ const ok=await run({body:{task:'objection',payload},generate:async()=>({objection:'تفترض أن الاختيار وحده يصنع الحياة، لكنك لم تبيّن لماذا.',quote:'ومن لا يختار لا يعيش حقًا.'})})
+ assert.equal(ok.statusCode,200);assert.equal(ok.data.data.quote,'ومن لا يختار لا يعيش حقًا.')
+ const invented=await run({body:{task:'objection',payload},generate:async()=>({objection:'اعتراض طويل بما يكفي ليكون صالحًا هنا.',quote:'جملة غير موجودة'})})
+ assert.equal(invented.statusCode,200);assert.equal(invented.data.data.quote,'')
+ assert.equal((await run({body:{task:'objection',payload},generate:async()=>({objection:'<b>اعتراض</b> يحتوي وسومًا غير مقبولة هنا',quote:''})})).statusCode,502)
+ assert.equal((await run({body:{task:'objection',payload},generate:async()=>({objection:'قصير',quote:''})})).statusCode,502)
+ const turn={role:'critic',text:'اعتراض سابق'}
+ assert.equal((await run({body:{task:'objection',payload:{...payload,turns:Array(6).fill(turn)}},generate:async()=>({objection:'اعتراض جديد على جوابك الأخير بوضوح.',quote:''})})).statusCode,200)
+ for(const bad of [{...payload,style:'oracle'},{...payload,turns:Array(7).fill(turn)},{...payload,turns:[{role:'judge',text:'x'}]},{...payload,turns:[{...turn,extra:1}]},{...payload,turns:[{...turn,text:'ا'.repeat(4001)}]},{...payload,extra:1},{...payload,text:'قصير'}]){
+  const r=await run({body:{task:'objection',payload:bad}});assert.equal(r.statusCode,400);assert.equal(r.calls,0)
+ }
+})

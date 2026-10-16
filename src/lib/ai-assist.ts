@@ -1,5 +1,6 @@
 import {supabase} from './cloud'
 import type {QuizQuestion} from '../learning'
+import type {SparringStyle} from './exchange'
 
 export type AssistRequests={
  proofread:{payload:{text:string};result:{corrected:string;notes:string[]}}
@@ -7,6 +8,7 @@ export type AssistRequests={
  sessionSummary:{payload:{notes:string;title?:string;question?:string};result:{summary:string}}
  quiz:{payload:{text:string;title?:string;count?:number};result:{questions:QuizQuestion[]}}
  translate:{payload:{title:string;text:string;format?:'plain'|'markdown';sourceLanguage:'ar';targetLanguage:'en'};result:{title:string;text:string}}
+ objection:{payload:{title:string;text:string;style:SparringStyle;turns:{role:'critic'|'owner';text:string}[]};result:{objection:string;quote:string}}
 }
 export type AssistTask=keyof AssistRequests
 
