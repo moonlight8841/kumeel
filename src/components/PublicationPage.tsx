@@ -14,6 +14,7 @@ import type { PageInfo } from '../lib/pages'
 import { ThoughtSpace } from './ThoughtSpace'
 import { BookLibrary } from './BookLibrary'
 import {TextDocument} from './TextDocument'
+import {WritingExchange} from './WritingExchange'
 
 function Video({ url, title }: { url: string; title: string }) {
   const [error, setError] = useState(false)
@@ -40,9 +41,10 @@ export function PublicationPage({ content, info }: { content: Content; info: Pag
       {info.media && <div className="publication-media">{info.media.type === 'صورة' ? <img src={info.media.url} alt={info.media.description || info.media.title} /> : <Video url={info.media.url} title={info.media.title} />}<p className="publication-lead">{info.media.description}</p>{info.media.source && <p className="publication-source">المصدر / صاحب الحكمة: {info.media.source}</p>}</div>}
       {text && <div className="publication-text"><TextDocument text={text} format={info.writing?.format}/></div>}
       {info.idea?.counterpoint && <aside className="publication-counterpoint"><h2>اعتراض يستحق الإنصاف</h2><p>{info.idea.counterpoint}</p></aside>}
+      {info.writing?.exchange && <WritingExchange rounds={info.writing.exchange}/>}
       {info.idea?.question && <aside className="publication-question"><h2>السؤال لك الآن</h2><p>{info.idea.question}</p><a className="text-link" href={`/observatory?idea=${encodeURIComponent(info.idea.id)}#assumption-lab`}>اختبر موقفك في مختبر الافتراضات ←</a></aside>}
       {(info.idea?.source || info.idea?.sourceUrl) && <p className="publication-source">المصدر: {info.idea.source}{info.idea.sourceUrl && <> · <a href={info.idea.sourceUrl} target="_blank" rel="noopener noreferrer">اقرأ المصدر ↗</a></>}</p>}
-      <div className="publication-actions"><button className="text-link" onClick={copyLink}>انسخ رابط الفكرة</button><a className="text-link" href="/salon">أكمل السؤال في مجلس الحوار ←</a></div><p role="status" className="sample-note">{message}</p>
+      <div className="publication-actions"><button className="text-link" onClick={copyLink}>انسخ رابط الفكرة</button>{info.writing?<a className="text-link" href="#responses">اكتب رأيك ↓</a>:<a className="text-link" href="/salon">أكمل السؤال في مجلس الحوار ←</a>}</div><p role="status" className="sample-note">{message}</p>
     </article>}
     {info.kind === 'missing' && <section className="wrap section missing-page"><h1>لم نجد هذه الصفحة.</h1><p>ربما تغيّر الرابط أو لم تُنشر المادة بعد.</p><a className="primary" href="/observatory">عد إلى مرصد الأفكار</a></section>}
   </main><ReaderQuestion content={content}/><Newsletter content={content}/><div className="wrap publication-contact"><ContactLinks content={content} /></div><SiteFooter/></>
