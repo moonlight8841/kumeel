@@ -17,7 +17,7 @@ export function SparringNudge({content,go}:{content:SiteContent;go:(tab:AdminTab
  return <section className="admin-card admin-sparring-nudge"><span className="admin-eyebrow">المحاور</span><p>{n(count)} كتابات لم تُختبر بعد.</p><button className="admin-btn is-primary" onClick={()=>go('sparring')}>ابدأ مبارزة</button></section>
 }
 
-export function AdminSparring({content,save}:{content:Content;save:(next:Content)=>boolean}){
+export function AdminSparring({content,save,onDirtyChange}:{content:Content;save:(next:Content)=>boolean;onDirtyChange?:(dirty:boolean)=>void}){
  const writings=useMemo(()=>content.writings.filter(w=>!isStarterWriting(w)),[content.writings])
  const [writingId,setWritingId]=useState(writings[0]?.id??'')
  const [style,setStyle]=useState<SparringStyle>('logic')
@@ -26,10 +26,12 @@ export function AdminSparring({content,save}:{content:Content;save:(next:Content
  const [reply,setReply]=useState('')
  const [edits,setEdits]=useState<Record<number,string>>({})
  const [busy,setBusy]=useState(false)
+ const [loading,setLoading]=useState(true)
  const [message,setMessage]=useState({text:'',error:false})
+ useEffect(()=>{onDirtyChange?.(busy||Boolean(reply.trim()));return()=>onDirtyChange?.(false)},[busy,reply,onDirtyChange])
  const mounted=useRef(true)
  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false}},[])
- useEffect(()=>{listSessions().then(s=>{if(mounted.current)setSessions(s)}).catch(e=>{if(mounted.current)setMessage({text:sparringError(e),error:true})})},[])
+ useEffect(()=>{listSessions().then(s=>{if(mounted.current)setSessions(s)}).catch(e=>{if(mounted.current)setMessage({text:sparringError(e),error:true})}) .finally(()=>{if(mounted.current)setLoading(false)})},[])
  const say=(text:string,error=false)=>{if(mounted.current)setMessage({text,error})}
  const writing=writings.find(w=>w.id===writingId)
  const published=writing?.exchange?.length??0
@@ -49,10 +51,11 @@ export function AdminSparring({content,save}:{content:Content;save:(next:Content
   catch(e){say(sparringError(e),true)}
   finally{if(mounted.current)setBusy(false)}
  }
- async function answer(){
+ async function answer(andClose=false){
   if(!session||busy||!reply.trim())return
+  if(session.turns.length>=MAX_TURNS){say('بلغ الحوار الحد الأقصى للأدوار.',true);return}
   setBusy(true);say('')
-  try{await persist({...session,turns:[...session.turns,{role:'owner',text:reply.trim()}]});if(mounted.current)setReply('')}
+  try{await persist({...session,turns:[...session.turns,{role:'owner',text:reply.trim()}]});if(mounted.current){setReply('');if(andClose)close()}}
   catch(e){say(sparringError(e),true)}
   finally{if(mounted.current)setBusy(false)}
  }
@@ -79,14 +82,16 @@ export function AdminSparring({content,save}:{content:Content;save:(next:Content
  const last=session?session.turns[session.turns.length-1]:undefined
  return <section className="admin-card admin-sparring">
   <header><h2>المحاور</h2><p className="admin-muted">اختبر كتابتك أمام اعتراض قوي. الحوار خاص بك؛ لا يظهر للزوار إلا ما تنشره من جولات.</p></header>
-  <label className="admin-field"><span className="admin-field-label">الكتابة</span><select disabled={busy} value={writingId} onChange={e=>{setWritingId(e.target.value);close()}}>{writings.map(w=><option key={w.id} value={w.id}>{w.title||w.id}</option>)}</select></label>
-  <p className="admin-muted">جولات منشورة: {n(published)} من {n(MAX_ROUNDS)}</p>
+  <label className="admin-field"><span className="admin-field-label">الكتابة</span><select disabled={busy} value={writingId} onChange={e=>{if(reply.trim()&&!window.confirm('سيُفقد الجواب غير المحفوظ. هل تريد تغيير الكتابة؟'))return;setWritingId(e.target.value);close()}}>{writings.map(w=><option key={w.id} value={w.id}>{w.title||w.id}</option>)}</select></label>
+  <p className="admin-muted">جولات في المسودة: {n(published)} من {n(MAX_ROUNDS)}</p>
+  {loading&&<p role="status">جارٍ تحميل الجلسات الخاصة…</p>}
   {!session&&<>
    <fieldset className="admin-field"><legend className="admin-field-label">اختر المحاور</legend>{sparringStyles.map(s=><label key={s} className="admin-check"><input type="radio" name="sparring-style" checked={style===s} onChange={()=>setStyle(s)}/> <b>{styleLabel[s]}</b> — {styleHint[s]}</label>)}</fieldset>
-   <button className="admin-btn is-primary" disabled={busy||!writing} onClick={()=>void challenge(null)}>{busy?'المحاور يفكّر…':'ابدأ المبارزة'}</button>
+   <button className="admin-btn is-primary" disabled={busy||loading||!writing} onClick={()=>void challenge(null)}>{busy?'المحاور يفكّر…':'ابدأ المبارزة'}</button>
    {own.length>0&&<><h3>جلسات سابقة</h3><ul className="admin-list">{own.map(s=><li key={s.id}><button className="admin-btn is-quiet" disabled={busy} onClick={()=>{setSession(s);setEdits({})}}>{styleLabel[s.style]} · {n(s.turns.length)} أدوار · {when(s.updated_at)}</button><button className="admin-btn is-danger" disabled={busy} onClick={()=>void remove(s)}>حذف</button></li>)}</ul></>}
   </>}
   {session&&<>
+   <p className="admin-muted">{styleLabel[session.style]} · {n(session.turns.filter(t=>t.role==='owner').length)} جولات مكتملة · {n(session.turns.length)} من {n(MAX_TURNS)} دورًا محفوظًا</p>
    <ol className="sparring-turns">{session.turns.map((t,i)=><li key={i} className={`is-${t.role}`}>
     <strong>{t.role==='critic'?`المحاور ${styleLabel[session.style]}`:'جوابك'}</strong>
     {t.quote&&<blockquote>«{t.quote}»</blockquote>}
@@ -95,8 +100,8 @@ export function AdminSparring({content,save}:{content:Content;save:(next:Content
    </li>)}</ol>
    {last?.role==='critic'
     ?<form onSubmit={e=>{e.preventDefault();void answer()}}><label className="admin-field"><span className="admin-field-label">جوابك</span><textarea required maxLength={4000} value={reply} disabled={busy} onChange={e=>setReply(e.target.value)}/></label><small className="admin-muted">{n(reply.length)} / {n(4000)}</small> <button className="admin-btn is-primary" disabled={busy||!reply.trim()}>احفظ جوابك</button></form>
-    :<button className="admin-btn is-primary" disabled={busy} onClick={()=>void challenge(session)}>{busy?'المحاور يفكّر…':'اعترض مجددًا'}</button>}
-   <div className="admin-sparring-actions"><button className="admin-btn" disabled={busy} onClick={close}>احفظ وأغلق</button><button className="admin-btn" disabled={busy} onClick={()=>{close();setStyle(s=>sparringStyles[(sparringStyles.indexOf(s)+1)%sparringStyles.length])}}>محاور آخر</button></div>
+    :<button className="admin-btn is-primary" disabled={busy||session.turns.length>=MAX_TURNS} onClick={()=>void challenge(session)}>{busy?'المحاور يفكّر…':session.turns.length>=MAX_TURNS?'اكتملت الجلسة — ابدأ جلسة جديدة':'اعترض مجددًا'}</button>}
+   <div className="admin-sparring-actions"><button className="admin-btn" disabled={busy} onClick={()=>{if(reply.trim())void answer(true);else close()}}>{reply.trim()?'احفظ الجواب وأغلق':'أغلق الجلسة المحفوظة'}</button><button className="admin-btn" disabled={busy} onClick={()=>{if(reply.trim()&&!window.confirm('سيُفقد الجواب غير المحفوظ. هل تريد بدء جلسة أخرى؟'))return;const currentStyle=session.style;close();setStyle(sparringStyles[(sparringStyles.indexOf(currentStyle)+1)%sparringStyles.length])}}>محاور آخر</button></div>
   </>}
   <p role="status" className={message.error?'admin-error':'admin-muted'}>{message.text}</p>
  </section>

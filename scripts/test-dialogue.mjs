@@ -63,6 +63,8 @@ try{
   assert.deepEqual(next.writings[0].exchange,[{style:'history',objection:round.objection,reply:'جواب',publishedAt:'2026-10-17T10:00:00.000Z'}])
   assert.equal(content.writings[0].exchange,undefined)
   assert.equal(validContent(next),true)
+  assert.throws(()=>publishRound(next,'dialogue',{style:'history',objection:round.objection,reply:'جواب'}),/أُضيفت/)
+  assert.throws(()=>publishRound(content,'dialogue',{style:'logic',objection:'قصير',reply:'جواب'}),/صالحة/)
   assert.throws(()=>publishRound(withRounds(Array(5).fill(round)),'dialogue',{style:'logic',objection:round.objection,reply:'x'}),/٥/)
   assert.throws(()=>publishRound(content,'missing',{style:'logic',objection:round.objection,reply:'x'}))
   assert.deepEqual(untestedWritings(content,[]).map(w=>w.id),['dialogue'])

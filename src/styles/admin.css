@@ -384,3 +384,5 @@
 .sparring-turns blockquote{margin:8px 0;color:var(--color-text-muted);font-size:.9em}
 .admin-sparring-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
 .admin-sparring .admin-list li{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.admin-sparring{max-width:900px}.admin-sparring header{padding-bottom:18px;border-bottom:1px solid var(--color-line);margin-bottom:20px}.admin-sparring fieldset .admin-check{padding:12px;border:1px solid var(--color-line);border-radius:6px;align-items:flex-start}.admin-sparring fieldset .admin-check:has(input:checked){border-color:var(--accent);background:var(--color-sunken)}.sparring-turns li{border-radius:8px;overflow-wrap:anywhere}.sparring-turns p{font-family:var(--font-reading);font-size:21px;line-height:2}.admin-sparring textarea{min-height:150px;line-height:1.9}.admin-sparring details{margin-top:16px;padding-top:12px;border-top:1px solid var(--color-line)}.admin-sparring summary{cursor:pointer;min-height:44px}.admin-sparring-actions{padding-top:16px;border-top:1px solid var(--color-line)}

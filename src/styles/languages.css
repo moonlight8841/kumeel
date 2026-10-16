@@ -14,3 +14,6 @@
 .english-footer{padding-block:2rem;border-block-start:1px solid var(--line)}.english-footer nav{display:flex;flex-wrap:wrap;gap:1rem;margin-block:1rem}
 .translation-editors{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}.translation-editors textarea{width:100%;min-height:18rem}
 @media(max-width:640px){.english-header{gap:1rem}.english-header>nav:not(.language-switch){order:3;flex-basis:100%}.translation-editors{grid-template-columns:1fr}.header-tools{flex-wrap:wrap}}
+/* Language links stay inside header tools when the main navigation collapses. */
+.header .header-tools nav.language-switch{position:static;inset:auto;width:auto;padding:0;border:0;background:transparent;box-shadow:none;flex-direction:row;justify-content:flex-start;gap:.4rem;font-size:.85rem}
+.header .header-tools nav.language-switch a{padding:0}.header .header-tools nav.language-switch a::after{display:none}

@@ -2,7 +2,7 @@ import {supabase} from './cloud'
 import {ASSIST_MAX_BODY,requestAssist} from './ai-assist'
 import {communityError} from './community'
 import {isStarterWriting} from './publication'
-import {MAX_ROUNDS,type ExchangeRound,type SparringStyle} from './exchange'
+import {MAX_ROUNDS,validExchange,type ExchangeRound,type SparringStyle} from './exchange'
 import type {Content,Writing} from '../content'
 
 export type Turn={role:'critic'|'owner';text:string;quote?:string}
@@ -16,8 +16,13 @@ export function sparringError(error:unknown){
  return communityError(error)
 }
 export async function listSessions(){
- const {data,error}=await supabase.from('kumeel_sparring').select(columns).order('updated_at',{ascending:false}).limit(200)
- if(error)throw error;return data as SparringSession[]
+ const sessions:SparringSession[]=[]
+ for(let from=0;;from+=200){
+  const {data,error}=await supabase.from('kumeel_sparring').select(columns).order('updated_at',{ascending:false}).order('id').range(from,from+199)
+  if(error)throw error
+  sessions.push(...data as SparringSession[])
+  if(data.length<200)return sessions
+ }
 }
 export async function saveSession(s:{id?:string;revision?:number;writing_id:string;style:SparringStyle;turns:Turn[]}){
  const {data,error}=await supabase.rpc('kumeel_save_sparring',{p_id:s.id??null,p_revision:s.revision??null,p_writing:s.writing_id,p_style:s.style,p_turns:s.turns})
@@ -45,6 +50,8 @@ export function publishRound<T extends Content>(content:T,writingId:string,round
  const rounds=writing.exchange??[]
  if(rounds.length>=MAX_ROUNDS)throw new Error(`بلغت هذه الكتابة ${MAX_ROUNDS.toLocaleString('ar-SA')} جولات منشورة.`)
  const next:ExchangeRound={style:round.style,objection:round.objection,reply:round.reply.trim(),publishedAt:now.toISOString()}
+ if(!validExchange([next]))throw new Error('الجولة غير صالحة؛ راجع طول الاعتراض والجواب.')
+ if(rounds.some(r=>r.style===next.style&&r.objection===next.objection&&r.reply.trim()===next.reply))throw new Error('أُضيفت هذه الجولة إلى المسودة بالفعل.')
  return {...content,writings:content.writings.map(w=>w.id===writingId?{...w,exchange:[...rounds,next]}:w)}
 }
 export function untestedWritings(content:Content,sessions:Pick<SparringSession,'writing_id'>[]){
