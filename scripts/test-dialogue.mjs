@@ -3,11 +3,12 @@ import {test} from 'node:test'
 import {createServer} from 'vite'
 const server=await createServer({server:{middlewareMode:true},appType:'custom'})
 try{
- const {initialContent,validContent}=await server.ssrLoadModule('/src/content.ts')
+ const {initialContent,legacyContent,validContent}=await server.ssrLoadModule('/src/content.ts')
  const {validExchange}=await server.ssrLoadModule('/src/lib/exchange.ts')
  const {sourceDigest}=await server.ssrLoadModule('/src/lib/source-hash.mjs')
  const {render}=await server.ssrLoadModule('/src/entry-server.tsx')
  const {safeNext}=await server.ssrLoadModule('/src/lib/navigation.ts')
+ const {objectionPayload,publishRound,untestedWritings}=await server.ssrLoadModule('/src/lib/sparring.ts')
  const round={style:'logic',objection:'تفترض المقدمة الأولى دون أن تبيّن سببها.',reply:'لأن الثانية تلزم عنها.',publishedAt:'2026-10-17T10:00:00.000Z'}
  const writing={id:'dialogue',title:'الحرية',category:'فلسفة',text:'الحرية أن تختار ما تريد. ومن لا يختار لا يعيش حقًا.'}
  const withRounds=rounds=>({...initialContent,writings:[{...writing,exchange:rounds}]})
@@ -49,5 +50,23 @@ try{
   assert.ok(markup.includes('id="responses"'))
   assert.ok(markup.includes('آراء القراء'))
   assert.ok(!render({...initialContent,ideas:initialContent.ideas.map(i=>({...i,sample:false}))},'/ideas/certainty').includes('id="responses"'))
+ })
+ await test('Sparring helpers trim context to the request limit and publish rounds into the draft only',()=>{
+  const turns=Array.from({length:9},(_,i)=>({role:i%2?'owner':'critic',text:'ا'.repeat(3000)+i,quote:'q'}))
+  const payload=objectionPayload(writing,'logic',turns)
+  assert.ok(payload.turns.length<=6)
+  assert.ok(new TextEncoder().encode(JSON.stringify({task:'objection',payload})).byteLength<=30000)
+  assert.equal(payload.turns.at(-1).text,turns.at(-1).text)
+  assert.ok(payload.turns.every(t=>!('quote' in t)))
+  const content={...initialContent,writings:[writing]}
+  const next=publishRound(content,'dialogue',{style:'history',objection:round.objection,reply:'  جواب  '},new Date('2026-10-17T10:00:00Z'))
+  assert.deepEqual(next.writings[0].exchange,[{style:'history',objection:round.objection,reply:'جواب',publishedAt:'2026-10-17T10:00:00.000Z'}])
+  assert.equal(content.writings[0].exchange,undefined)
+  assert.equal(validContent(next),true)
+  assert.throws(()=>publishRound(withRounds(Array(5).fill(round)),'dialogue',{style:'logic',objection:round.objection,reply:'x'}),/٥/)
+  assert.throws(()=>publishRound(content,'missing',{style:'logic',objection:round.objection,reply:'x'}))
+  assert.deepEqual(untestedWritings(content,[]).map(w=>w.id),['dialogue'])
+  assert.deepEqual(untestedWritings(content,[{writing_id:'dialogue'}]),[])
+  assert.deepEqual(untestedWritings(legacyContent,[]),[]) // starter templates are never offered for sparring
  })
 }finally{await server.close()}
