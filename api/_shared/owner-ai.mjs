@@ -6,7 +6,7 @@ import {GoogleGenerativeAIAbortError,GoogleGenerativeAIResponseError} from '@goo
 
 export const supabaseConfig=supabaseSettings
 export const authConfig=authSettings
-export const OWNER_EMAIL='komeil9060@gmail.com'
+export const OWNER_EMAILS=new Set(['komeil9060@gmail.com','bobmorgann2@gmail.com'])
 
 export function jsonResponder(res){
  res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff')
@@ -20,7 +20,7 @@ export async function verifyOwner({authorization,fetcher=fetch,config=supabaseCo
  const userResponse=await fetcher(`${config.url}/auth/v1/user`,{headers:{apikey:config.publishableKey,Authorization:authorization},signal:AbortSignal.timeout(8000)})
  if(!userResponse.ok)return {status:401,error:'انتهت جلسة الدخول. سجّل الدخول مجددًا.'}
  const user=await userResponse.json()
- if(!user.email_confirmed_at||user.email?.toLowerCase()!==OWNER_EMAIL||typeof user.id!=='string')return {status:403,error:forbidden}
+ if(!user.email_confirmed_at||!OWNER_EMAILS.has(user.email?.toLowerCase())||typeof user.id!=='string')return {status:403,error:forbidden}
  if(auth.requireAdminMfa){const payload=JSON.parse(Buffer.from(authorization.slice(7).split('.')[1],'base64url').toString());if(payload.aal!=='aal2')return {status:403,error:'أكمل التحقق الثنائي.'}}
  const memberResponse=await fetcher(`${config.url}/rest/v1/kumeel_editors?user_id=eq.${encodeURIComponent(user.id)}&select=user_id`,{headers:{apikey:config.publishableKey,Authorization:authorization},signal:AbortSignal.timeout(8000)})
  if(!memberResponse.ok)return {status:503,error:'تعذّر التحقق من صلاحيات الإدارة.'}

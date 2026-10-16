@@ -10,7 +10,7 @@ const quizQuestion={title:'ما الفكرة؟',options:['أ','ب','ج','د'],an
 
 async function run({method='POST',body={task:'proofread',payload:{text}},user=owner,member=true,key='k',generate=async()=>({corrected:text.replace('الاخطاء','الأخطاء'),notes:['همزة القطع']}),imageFetcher=async()=>({mimeType:'image/png',data:'AA=='}),headers={authorization},limits=new Map()}={}){
  let calls=0
- const fetcher=async url=>({ok:true,json:async()=>url.includes('/auth/')?user:member?[{user_id:owner.id}]:[]})
+ const fetcher=async url=>({ok:true,json:async()=>url.includes('/auth/')?user:member?[{user_id:user.id}]:[]})
  const handler=createHandler({fetcher,env:{GEMINI_API_KEY:key},limits,imageFetcher,generate:async(...a)=>{calls++;return generate(...a)}})
  const result={headers:{},statusCode:0}
  await handler({method,body,headers},{setHeader:(k,v)=>result.headers[k]=v,status(c){result.statusCode=c;return this},json(d){result.data=d}})
@@ -23,6 +23,10 @@ await test('Edit assist: only the verified owner reaches the model',async()=>{
  for(const user of [{...owner,email:'visitor@example.com'},{...owner,email_confirmed_at:null}]){const r=await run({user});assert.equal(r.statusCode,403);assert.equal(r.calls,0)}
  assert.equal((await run({member:false})).calls,0)
  assert.equal((await run({key:''})).statusCode,503)
+ const second={...owner,id:'second-owner-id',email:'bobmorgann2@gmail.com'}
+ assert.equal((await run({user:second})).statusCode,200)
+ assert.equal((await run({user:second,member:false})).statusCode,403)
+ assert.equal((await run({user:{...second,email_confirmed_at:null}})).statusCode,403)
 })
 
 await test('Edit assist: rejects unknown tasks, prototype keys and oversized or malformed input',async()=>{
