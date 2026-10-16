@@ -67,7 +67,7 @@
 
 ## البيانات والحماية
 
-ملف `supabase/writing-dialogue.sql`، إضافي، داخل معاملة، قابل لإعادة التنفيذ، يعتمد على `kumeel_is_secure_editor()` و`kumeel_private.community_actor()` و`kumeel_private.community_limit()` من `community.sql`. ونسخة ترحيل مطابقة في `supabase/migrations/`.
+ملف `supabase/writing-dialogue.sql`، إضافي، داخل معاملة، قابل لإعادة التنفيذ، يعتمد على `kumeel_is_secure_editor()` و`kumeel_private.community_actor()` و`kumeel_private.community_limit()` من `community.sql`، ويُنفّذ بعده. لا يُكتب ملف ترحيل يدوي؛ أرقام الترحيل يولّدها الخادم عند التطبيق، كما في `community.sql`.
 
 ### `kumeel_writing_responses` (خاص)
 
@@ -81,15 +81,16 @@ RLS: صاحب الرأي يقرأ صفوفه، والمالك المخوّل ي�
 
 ### الدوال
 
-- `kumeel_send_writing_response(p_writing text, p_name text, p_body text)`: تتحقق من الفاعل ذي البريد المؤكد، ومن وجود الكتابة في `kumeel_published.content->'writings'` وأنها ليست `sample`. تطبّق `community_limit(actor,'comment')` فيشترك الحد اليومي (٢٠) مع ردود المجتمع. تُنشئ صفًا `pending`.
-- `kumeel_review_community`: يُضاف نوع `response`. `published` ينسخ إلى الجدول العام، `rejected` يحذف من العام ويتطلب سببًا، والقرار مقيد برقم النسخة ويسجَّل في `kumeel_review_log`. الأنواع الحالية لا يتغير سلوكها.
+- `kumeel_send_writing_response(p_writing text, p_name text, p_body text)`: تتحقق من الفاعل ذي البريد المؤكد، ومن وجود معرّف الكتابة في `kumeel_published.content->'writings'`. الكتابات التمهيدية لا صفحة لها (404)، فلا يصل القارئ إلى نموذجها؛ ولا يحمل نوع `Writing` حقل `sample`. تطبّق `community_limit(actor,'comment')` فيشترك الحد اليومي (٢٠) مع ردود المجتمع. تُنشئ صفًا `pending`.
+- `kumeel_review_writing_response(p_id uuid, p_revision integer, p_decision text, p_note text)`: دالة مراجعة مستقلة بالقواعد نفسها: `published` ينسخ إلى الجدول العام، `rejected` يحذف من العام ويتطلب سببًا، والقرار مقيد برقم النسخة ويسجَّل في `kumeel_review_log` بنوع `writing_response`. لا يُعاد تعريف `kumeel_review_community`، لأن إعادة تنفيذ `community.sql` كانت ستمحو أي فرع مضاف إليها.
+- قبل الإطلاق يُتحقق أن النسخة المنشورة الحية تحمل معرّفات الكتابات المعتمدة نفسها التي يعرضها الموقع؛ `adoptApprovedWritings` يستبدل القوالب القديمة عند القراءة فقط. إن لم تكن، ينشر المالك مرة من الإدارة.
 - حذف كتابة من المنشور يجعل صفحتها 404 فلا تظهر آراؤها؛ الصفوف تبقى وتعود بعودة الكتابة.
 
 مراجعة الآراء في شاشة مراجعة المجتمع الحالية، في قسم «آراء على الكتابات» يعرض عنوان الكتابة ورابطها.
 
 ### `kumeel_sparring` (المالك فقط)
 
-`id uuid`، `writing_id text`، `style` (`logic`|`history`|`skeptic`)، `turns jsonb` (مصفوفة حتى ٤٠ دورًا، لكل دور `role` و`text` حتى ٤٠٠٠ و`quote` اختياري حتى ٥٠٠)، `revision integer`، `created_at`، `updated_at`. RLS لكل العمليات عبر `kumeel_is_secure_editor()`. التحديث مقيد برقم النسخة لمنع الكتابة فوق تبويب آخر.
+`id uuid`، `writing_id text`، `style` (`logic`|`history`|`skeptic`)، `turns jsonb` (مصفوفة حتى ٤٠ دورًا، لكل دور `role` و`text` حتى ٤٠٠٠ و`quote` اختياري حتى ٥٠٠)، `revision integer`، `created_at`، `updated_at`. القراءة عبر RLS بشرط `kumeel_is_secure_editor()`. الكتابة والحذف عبر `kumeel_save_sparring` و`kumeel_delete_sparring` فقط (security definer)، والحفظ يتحقق من بنية الأدوار ومقيد برقم النسخة لمنع الكتابة فوق تبويب آخر.
 
 ### حقل `exchange`
 
@@ -98,7 +99,7 @@ RLS: صاحب الرأي يقرأ صفوفه، والمالك المخوّل ي�
 ## الاختبارات
 
 - `scripts/test-community-db.mjs` (PGlite): رفض البريد غير المؤكد؛ رفض كتابة غير منشورة أو تجريبية؛ الحد المشترك مع ردود المجتمع؛ عزل الآراء قبل الاعتماد؛ خلو الجدول العام من البريد والمعرّف؛ رفض القرار بنسخة قديمة والرفض بلا سبب؛ تسجيل القرار؛ منع غير المالك من `kumeel_sparring`.
-- `scripts/test-edit-assist.mjs`: رفض الطلب بلا جلسة مالك؛ حذف `quote` غير الموجود؛ رفض HTML؛ الانتقال إلى Workers AI؛ رفض أكثر من ٦ أدوار أو أسلوب غير معروف.
+- `scripts/test-edit-assist.mjs`: رفض الطلب بلا جلسة مالك؛ حذف `quote` غير الموجود؛ رفض HTML؛ رفض أكثر من ٦ أدوار أو أسلوب غير معروف أو مفاتيح زائدة. الانتقال إلى Workers AI مشترك بين المهام ومختبر في `owner-ai`، ولا يحتاج اختبارًا خاصًا.
 - `scripts/test-platform.mjs`: صلاحية `exchange` وحدوده والمحتوى القديم؛ ظهور الجولة ووسمها في SSR مع الهروب؛ غياب `/salon` وحضور `#responses` في صفحة الكتابة؛ فحص `next` (`/writings/x` مقبول، و`//evil.com` و`https://evil.com` و`/\evil` مرفوضة).
 - `scripts/test-translations.mjs`: إضافة `exchange` لا تغيّر بصمة الترجمة.
 - البوابة: `npm run verify` كاملًا. تطبيق SQL على المشروع الحي والتجربة اليدوية يتمان بعد موافقة المالك.
