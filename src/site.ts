@@ -1,3 +1,5 @@
+// Temporary public visibility switch; owner management and stored data stay available.
+export const teachersPublicEnabled=false
 export type SectionKey = 'hero' | 'story' | 'writings' | 'explore' | 'observatory' | 'salon' | 'teachers' | 'library' | 'quote' | 'contact'
 export const siteThemes = [
   { key: 'olive', label: 'ورقي دافئ', note: 'الهوية الأصلية: ورق عتيق وحبر طيني', swatches: ['#f7f1e6', '#944b38', '#42352e'] },

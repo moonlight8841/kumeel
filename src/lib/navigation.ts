@@ -1,5 +1,7 @@
+import {teachersPublicEnabled} from '../site'
 // Reading journey: write → think → discuss → learn → share → keep → who.
-export const siteNav=[['/','الرئيسية'],['/writings','الكتابات'],['/observatory','مرصد الأفكار'],['/salon','مجلس الحوار'],['/teachers','مجلس التعلّم'],['/community','المجتمع'],['/library','المكتبة'],['/about','عن كميل']] as const
+const allSiteNav=[['/','الرئيسية'],['/writings','الكتابات'],['/observatory','مرصد الأفكار'],['/salon','مجلس الحوار'],['/teachers','مجلس التعلّم'],['/community','المجتمع'],['/library','المكتبة'],['/about','عن كميل']] as const
+export const siteNav=allSiteNav.filter(([href])=>teachersPublicEnabled||href!=='/teachers')
 
 export function isCurrentPath(href:string,current?:string){
  if(!current)return false

@@ -2,7 +2,7 @@ import {ReaderQuestion} from './ReaderQuestion'
 import {sortedWritings} from '../lib/writings'
 import {useEffect,useState,type ReactNode} from 'react'
 import type {Content} from '../content'
-import {defaultSite,withLibrary,type SectionKey} from '../site'
+import {teachersPublicEnabled,defaultSite,withLibrary,type SectionKey} from '../site'
 import {booksFor} from '../books'
 import {salonSchedule} from '../lib/salon'
 import {SiteHeader} from './SiteHeader'
@@ -40,7 +40,7 @@ export function HomeShowcase({content}:{content:Content}){
  let cards:ReactNode[]=[]
  const flush=()=>{if(!cards.length)return;rows.push(cards.length===1?<div key={`row-${rows.length}`} className="wrap home-block">{cards}</div>:<div key={`row-${rows.length}`} className={`wrap showcase-grid home-block${cards.length%3===0?" is-three":""}`}>{cards}</div>);cards=[]}
  for(const section of site.sections){
-  if(!section.visible)continue
+  if(!section.visible||(!teachersPublicEnabled&&section.key==='teachers'))continue
   const node=blocks[section.key]?.()
   if(!node)continue
   if(cardSections.has(section.key)){cards.push(<div key={section.key} className="home-card-slot">{node}</div>);continue}

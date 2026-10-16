@@ -1,3 +1,4 @@
+import {teachersPublicEnabled} from '../site'
 import type {Content} from '../content'
 import {messages,resolveLocalePath,localePath} from '../lib/i18n'
 import {LanguageSwitch} from './LanguageSwitch'
@@ -21,6 +22,6 @@ export function EnglishPages({content,pathname}:{content:Content;pathname:string
    route.path==='/writings'?<><h1>{m.writings}</h1><p>{m.reviewed}</p><div className="english-grid">{cards}</div></>:
    record?<article><a href="/en/writings">{m.back}</a><h1>{record.title}</h1><p className="sample-note">{m.reviewed}</p><TextDocument text={record.text} format={writing?.format}/><a href={route.path} lang="ar">{m.original}</a></article>:null}
   </main>
-  <footer className="wrap english-footer"><p>{m.owner} · {m.tagline}</p><nav aria-label={m.footer}><a href="/community">{m.community} ({m.arabicSection})</a><a href="/library">{m.library} ({m.arabicSection})</a><a href="/salon">{m.salon} ({m.arabicSection})</a><a href="/teachers">{m.teachers} ({m.arabicSection})</a><a href="/observatory">{m.observatory} ({m.arabicSection})</a><a href="/explore">{m.discover} ({m.arabicSection})</a></nav><p>{m.chatArabic}</p><a href="/">{m.openArabic}</a></footer>
+  <footer className="wrap english-footer"><p>{m.owner} · {m.tagline}</p><nav aria-label={m.footer}><a href="/community">{m.community} ({m.arabicSection})</a><a href="/library">{m.library} ({m.arabicSection})</a><a href="/salon">{m.salon} ({m.arabicSection})</a>{teachersPublicEnabled&&<a href="/teachers">{m.teachers} ({m.arabicSection})</a>}<a href="/observatory">{m.observatory} ({m.arabicSection})</a><a href="/explore">{m.discover} ({m.arabicSection})</a></nav><p>{m.chatArabic}</p><a href="/">{m.openArabic}</a></footer>
  </div>
 }
