@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { supabase } from '../lib/cloud'
-import { MIN_PASSWORD_LENGTH, safeAuthReturnUrl, validNewPassword, captchaConfigured } from '../lib/auth-security'
+import { MIN_PASSWORD_LENGTH, safeAuthReturnUrl, validNewPassword, captchaConfigured, authLinkError } from '../lib/auth-security'
 import { AuthCaptcha } from './AuthCaptcha'
 
 export function LoginForm() {
@@ -14,7 +14,15 @@ export function LoginForm() {
  const [cooldown,setCooldown]=useState(0)
  const [captchaToken,setCaptchaToken]=useState('')
  const [captchaVersion,setCaptchaVersion]=useState(0)
- useEffect(()=>{const url=new URL(window.location.href);if(url.searchParams.has('error')||url.hash.includes('error=')){setFailed(true);setMessage('رابط الدخول انتهى أو تعذّر التحقق منه. اطلب رابطًا جديدًا وافتحه في المتصفح نفسه.')}},[])
+ useEffect(()=>{
+  const url=new URL(window.location.href),failure=authLinkError(url)
+  if(!failure)return
+  setMethod('link');setFailed(true)
+  setMessage(failure==='expired'?'رابط الدخول غير صالح أو انتهت صلاحيته أو استُخدم سابقًا. اطلب رابطًا جديدًا، وافتح أحدث رسالة مرة واحدة في المتصفح نفسه.':'تعذّر التحقق من رابط الدخول. اطلب رابطًا جديدًا من هذه الصفحة.')
+  for(const key of ['error','error_code','error_description','auth_error'])url.searchParams.delete(key)
+  if(new URLSearchParams(url.hash.slice(1)).has('error')||new URLSearchParams(url.hash.slice(1)).has('error_code'))url.hash=''
+  history.replaceState(null,'',url.pathname+url.search+url.hash)
+ },[])
  useEffect(()=>{if(!cooldown)return;const timer=setInterval(()=>setCooldown(v=>Math.max(0,v-1)),1000);return()=>clearInterval(timer)},[cooldown])
  function change(next:typeof method){setMethod(next);setMessage('');setFailed(false);setVisible(false);setCaptchaToken('');setCaptchaVersion(v=>v+1)}
  async function submit(e:FormEvent<HTMLFormElement>) {

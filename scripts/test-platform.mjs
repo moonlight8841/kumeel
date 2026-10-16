@@ -42,7 +42,7 @@ try {
       assert.ok(!publicPaths(content).includes(path))
     }
   })
-  const { validNewPassword, safeAuthReturnUrl } = await server.ssrLoadModule('/src/lib/auth-security.ts')
+  const { validNewPassword, safeAuthReturnUrl, authLinkError, authErrorReturnPath } = await server.ssrLoadModule('/src/lib/auth-security.ts')
   await test('Authentication rejects weak passwords and untrusted return origins', () => {
     assert.equal(validNewPassword('short'), false)
     assert.equal(validNewPassword('a'.repeat(14)), true)
@@ -52,6 +52,19 @@ try {
     assert.equal(safeAuthReturnUrl('https://www.kumeelalnahab.com'), 'https://www.kumeelalnahab.com/admin')
     assert.equal(safeAuthReturnUrl('http://127.0.0.1:5173'), 'http://127.0.0.1:5173/admin')
     for (const origin of ['https://evil.example', 'https://kumeel-nine.vercel.app.evil.example', 'http://kumeel-nine.vercel.app']) assert.throws(() => safeAuthReturnUrl(origin))
+  })
+  await test('Auth callback errors return to login without reflecting provider descriptions',()=>{
+    const origin='https://kumeelalnahab.com'
+    assert.equal(authLinkError(new URL(origin+'/admin?error_code=otp_expired')),'expired')
+    assert.equal(authLinkError(new URL(origin+'/#error=access_denied&error_code=otp_expired')),'expired')
+    assert.equal(authLinkError(new URL(origin+'/admin?error=access_denied&error_description=<script>')),'failed')
+    assert.equal(authErrorReturnPath(new URL(origin+'/?error=access_denied&error_code=otp_expired&error_description=private')),'/admin?auth_error=expired')
+    assert.equal(authErrorReturnPath(new URL(origin+'/#error=access_denied')),'/admin?auth_error=failed')
+    assert.equal(authErrorReturnPath(new URL(origin+'/admin?auth_error=expired')),null)
+    assert.equal(authErrorReturnPath(new URL(origin+'/member?error_code=otp_expired')),null)
+    assert.equal(authErrorReturnPath(new URL(origin+'/writings?error=unrelated')),null)
+    assert.equal(authLinkError(new URL(origin+'/?code=pkce-code')),null)
+    assert.equal(authErrorReturnPath(new URL(origin+'/#sparring')),null)
   })
   const { sessionCalendar } = await server.ssrLoadModule('/src/lib/calendar.ts')
   const {totpQrSource,normalizeTotp}=await server.ssrLoadModule('/src/lib/mfa.ts')

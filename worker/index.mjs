@@ -1,3 +1,4 @@
+import {authErrorReturnPath} from '../src/lib/auth-security.ts'
 import template from '../dist/template.html'
 import {render,initialContent,validContent,readerContent,contentForPage,pageInfo,renderHead,replaceHead,publicPaths,documentLanguage,resolvePublishedTranslations} from '../dist-ssr/entry-server.js'
 import config from '../src/supabase-config.json' with {type:'json'}
@@ -46,6 +47,8 @@ export async function handleRequest(request,env){
  const url=new URL(request.url)
  const path=url.pathname.replace(/\/+$/,'')||'/'
  const origin=env.SITE_URL||'https://kumeelalnahab.com'
+ const authReturn=authErrorReturnPath(url)
+ if(authReturn){const target=new URL(authReturn,url);target.hash='#';return new Response(null,{status:302,headers:{Location:target.toString(),'Cache-Control':'no-store'}})}
  if(url.hostname==='www.kumeelalnahab.com'){const target=new URL(origin);target.pathname=url.pathname;target.search=url.search;return Response.redirect(target.toString(),308)}
  if(path==='/api/chat')return apiResponse(request,createChat({env,loadCorpus:async()=>buildCorpus(readerContent((await loadContent()).content))}))
  if(path==='/api/generate-idea')return apiResponse(request,createIdea({env}))
