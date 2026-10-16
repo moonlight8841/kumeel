@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react'
 import type {Content} from '../../content'
 import {contentHealth,contentStats,type AdminTab} from '../../lib/admin'
+import {SparringNudge} from './AdminSparring'
 
 type Props={content:Content;revision:number|null;draft:boolean;go:(tab:AdminTab)=>void}
 const quickActions:[AdminTab,string,string][]=[['writings','✎','كتابة جديدة'],['thoughts','◇','فكرة أو لقاء'],['settings','◐','الهوية والمظهر'],['backup','⇩','نسخة احتياطية']]
@@ -13,6 +14,7 @@ export function AdminOverview({content,revision,draft,go}:Props){
  const issues=now===null?[]:contentHealth(content,now)
  const warnings=issues.filter(i=>i.level==='warning').length
  return <div className="admin-overview">
+  <SparringNudge content={content} go={go}/>
   <section className={`admin-card admin-publish-state ${draft?'is-warning':'is-success'}`} aria-labelledby="publish-state">
    <div><span className="admin-eyebrow">حالة النشر</span><h2 id="publish-state">{draft?'لديك مسودة لم تُنشر بعد.':revision===null?'لم يتم التحقق من النسخة المنشورة.':'الموقع متطابق مع آخر نسخة منشورة.'}</h2><p>{draft?'التغييرات محفوظة على هذا المتصفح فقط. راجعها ثم انشرها ليراها الزوار.':revision===null?'أعد تحميل الصفحة بعد استعادة الاتصال.':`النسخة المنشورة الحالية رقم ${revision.toLocaleString('ar-SA')}.`}</p></div>
    <button className={`admin-btn${draft?' is-primary':''}`} onClick={()=>go('publish')}>{draft?'مراجعة ونشر ←':'إدارة النشر ←'}</button>

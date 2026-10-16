@@ -376,3 +376,11 @@
 .translation-source p { margin: 0 0 var(--space-2); font-family: var(--font-reading); line-height: var(--leading-relaxed); white-space: pre-line; overflow-wrap: anywhere; }
 .translation-target textarea, .translation-target input { font-family: var(--font-reading); text-align: left; }
 @media (max-width: 900px) { .translation-pair { grid-template-columns: 1fr; } }
+
+.admin-sparring fieldset{border:0;padding:0;display:grid;gap:8px}
+.sparring-turns{list-style:none;padding:0;display:grid;gap:14px;margin-block:18px}
+.sparring-turns li{padding:14px 16px;border:1px solid var(--color-line);background:var(--color-sunken)}
+.sparring-turns li.is-owner{background:transparent;border-inline-start:3px solid var(--color-text-muted)}
+.sparring-turns blockquote{margin:8px 0;color:var(--color-text-muted);font-size:.9em}
+.admin-sparring-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.admin-sparring .admin-list li{display:flex;gap:8px;align-items:center;flex-wrap:wrap}

@@ -1,4 +1,5 @@
 import {TeacherReview} from './Teachers'
+import {AdminSparring} from './admin/AdminSparring'
 import {CommunityReview} from './CommunityReview'
 import {IdeaEngine} from './IdeaEngine'
 import {useCallback,useEffect,useState} from 'react'
@@ -85,6 +86,7 @@ export function AdminPanel({content,revision,draft=false,onSave,onPublish}:Props
      {tab==='community'&&authorized&&<CommunityReview/>}
      {tab==='engine'&&<IdeaEngine content={content} save={commit}/>}
      {tab==='assist'&&<AdminAssist content={content} save={commit}/>}
+     {tab==='sparring'&&authorized&&<AdminSparring content={content} save={commit}/>}
      {tab==='settings'&&<AdminSettings key={JSON.stringify([content.site,content.bio])} content={content} save={commit} onDirtyChange={setSettingsDirty}/>}
      {tab==='thoughts'&&<ThoughtEditor content={content} onSave={commit}/>}
      {tab==='writings'&&<NotebookEditor content={content} save={commit} onDirtyChange={setNotebookDirty}/>}

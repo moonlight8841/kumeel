@@ -4,7 +4,7 @@ import {booksFor} from '../books'
 import {isStarterWriting} from './publication'
 
 const n=(value:number)=>value.toLocaleString('ar-SA')
-export type AdminTab='teachers'|'overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'assist'|'settings'|'arrange'|'publish'|'backup'
+export type AdminTab='sparring'|'teachers'|'overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'assist'|'settings'|'arrange'|'publish'|'backup'
 export type AdminNavItem={key:AdminTab;label:string;icon:string;hint:string;ownerOnly?:boolean}
 export type AdminNavGroup={label:string;items:AdminNavItem[]}
 
@@ -13,6 +13,7 @@ export const adminNav:AdminNavGroup[]=[
  {label:'البداية',items:[{key:'overview',label:'نظرة عامة',icon:'◎',hint:'حالة المحتوى وما يحتاج انتباهك'}]},
  {label:'المحتوى',items:[
   {key:'writings',label:'الكتابات',icon:'✎',hint:'دفتر الكتابة والمعاينة'},
+  {key:'sparring',label:'المحاور',icon:'⚖',hint:'اختبر كتاباتك أمام اعتراض قوي، وانشر ما تختار',ownerOnly:true},
   {key:'thoughts',label:'الأفكار واللقاءات',icon:'◇',hint:'المرصد والوسائط ومجلس الحوار'},
   {key:'learning',label:'المحتوى التعليمي',icon:'◈',hint:'مقالات الاكتشاف وأسئلة التحدّي'},
   {key:'books',label:'مكتبة الكتب',icon:'▤',hint:'الكتب وملفاتها وترتيبها'},
