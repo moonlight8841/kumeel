@@ -4,6 +4,7 @@ import type {User} from '@supabase/supabase-js'
 import {supabase} from '../lib/cloud'
 import {categories,communityError,saveSubmission,statusLabel,type Submission,type CommunityComment} from '../lib/community'
 import {LoginForm} from './LoginForm'
+import {safeNext} from '../lib/navigation'
 const blank={author_name:'',title:'',body:'',category:'فلسفة',sources:'',assisted:false,rights_confirmed:false}
 export function MemberSpace(){
  const [user,setUser]=useState<User|null>(null),[checking,setChecking]=useState(true)
@@ -11,7 +12,7 @@ export function MemberSpace(){
  const [comments,setComments]=useState<CommunityComment[]>([])
  const [message,setMessage]=useState(''),[busy,setBusy]=useState(false),[dirty,setDirty]=useState(false)
  const lock=useRef(false),identity=useRef<string|null>(null)
- useEffect(()=>{let active=true;const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{if(active){setUser(session?.user??null);setChecking(false);if(identity.current!==(session?.user.id??null)){identity.current=session?.user.id??null;setItems([]);setItem(blank);setDirty(false)}}});return()=>{active=false;subscription.unsubscribe()}},[])
+ useEffect(()=>{let active=true;const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{if(active){setUser(session?.user??null);setChecking(false);if(session?.user){const next=safeNext(new URLSearchParams(location.search).get('next'),location.origin);if(next){location.assign(next);return}}if(identity.current!==(session?.user.id??null)){identity.current=session?.user.id??null;setItems([]);setItem(blank);setDirty(false)}}});return()=>{active=false;subscription.unsubscribe()}},[])
  useEffect(()=>{if(!user)return;let active=true;supabase.from('kumeel_submissions').select('*').eq('author_id',user.id).order('updated_at',{ascending:false}).limit(50).then(({data,error})=>{if(active){if(error)setMessage(communityError(error));else setItems(data as Submission[])}});return()=>{active=false}},[user])
  useEffect(()=>{if(!dirty)return;const handler=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue=''};window.addEventListener('beforeunload',handler);return()=>window.removeEventListener('beforeunload',handler)},[dirty])
  async function refresh(){const {data,error}=await supabase.from('kumeel_submissions').select('*').eq('author_id',user!.id).order('updated_at',{ascending:false}).limit(50);if(error)throw error;setItems(data as Submission[])}

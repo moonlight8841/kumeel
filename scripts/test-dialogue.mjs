@@ -7,6 +7,7 @@ try{
  const {validExchange}=await server.ssrLoadModule('/src/lib/exchange.ts')
  const {sourceDigest}=await server.ssrLoadModule('/src/lib/source-hash.mjs')
  const {render}=await server.ssrLoadModule('/src/entry-server.tsx')
+ const {safeNext}=await server.ssrLoadModule('/src/lib/navigation.ts')
  const round={style:'logic',objection:'تفترض المقدمة الأولى دون أن تبيّن سببها.',reply:'لأن الثانية تلزم عنها.',publishedAt:'2026-10-17T10:00:00.000Z'}
  const writing={id:'dialogue',title:'الحرية',category:'فلسفة',text:'الحرية أن تختار ما تريد. ومن لا يختار لا يعيش حقًا.'}
  const withRounds=rounds=>({...initialContent,writings:[{...writing,exchange:rounds}]})
@@ -35,5 +36,18 @@ try{
   assert.ok(markup.includes('href="#responses"'))
   assert.ok(!markup.includes('أكمل السؤال في مجلس الحوار'))
   assert.ok(!render({...initialContent,writings:[writing]},'/writings/dialogue').includes('اعتراض وجواب'))
+ })
+ await test('Sign-in returns only to same-site paths',()=>{
+  const origin='https://kumeelalnahab.com'
+  assert.equal(safeNext('/writings/x#responses',origin),'/writings/x#responses')
+  assert.equal(safeNext('/writings/%D8%A7',origin),'/writings/%D8%A7')
+  for(const bad of [null,'','writings/x','//evil.com','/\\evil.com','https://evil.com','/x\nSet-Cookie','/'+'a'.repeat(400)])assert.equal(safeNext(bad,origin),null,String(bad))
+ })
+
+ await test('Writing pages carry the opinions section shell during SSR',()=>{
+  const markup=render({...initialContent,writings:[writing]},'/writings/dialogue')
+  assert.ok(markup.includes('id="responses"'))
+  assert.ok(markup.includes('آراء القراء'))
+  assert.ok(!render({...initialContent,ideas:initialContent.ideas.map(i=>({...i,sample:false}))},'/ideas/certainty').includes('id="responses"'))
  })
 }finally{await server.close()}
