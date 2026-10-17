@@ -5,8 +5,11 @@ import assert from 'node:assert/strict'
 const db=new PGlite()
 try{
  await db.exec(`create role anon;create role authenticated;create schema auth;
+ create table auth.sessions(id uuid primary key,user_id uuid,not_after timestamptz);
  create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ create function auth.jwt() returns jsonb language sql stable as $$select jsonb_build_object('session_id',current_setting('request.jwt.claim.session_id',true))$$;
+ insert into auth.sessions values('10000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000001',null),('10000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000002',null),('10000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000003',null);
  create table public.kumeel_editors(user_id uuid primary key references auth.users(id));
  insert into auth.users values
  ('00000000-0000-4000-8000-000000000001','komeil9060@gmail.com',now()),
@@ -18,7 +21,7 @@ try{
  await db.exec(activate);await db.exec(activate)
  await db.exec(await readFile('supabase/pause-admin-mfa.sql','utf8'))
  const check=async n=>{
-  await db.exec(`reset role;select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-${String(n).padStart(12,'0')}',false);set role authenticated;`)
+  await db.exec(`reset role;select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-${String(n).padStart(12,'0')}',false);select set_config('request.jwt.claim.session_id','10000000-0000-4000-8000-${String(n).padStart(12,'0')}',false);set role authenticated;`)
   return (await db.query('select public.kumeel_is_secure_editor() as allowed')).rows[0].allowed
  }
  assert.equal(await check(1),true,'original owner retains access')

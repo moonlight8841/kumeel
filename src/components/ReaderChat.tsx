@@ -1,12 +1,13 @@
+import {PRIVATE_DATA_CLEARED} from '../lib/privacy'
+import {safeChatHistory,type ChatMessage} from '../lib/chat-history'
 import {useEffect,useRef,useState,type FormEvent} from 'react'
 
-type Source={title:string;href:string}
-type Message={role:'user'|'model';text:string;sources?:Source[];followUp?:string}
+type Message=ChatMessage
 const STORAGE='kumeel-reader-chat'
 const MAX=600
 const starters=['ما الفكرة التي تتكرر في المواد المنشورة؟','ما أحدث موضوع منشور يمكنني قراءته؟','بماذا أبدأ إن كنت جديدًا على المنصة؟']
 
-function restore():Message[]{try{const v:unknown=JSON.parse(sessionStorage.getItem(STORAGE)||'[]');return Array.isArray(v)?v.filter((m):m is Message=>m&&typeof m==='object'&&['user','model'].includes(m.role)&&typeof m.text==='string').slice(-16):[]}catch{return []}}
+function restore():Message[]{try{return safeChatHistory(JSON.parse(sessionStorage.getItem(STORAGE)||'[]'))}catch{return []}}
 
 export function ReaderChat(){
  const [enabled,setEnabled]=useState(false)
@@ -22,6 +23,7 @@ export function ReaderChat(){
  // Server decides availability; nothing renders during SSR or when disabled.
  useEffect(()=>{let live=true;fetch('/api/chat').then(r=>r.ok?r.json():null).then(d=>{if(live&&d?.enabled===true){setEnabled(true);setMessages(restore())}}).catch(()=>{});return()=>{live=false}},[])
  useEffect(()=>{if(!enabled)return;try{sessionStorage.setItem(STORAGE,JSON.stringify(messages.slice(-16)))}catch{/* Memory-only conversation. */}},[messages,enabled])
+ useEffect(()=>{const clear=()=>{setMessages([]);setInput('');setError('')};window.addEventListener(PRIVATE_DATA_CLEARED,clear);return()=>window.removeEventListener(PRIVATE_DATA_CLEARED,clear)},[])
  useEffect(()=>{if(open)inputRef.current?.focus()},[open])
  useEffect(()=>{listRef.current?.lastElementChild?.scrollIntoView({block:'end'})},[messages,busy])
  useEffect(()=>{if(!open)return;const close=(e:KeyboardEvent)=>{if(e.key==='Escape'){setOpen(false);launcherRef.current?.focus()}};window.addEventListener('keydown',close);return()=>window.removeEventListener('keydown',close)},[open])
@@ -66,7 +68,7 @@ export function ReaderChat(){
     <textarea id="chat-input" ref={inputRef} rows={2} maxLength={MAX} value={input} placeholder="اكتب سؤالك…" onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send(input)}}}/>
     <button className="primary" disabled={busy||!input.trim()} aria-label="إرسال">↑</button>
    </form>
-   <footer className="chat-foot"><span>إجابات آلية عبر Gemini وقد تخطئ؛ النص الأصلي هو المرجع. لا نحفظها على الخادم.</span>{messages.length>0&&<button onClick={()=>{setMessages([]);setError('')}}>محادثة جديدة</button>}</footer>
+   <footer className="chat-foot"><span>يُرسل السؤال وسياق المحادثة إلى مزوّد الذكاء الاصطناعي المفعّل. لا نحفظ نصها على خادم المنصة؛ تبقى نسختها في هذا التبويب. قد تخطئ الإجابة، والنص الأصلي هو المرجع.</span>{messages.length>0&&<button onClick={()=>{setMessages([]);setError('')}}>محادثة جديدة</button>}</footer>
   </section>}
  </>
 }

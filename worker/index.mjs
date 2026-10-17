@@ -1,3 +1,4 @@
+import {createPublishedLoader} from '../api/_shared/published-loader.mjs'
 import {authErrorReturnPath} from '../src/lib/auth-security.ts'
 import template from '../dist/template.html'
 import {render,initialContent,validContent,readerContent,contentForPage,pageInfo,renderHead,replaceHead,publicPaths,documentLanguage,resolvePublishedTranslations} from '../dist-ssr/entry-server.js'
@@ -9,16 +10,24 @@ import {createHandler as createAssist} from '../api/edit-assist.mjs'
 
 const safeJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')
 const xmlEscape=value=>value.replace(/[<>&"']/g,char=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'})[char])
-async function loadContent(){
- try{
-  const response=await fetch(`${config.url}/rest/v1/kumeel_published?id=eq.main&select=content`,{headers:{apikey:config.publishableKey},signal:AbortSignal.timeout(5000)})
-  if(!response.ok)throw new Error('unavailable')
-  const rows=await response.json()
-  if(!validContent(rows[0]?.content))throw new Error('invalid')
-  return {content:await resolvePublishedTranslations(rows[0].content),fresh:true}
- }catch{
+async function readPublication(columns){
+ const response=await fetch(`${config.url}/rest/v1/kumeel_published?id=eq.main&select=${columns}`,{headers:{apikey:config.publishableKey},signal:AbortSignal.timeout(5000)})
+ if(!response.ok)throw new Error('Publication unavailable')
+ return (await response.json())[0]
+}
+const publishedLoader=createPublishedLoader({
+ readRevision:async()=> (await readPublication('revision'))?.revision,
+ readSnapshot:()=>readPublication('content,revision'),
+ prepare:async(content,{bypass})=>{
+  if(!validContent(content))throw new Error('Invalid publication')
+  const resolved=await resolvePublishedTranslations(content)
+  return bypass?resolved:readerContent(resolved)
+ },
+})
+async function loadContent(options){
+ try{return await publishedLoader(options)}catch{
   console.warn(JSON.stringify({event:'published_content_unavailable'}))
-  return {content:initialContent,fresh:false}
+  return {content:{...initialContent,bio:'',writings:[],ideas:[],sessions:[],media:[],books:[],discoveries:[],quiz:[],translations:undefined},fresh:false}
  }
 }
 
@@ -32,12 +41,12 @@ async function apiResponse(request,handler){
  let body
  if(request.method==='POST'){
   const reader=request.body?.getReader();const chunks=[];let length=0
-  if(reader)while(true){const {done,value}=await reader.read();if(done)break;length+=value.byteLength;if(length>30000){await reader.cancel();return Response.json({success:false,error:'الطلب أكبر من المسموح.'},{status:413})}chunks.push(value)}
+  if(reader)while(true){const {done,value}=await reader.read();if(done)break;length+=value.byteLength;if(length>30000){await reader.cancel();return Response.json({success:false,error:'الطلب أكبر من المسموح.'},{status:413,headers:{'Cache-Control':'no-store'}})}chunks.push(value)}
   const bytes=new Uint8Array(length);let at=0;for(const chunk of chunks){bytes.set(chunk,at);at+=chunk.byteLength}
   body=new TextDecoder().decode(bytes)
  }
  let status=200,payload=null
- const output=new Headers()
+ const output=new Headers({'Cache-Control':'no-store'})
  const response={setHeader(key,value){output.set(key,String(value));return this},status(value){status=value;return this},json(value){output.set('Content-Type','application/json; charset=utf-8');payload=JSON.stringify(value);return this},send(value){payload=value;return this},end(){payload=null;return this}}
  await handler({method:request.method,headers,body},response)
  return new Response(request.method==='HEAD'?null:payload,{status,headers:output})
@@ -53,12 +62,19 @@ export async function handleRequest(request,env){
  if(path==='/api/chat')return apiResponse(request,createChat({env,loadCorpus:async()=>buildCorpus(readerContent((await loadContent()).content))}))
  if(path==='/api/generate-idea')return apiResponse(request,createIdea({env}))
  if(path==='/api/edit-assist')return apiResponse(request,createAssist({env}))
- if(path.startsWith('/api/'))return Response.json({success:false,error:'المسار غير موجود.'},{status:404})
+ if(path.startsWith('/api/'))return Response.json({success:false,error:'المسار غير موجود.'},{status:404,headers:{'Cache-Control':'no-store'}})
  if(!['GET','HEAD'].includes(request.method))return new Response(null,{status:405,headers:{Allow:'GET, HEAD'}})
  if(path==='/robots.txt')return new Response(request.method==='HEAD'?null:`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /member\nSitemap: ${origin}/sitemap.xml\n`,{headers:{'Content-Type':'text/plain; charset=utf-8'}})
  // Static resources bypass rendering; HTML routes always use current published data.
- if(/\.[a-z0-9]+$/i.test(path)&&!['/index.html','/sitemap.xml'].includes(path))return env.ASSETS.fetch(request)
- const {content,fresh}=await loadContent()
+ if(/\.[a-z0-9]+$/i.test(path)&&!['/index.html','/sitemap.xml'].includes(path)){
+  const asset=await env.ASSETS.fetch(request)
+  const response=new Response(asset.body,asset)
+  if(asset.status===200&&/^\/assets\/[^/]+-[A-Za-z0-9_-]{8,}\.(?:js|css|woff2?)$/.test(path))response.headers.set('Cache-Control','public, max-age=31536000, immutable')
+  else if(asset.status>=400)response.headers.set('Cache-Control','no-store')
+  return response
+ }
+ const {content,fresh}=await loadContent({bypass:path==='/admin'})
+ if(!fresh&&path!=='/admin')return new Response('المحتوى المنشور غير متاح مؤقتًا. حاول مجددًا لاحقًا.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'}})
  const edition=path==='/admin'?content:readerContent(content)
  if(path==='/sitemap.xml'){
   const xml=`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${publicPaths(edition).map(p=>`<url><loc>${xmlEscape(origin+p)}</loc></url>`).join('')}</urlset>`
@@ -75,13 +91,12 @@ export async function handleRequest(request,env){
 }
 
 export default {async fetch(request,env){
- try{
-  const response=await handleRequest(request,env)
-  const secured=new Response(response.body,response)
-  for(const {key,value} of deploymentConfig.headers[0].headers)secured.headers.set(key,value)
-  return secured
- }catch{
+ let response
+ try{response=await handleRequest(request,env)}catch{
   console.error(JSON.stringify({event:'request_failed'}))
-  return Response.json({success:false,error:'تعذّر إكمال الطلب. حاول لاحقًا.'},{status:500})
+  response=Response.json({success:false,error:'تعذّر إكمال الطلب. حاول لاحقًا.'},{status:500,headers:{'Cache-Control':'no-store'}})
  }
+ const secured=new Response(response.body,response)
+ for(const {key,value} of deploymentConfig.headers[0].headers)secured.headers.set(key,value)
+ return secured
 }}

@@ -1,3 +1,4 @@
+import {clearPrivateTabData,PRIVATE_DATA_CLEARED} from './privacy'
 import { createClient } from '@supabase/supabase-js'
 import config from '../supabase-config.json'
 import { validContent } from '../content'
@@ -13,17 +14,23 @@ if (typeof window !== 'undefined') {
 export const supabase = createClient(config.url, config.publishableKey, {
   auth: { storageKey: 'kumeel-auth-v2', storage: tabAuthStorage, flowType: 'pkce', persistSession: typeof window !== 'undefined', autoRefreshToken: typeof window !== 'undefined', detectSessionInUrl: typeof window !== 'undefined' },
 })
+if(typeof window!=='undefined')supabase.auth.onAuthStateChange(event=>{
+ if(event!=='SIGNED_OUT')return
+ try{clearPrivateTabData();tabAuthStorage.removeItem('kumeel-auth-v2-code-verifier')}catch{/* Session revocation remains effective if browser storage is unavailable. */}
+ window.dispatchEvent(new Event(PRIVATE_DATA_CLEARED))
+})
 export async function readPublished() {
   const { data, error } = await supabase.from('kumeel_published').select('content,revision').eq('id', 'main').single()
   if (error) throw error
   if (!validContent(data.content)) throw new Error('المحتوى المنشور غير صالح.')
   return { content: await resolvePublishedTranslations(adoptApprovedWritings(data.content)), revision: data.revision as number }
 }
-export async function isEditor(id: string) {
-  const { data, error } = await supabase.from('kumeel_editors').select('user_id').eq('user_id', id).maybeSingle()
-  if (error?.code === 'PGRST205' || error?.code === '42P01') throw new Error('جداول إدارة المنصة لم تُهيّأ بعد. نفّذ ملف تهيئة قاعدة البيانات من حساب مسؤول المشروع.')
-  if (error) throw error
-  return Boolean(data)
+export async function isEditor(id:string){
+ const {data:user,error:identityError}=await supabase.auth.getUser()
+ if(identityError||user.user?.id!==id)return false
+ const {data,error}=await supabase.rpc('kumeel_is_secure_editor')
+ if(error)throw error
+ return data===true
 }
 export async function saveCloudDraft(id: string, content: OwnerDraft) {
   if(!validOwnerDraft(content))throw new Error('المسودة الخاصة غير صالحة.')

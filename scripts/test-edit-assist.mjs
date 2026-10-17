@@ -10,8 +10,8 @@ const quizQuestion={title:'ما الفكرة؟',options:['أ','ب','ج','د'],an
 
 async function run({method='POST',body={task:'proofread',payload:{text}},user=owner,member=true,key='k',generate=async()=>({corrected:text.replace('الاخطاء','الأخطاء'),notes:['همزة القطع']}),imageFetcher=async()=>({mimeType:'image/png',data:'AA=='}),headers={authorization},limits=new Map()}={}){
  let calls=0
- const fetcher=async url=>({ok:true,json:async()=>url.includes('/auth/')?user:member?[{user_id:user.id}]:[]})
- const handler=createHandler({fetcher,env:{GEMINI_API_KEY:key},limits,imageFetcher,generate:async(...a)=>{calls++;return generate(...a)}})
+ const fetcher=async url=>({ok:true,json:async()=>url.includes('/auth/')?user:member})
+ const handler=createHandler({fetcher,env:{GEMINI_API_KEY:key},quota:async({actor})=>{const last=limits.get(actor),now=Date.now();if(last!==undefined&&now-last<8000)return {allowed:false,retry_after:8,reason:'cooldown'};limits.set(actor,now);return {allowed:true,retry_after:0}},imageFetcher,generate:async(...a)=>{calls++;return generate(...a)}})
  const result={headers:{},statusCode:0}
  await handler({method,body,headers},{setHeader:(k,v)=>result.headers[k]=v,status(c){result.statusCode=c;return this},json(d){result.data=d}})
  return {...result,calls}

@@ -22,10 +22,9 @@ export async function verifyOwner({authorization,fetcher=fetch,config=supabaseCo
  const user=await userResponse.json()
  if(!user.email_confirmed_at||!OWNER_EMAILS.has(user.email?.toLowerCase())||typeof user.id!=='string')return {status:403,error:forbidden}
  if(auth.requireAdminMfa){const payload=JSON.parse(Buffer.from(authorization.slice(7).split('.')[1],'base64url').toString());if(payload.aal!=='aal2')return {status:403,error:'أكمل التحقق الثنائي.'}}
- const memberResponse=await fetcher(`${config.url}/rest/v1/kumeel_editors?user_id=eq.${encodeURIComponent(user.id)}&select=user_id`,{headers:{apikey:config.publishableKey,Authorization:authorization},signal:AbortSignal.timeout(8000)})
- if(!memberResponse.ok)return {status:503,error:'تعذّر التحقق من صلاحيات الإدارة.'}
- const members=await memberResponse.json()
- if(!Array.isArray(members)||!members.some(m=>m.user_id===user.id))return {status:403,error:'لا توجد صلاحية إدارة.'}
+ const secureResponse=await fetcher(`${config.url}/rest/v1/rpc/kumeel_is_secure_editor`,{method:'POST',headers:{apikey:config.publishableKey,Authorization:authorization,'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(8000)})
+ if(!secureResponse.ok)return {status:503,error:'تعذّر التحقق من صلاحيات الإدارة.'}
+ if(await secureResponse.json()!==true)return {status:403,error:'الجلسة أو صلاحية الإدارة غير متاحة. سجّل الدخول مجددًا.'}
  return {user}
 }
 
@@ -152,3 +151,8 @@ export async function generateWithProviders({env,gemini,cloudflare,now=Date.now,
 }
 
 export function parseBody(req){try{return typeof req.body==='string'?JSON.parse(req.body):req.body}catch{return undefined}}
+
+export function bodyTooLarge(req,maximum){
+ if(Number(req.headers?.['content-length']||0)>maximum)return true
+ try{return Buffer.byteLength(typeof req.body==='string'?req.body:JSON.stringify(req.body??null),'utf8')>maximum}catch{return true}
+}

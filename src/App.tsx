@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { initialContent } from './content'
 import {validOwnerDraft as validContent,type OwnerDraft as Content} from './lib/translations'
-import {resolvePublishedTranslations} from './lib/localized-content'
+import {readOwnerDraft,writeOwnerDraft,clearOwnerDraft} from './lib/draft-storage'
 import {resolveLocalePath} from './lib/i18n'
 import {EnglishPages} from './components/EnglishPages'
 import './styles/languages.css'
@@ -28,8 +28,24 @@ function App({ startingContent = initialContent, startingPath = '/' }: { startin
  const [notice, setNotice] = useState('')
  const [draft, setDraft] = useState(false)
  const [revision, setRevision] = useState<number | null>(null)
- useEffect(() => { let active=true;try { const saved = localStorage.getItem('kumeel-journal-v1'); if (saved) { const parsed: unknown = JSON.parse(saved); if (validContent(parsed)) { if(startingPath==='/admin'){setContent(parsed);setDraft(true)}else void resolvePublishedTranslations(parsed).then(next=>{if(active){setContent(next);setDraft(true)}}) } } } catch { setNotice('تعذّر تحميل المسودة المحفوظة.') }return()=>{active=false} }, [startingPath])
- useEffect(() => { if(startingPath!=='/admin'&&document.getElementById('kumeel-content'))return; let active = true; readPublished().then(result => { if (!active) return; setRevision(result.revision); let hasDraft = false; try { hasDraft = validContent(JSON.parse(localStorage.getItem('kumeel-journal-v1') || 'null')) } catch { /* Invalid local data must not hide a published update. */ } if (!hasDraft) setContent(result.content) }).catch(() => { if (active) setNotice('تعذّر تحديث النسخة المنشورة؛ نعرض آخر نسخة متاحة.') }); return () => { active = false } }, [startingPath])
+ const published=useRef<Content>(startingContent)
+ const owner=useRef<string|null>(null)
+ const hasPrivateDraft=useRef(false)
+ const [legacyDraftAvailable,setLegacyDraftAvailable]=useState(false)
+ const ownerChanged=useCallback((id:string|null)=>{
+  if(owner.current===id)return
+  if(owner.current)try{clearOwnerDraft(owner.current)}catch{/* Clear in-memory state even if storage fails. */}
+  owner.current=id;hasPrivateDraft.current=false;setDraft(false);setContent(published.current)
+  setLegacyDraftAvailable(false)
+  if(!id)return
+  try{const saved=readOwnerDraft(id);if(validContent(saved)){setContent(saved);setDraft(true);hasPrivateDraft.current=true}setLegacyDraftAvailable(Boolean(localStorage.getItem('kumeel-journal-v1')))}catch{setNotice('تعذّر تحميل المسودة الخاصة بهذا التبويب.')}
+ },[])
+ useEffect(()=>{
+  if(startingPath!=='/admin'&&document.getElementById('kumeel-content'))return
+  let active=true
+  readPublished().then(result=>{if(!active)return;published.current=result.content;setRevision(result.revision);if(!hasPrivateDraft.current)setContent(result.content)}).catch(()=>{if(active)setNotice('تعذّر تحديث النسخة المنشورة. تحقق من الاتصال.')})
+  return()=>{active=false}
+ },[startingPath])
  const visibleContent = startingPath === '/admin' ? content : readerContent(content)
  const page = pageInfo(visibleContent, startingPath)
  useEffect(() => {
@@ -57,10 +73,23 @@ function App({ startingContent = initialContent, startingPath = '/' }: { startin
    for(const [language,href] of pairs){const link=document.createElement('link');link.rel='alternate';link.hreflang=language;link.href=href;document.head.append(link)}
    schema.textContent = JSON.stringify(structuredData(content, info, origin))
  }, [content, startingPath, draft])
- function save(next: Content) { if (!validContent(next)) { setNotice('المحتوى غير صالح أو تجاوز حدود الدفتر. راجع الحقول والروابط.'); return false } try { localStorage.setItem('kumeel-journal-v1', JSON.stringify(next)); setContent(next); setDraft(true); setNotice('حُفظت المسودة على هذا المتصفح.'); return true } catch { setNotice('لم يتم الحفظ؛ مساحة المتصفح غير كافية. صدّر نسخة من محتواك.'); return false } }
+ function save(next:Content){
+  if(startingPath!=='/admin'||!validContent(next)){setNotice('تعذّر حفظ المسودة. تحقق من الصلاحية وصحة المحتوى.');return false}
+  const id=owner.current??(import.meta.env.DEV?'development-preview':null)
+  if(!id){setNotice('سجّل الدخول بحساب مخوّل لحفظ المسودة.');return false}
+  try{writeOwnerDraft(id,next);setContent(next);setDraft(true);hasPrivateDraft.current=true;setNotice('حُفظت المسودة في هذا التبويب. احفظها سحابيًا للاحتفاظ بها بعد إغلاقه.');return true}catch{setNotice('تعذّر حفظ المسودة في التبويب. صدّر نسخة قبل المغادرة.');return false}
+ }
+ function importLegacy(){
+  if(!owner.current||!window.confirm('ستحل المسودة القديمة محل المسودة الحالية لحسابك في هذا التبويب. هل تريد نقلها؟'))return
+  try{const next:unknown=JSON.parse(localStorage.getItem('kumeel-journal-v1')??'null');if(validContent(next)&&save(next)){setLegacyDraftAvailable(false)}else setNotice('المسودة القديمة غير صالحة. لم تُحذف.')}catch{setNotice('تعذّر نقل المسودة القديمة. لم تُحذف.')}
+ }
+ function deleteLegacy(){
+  if(!owner.current||!window.confirm('احفظ أو صدّر نسخة احتياطية أولًا. هل تريد حذف المسودة القديمة من هذا المتصفح؟'))return
+  try{localStorage.removeItem('kumeel-journal-v1');setLegacyDraftAvailable(false)}catch{setNotice('تعذّر حذف النسخة القديمة.')}
+ }
  const site = withLibrary(content.site ?? defaultSite)
  if(resolveLocalePath(startingPath).locale==='en')return <div className={`site-shell theme-${site.theme}`}><EnglishPages content={visibleContent} pathname={startingPath}/><div lang="ar" dir="rtl"><ReaderChat/></div></div>
- if (page.kind === 'admin') return <AdminPanel content={content} revision={revision} draft={draft} onSave={save} onPublish={(next, version) => { setContent(next); setRevision(version); setDraft(false); try { localStorage.removeItem('kumeel-journal-v1') } catch { /* Published state is authoritative. */ } }} />
+ if (page.kind === 'admin') return <AdminPanel onOwnerChange={ownerChanged} legacyDraftAvailable={legacyDraftAvailable} onImportLegacy={importLegacy} onDeleteLegacy={deleteLegacy} content={content} revision={revision} draft={draft} onSave={save} onPublish={(next, version) => { published.current=next;hasPrivateDraft.current=false;setContent(next);setRevision(version);setDraft(false);if(owner.current)try{clearOwnerDraft(owner.current)}catch{/* Published content remains authoritative. */} }} />
  if (page.kind !== 'home') return <div className={`site-shell theme-${site.theme}`}><PublicationPage content={visibleContent} info={page} /><ReaderChat/>{draft && <div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}</div>
  return <div className={`site-shell theme-${site.theme}`}><HomeShowcase content={visibleContent}/><ReaderChat/>{draft&&<div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}<div role="status" className={notice?'toast':''} onClick={()=>setNotice('')}>{notice}</div></div>
 }

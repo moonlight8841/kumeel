@@ -18,7 +18,7 @@ export function PasswordResetForm({onDone}:{onDone:()=>void}){
    const {error}=await supabase.auth.updateUser({password})
    if(error)throw new Error(error.code==='same_password'?'اختر كلمة مرور جديدة تختلف عن السابقة.':'تعذّر حفظ كلمة المرور. قد تحتاج إلى رابط استعادة جديد.')
    form.reset()
-   const {error:signOutError}=await supabase.auth.signOut({scope:'local'})
+   const {error:signOutError}=await supabase.auth.signOut({scope:'global'})
    if(signOutError){setMessage('حُفظت كلمة المرور. أعد تحميل الصفحة ثم سجّل الدخول بالكلمة الجديدة.');return}
    history.replaceState(null,'',location.pathname)
    onDone()

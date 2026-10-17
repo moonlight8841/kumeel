@@ -1,12 +1,13 @@
+import {enforceOwnerQuota,takeOwnerQuota} from './_shared/owner-quota.mjs'
 // Owner-only editing assistant: proofreading, image alt text, session summaries,
 // quiz drafts, English translation drafts and sparring objections. Every result is a suggestion the owner reviews before saving.
 import {GoogleGenerativeAI,SchemaType} from '@google/generative-ai'
-import {jsonResponder,parseBody,providerFailure,supabaseConfig,verifyOwner,withModelFallback,jsonInstruction,parseModelJson,thinkingFor,generateWithProviders,cloudflareConfigured} from './_shared/owner-ai.mjs'
+import {jsonResponder,bodyTooLarge,parseBody,providerFailure,supabaseConfig,verifyOwner,withModelFallback,jsonInstruction,parseModelJson,thinkingFor,generateWithProviders,cloudflareConfigured} from './_shared/owner-ai.mjs'
 
 const MAX_TEXT=12000
 const MAX_IMAGE=4_000_000
-const COOLDOWN=8000
-const recent=new Map()
+
+
 const S=SchemaType
 const str=(v,max,min=1)=>typeof v==='string'&&v.trim().length>=min&&v.length<=max
 const MAX_TRANSLATION=60000
@@ -124,10 +125,10 @@ export function assist({task,payload,image,env}){
  return generateWithProviders({env,gemini:()=>geminiGenerate({task,payload,image,env}),cloudflare:spec.image?null:{system:jsonInstruction(systemFor(spec,payload),spec.schema),messages:[{role:'user',text:JSON.stringify(spec.input(payload))}],maxTokens:spec.maxTokens?Math.min(spec.maxTokens,8192):task==='proofread'?6000:1500,temperature:temperatureFor(task),timeoutMs:task==='translate'?90_000:40_000}})
 }
 
-export function createHandler({fetcher=fetch,env=process.env,generate=assist,imageFetcher=fetchImage,clock=Date.now,limits=recent}={}){return async(req,res)=>{
+export function createHandler({fetcher=fetch,env=process.env,generate=assist,imageFetcher=fetchImage,quota=takeOwnerQuota}={}){return async(req,res)=>{
  const fail=jsonResponder(res)
  if(req.method!=='POST'){res.setHeader('Allow','POST');return fail(405,'استخدم طلب POST.')}
- if(Number(req.headers?.['content-length']||0)>40000)return fail(413,'النص أطول من المسموح.')
+ if(bodyTooLarge(req,40000))return fail(413,'النص أطول من المسموح.')
  try{
   const owner=await verifyOwner({authorization:req.headers?.authorization,fetcher,forbidden:'مساعد التحرير متاح للمالك فقط.'})
   if(!owner.user)return fail(owner.status,owner.error)
@@ -136,9 +137,7 @@ export function createHandler({fetcher=fetch,env=process.env,generate=assist,ima
   const payload=body?.payload
   if(!spec||!payload||typeof payload!=='object'||Array.isArray(payload)||!spec.validate(payload))return fail(400,`مدخلات غير صالحة. الحد الأقصى ${MAX_TEXT.toLocaleString('ar-SA')} حرف.`)
   if(!env.GEMINI_API_KEY&&!cloudflareConfigured(env))return fail(503,'لم يُفعّل مزوّد الذكاء الاصطناعي على الخادم بعد.')
-  const time=clock(),last=limits.get(owner.user.id)
-  if(last!==undefined&&time-last<COOLDOWN){res.setHeader('Retry-After',String(Math.ceil(COOLDOWN/1000)));return fail(429,'انتظر ثوانيَ قليلة قبل الطلب التالي.')}
-  limits.set(owner.user.id,time)
+ if(!await enforceOwnerQuota({actor:owner.user.id,scope:'assist',env,fetcher,quota,res,fail}))return
   let image
   if(spec.image){try{image=await imageFetcher(payload.imageUrl)}catch(error){return fail(422,error?.code==='size'?'الصورة أكبر من ٤ ميغابايت.':'تعذّر قراءة الصورة. الصيغ المدعومة: JPEG وPNG وWebP من مكتبة المنصة.')}}
   const data=await generate({task:body.task,payload,image,env})

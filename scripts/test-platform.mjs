@@ -259,7 +259,7 @@ try {
     const originalFetch = globalThis.fetch
     const originalOrigin = process.env.SITE_URL
     process.env.SITE_URL = 'https://kumeel.example'
-    globalThis.fetch = async () => new Response(JSON.stringify([{ content }]), { headers: { 'Content-Type': 'application/json' } })
+    globalThis.fetch = async () => new Response(JSON.stringify([{ content,revision:1 }]), { headers: { 'Content-Type': 'application/json' } })
     const response = () => ({ code: 200, headers: {}, body: '', setHeader(key, value) { this.headers[key] = value }, status(code) { this.code = code; return this }, send(body) { this.body = body; return this }, end() { return this } })
     try {
       let res = response(); await handler({ method: 'GET', query: { path: '/ideas/approved' } }, res)
@@ -270,6 +270,10 @@ try {
       res = response(); await handler({ method: 'POST' }, res); assert.equal(res.code, 405)
       res = response(); await sitemap({ method: 'GET' }, res); assert.match(res.body, /\/ideas\/approved/); assert.ok(!res.body.includes('/ideas/certainty'))
       res = response(); await robots({ method: 'GET' }, res); assert.match(res.body, /Sitemap: https:\/\/kumeel.example\/sitemap.xml/)
+      globalThis.fetch=async()=>new Response('{}',{status:503})
+      res=response();await handler({method:'GET',query:{path:'/ideas/approved'}},res)
+      assert.equal(res.code,503);assert.equal(res.headers['Cache-Control'],'no-store');assert.ok(!res.body.includes('نص مستقل للفكرة'))
+      res=response();await handler({method:'GET',query:{path:'/admin'}},res);assert.equal(res.code,200);assert.equal(res.headers['Cache-Control'],'no-store')
     } finally { globalThis.fetch = originalFetch; if (originalOrigin === undefined) delete process.env.SITE_URL; else process.env.SITE_URL = originalOrigin }
   })
 } finally { await server.close() }
