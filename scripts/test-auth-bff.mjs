@@ -114,3 +114,13 @@ await test('Node adapter preserves separate cookies and never caches a personali
  await sendWebResponse(new Response('{}',{headers}),res)
  assert.equal(captured.get('set-cookie').length,2);assert.match(captured.get('cache-control'),/no-store/);assert.equal(ended,true)
 })
+await test('Gateway does not follow an upstream redirect with the user credential',async()=>{
+ const fixture=provider();let redirects=0
+ const fetcher=async(input,init)=>{
+  assert.equal(init.redirect,'manual')
+  if(new URL(String(input)).pathname==='/rest/v1/kumeel_drafts'){redirects++;return new Response(null,{status:307,headers:{Location:'https://evil.example/steal'}})}
+  return fixture.fetcher(input,init)
+ }
+ const request=new Request(origin+'/api/backend?path=/rest/v1/kumeel_drafts',{headers:{'X-Kumeel-BFF':'1',Cookie:`__Host-kumeel-access=${token}; __Host-kumeel-refresh=${refresh}`}})
+ const response=await handleBackend(request,{fetcher});assert.equal(response.status,503);assert.equal(response.headers.get('Location'),null);assert.equal(redirects,1)
+})

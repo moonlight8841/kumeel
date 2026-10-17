@@ -22,7 +22,7 @@ export async function handleBackend(request,{fetcher=fetch}={}){
  try{
   const identity=await context.verified()
   if(!identity&&!publicRead)return context.apply(fail(401))
-  if(isUpload){const owner=await fetcher(`${config.url}/rest/v1/rpc/kumeel_is_secure_editor`,{method:'POST',headers:{apikey:config.publishableKey,Authorization:`Bearer ${identity.access_token}`,'Content-Type':'application/json'},body:'{}',redirect:'error',signal:AbortSignal.timeout(10000)});if(!owner.ok||await owner.json()!==true)return context.apply(fail(403))}
+  if(isUpload){const owner=await fetcher(`${config.url}/rest/v1/rpc/kumeel_is_secure_editor`,{method:'POST',headers:{apikey:config.publishableKey,Authorization:`Bearer ${identity.access_token}`,'Content-Type':'application/json'},body:'{}',redirect:'manual',signal:AbortSignal.timeout(10000)});if(!owner.ok||await owner.json()!==true)return context.apply(fail(403))}
   const headers=new Headers({apikey:config.publishableKey})
   if(identity)headers.set('Authorization',`Bearer ${identity.access_token}`)
   for(const key of ['accept','content-type','prefer','range','range-unit','x-upsert','cache-control']){const value=request.headers.get(key);if(value)headers.set(key,value)}
@@ -37,7 +37,8 @@ export async function handleBackend(request,{fetcher=fetch}={}){
     body=request.body?.pipeThrough(new TransformStream({transform(chunk,controller){size+=chunk.byteLength;if(size>maximum)throw Error('Body too large');controller.enqueue(chunk)}}))
    }else body=await boundedText(request,3*1024*1024)
   }
-  const upstream=await fetcher(target,{method:request.method,headers,body,duplex:'half',redirect:'error',signal:AbortSignal.timeout(isUpload?90000:20000)})
+  const upstream=await fetcher(target,{method:request.method,headers,body,duplex:'half',redirect:'manual',signal:AbortSignal.timeout(isUpload?90000:20000)})
+  if(upstream.status>=300&&upstream.status<400)throw Error('Unexpected upstream redirect')
   const output=new Headers()
   for(const key of ['content-type','content-range','range-unit','preference-applied']){const value=upstream.headers.get(key);if(value)output.set(key,value)}
   // PostgREST body contains application records only; Auth and token RPCs are not allowlisted.

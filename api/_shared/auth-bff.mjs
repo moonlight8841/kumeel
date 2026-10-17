@@ -44,7 +44,7 @@ export async function handleAuth(request,options){
    data={user:publicUser(user),session:hasSession?{user:publicUser(user)}:null}
   }
   return context.apply(reply({data,error:null,event}))
- }catch(error){const tooLarge=error?.message==='Body too large';return context.apply(reply({data:null,error:{code:tooLarge?'body_too_large':'auth_unavailable',status:tooLarge?413:503,message:'Authentication unavailable.'}},tooLarge?413:503))}
+ }catch(error){console.error(JSON.stringify({event:'auth_bff_failed',type:error?.name}));const tooLarge=error?.message==='Body too large';return context.apply(reply({data:null,error:{code:tooLarge?'body_too_large':'auth_unavailable',status:tooLarge?413:503,message:'Authentication unavailable.'}},tooLarge?413:503))}
 }
 export async function boundedText(request,max){
  const reader=request.body?.getReader();if(!reader)return ''

@@ -32,18 +32,18 @@ export function browserSession(request,{fetcher=fetch,refresh=true}={}){
   removeItem(key){if(key.endsWith('-code-verifier'))write(VERIFIER,null);else{write(ACCESS,null);write(REFRESH,null)}},
  }
  let instance
- const getClient=()=>instance??=createClient(config.url,config.publishableKey,{global:{fetch:(input,init)=>fetcher(input,{...init,redirect:'error',signal:init?.signal??AbortSignal.timeout(10000)})},auth:{storage,storageKey:'kumeel-server',flowType:'pkce',persistSession:true,autoRefreshToken:false,detectSessionInUrl:false}})
+ const getClient=()=>instance??=createClient(config.url,config.publishableKey,{global:{fetch:(input,init)=>fetcher(input,{...init,redirect:'manual',signal:init?.signal??AbortSignal.timeout(10000)})},auth:{storage,storageKey:'kumeel-server',flowType:'pkce',persistSession:true,autoRefreshToken:false,detectSessionInUrl:false}})
  async function verified(){
   if(!refresh){
    const access_token=cookies.get(ACCESS)
    if(!access_token)return null
    try{const claims=JSON.parse(Buffer.from(access_token.split('.')[1],'base64url').toString());if(!Number.isFinite(claims.exp)||claims.exp<=Date.now()/1000)return null}catch{return null}
    const headers={apikey:config.publishableKey,Authorization:`Bearer ${access_token}`}
-   const identity=await fetcher(`${config.url}/auth/v1/user`,{headers,redirect:'error',signal:AbortSignal.timeout(10000)})
+   const identity=await fetcher(`${config.url}/auth/v1/user`,{headers,redirect:'manual',signal:AbortSignal.timeout(10000)})
    if(identity.status===401||identity.status===403)return null
    if(!identity.ok)throw Error('Identity unavailable')
    const user=await identity.json()
-   const active=await fetcher(`${config.url}/rest/v1/rpc/kumeel_has_active_session`,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:'{}',redirect:'error',signal:AbortSignal.timeout(10000)})
+   const active=await fetcher(`${config.url}/rest/v1/rpc/kumeel_has_active_session`,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:'{}',redirect:'manual',signal:AbortSignal.timeout(10000)})
    if(!active.ok)throw Error('Session authorization unavailable')
    return await active.json()===true?{user,access_token}:null
   }
