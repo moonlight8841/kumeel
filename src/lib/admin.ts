@@ -1,9 +1,10 @@
 import type {Content} from '../content'
 import {defaultSite} from '../site'
 import {booksFor} from '../books'
+import {isStarterWriting} from './publication'
 
 const n=(value:number)=>value.toLocaleString('ar-SA')
-export type AdminTab='teachers'|'overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'assist'|'settings'|'arrange'|'publish'|'backup'
+export type AdminTab='sparring'|'teachers'|'overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'assist'|'settings'|'arrange'|'publish'|'backup'
 export type AdminNavItem={key:AdminTab;label:string;icon:string;hint:string;ownerOnly?:boolean}
 export type AdminNavGroup={label:string;items:AdminNavItem[]}
 
@@ -12,6 +13,7 @@ export const adminNav:AdminNavGroup[]=[
  {label:'البداية',items:[{key:'overview',label:'نظرة عامة',icon:'◎',hint:'حالة المحتوى وما يحتاج انتباهك'}]},
  {label:'المحتوى',items:[
   {key:'writings',label:'الكتابات',icon:'✎',hint:'دفتر الكتابة والمعاينة'},
+  {key:'sparring',label:'المحاور',icon:'⚖',hint:'اختبر كتاباتك أمام اعتراض قوي، وانشر ما تختار',ownerOnly:true},
   {key:'thoughts',label:'الأفكار واللقاءات',icon:'◇',hint:'المرصد والوسائط ومجلس الحوار'},
   {key:'learning',label:'المحتوى التعليمي',icon:'◈',hint:'مقالات الاكتشاف وأسئلة التحدّي'},
   {key:'books',label:'مكتبة الكتب',icon:'▤',hint:'الكتب وملفاتها وترتيبها'},
@@ -69,7 +71,10 @@ export function contentHealth(content:Content,now:number):HealthIssue[]{
  const unsourced=(content.ideas??[]).filter(i=>!i.sample&&!i.source?.trim()&&!i.sourceUrl?.trim())
  if(unsourced.length)add({id:'idea-source',level:'warning',title:`${n(unsourced.length)} أفكار بلا مصدر`,detail:'ذكر المصدر أو السياق يعزّز ثقة القارئ.',tab:'thoughts'})
  const samples=(content.ideas??[]).filter(i=>i.sample)
- if(samples.length)add({id:'idea-sample',level:'info',title:`${n(samples.length)} أفكار تجريبية ما زالت ظاهرة`,detail:'استبدلها بأفكارك أو أزلها قبل النشر.',tab:'arrange'})
+ if(samples.length)add({id:'idea-sample',level:'info',title:`${n(samples.length)} أفكار تجريبية في الدفتر`,detail:'مخفية عن الزوار. استبدلها بأفكار معتمدة قبل إتاحتها.',tab:'thoughts'})
+ const starters=content.writings.filter(isStarterWriting)
+ if(starters.length)add({id:'writing-starter',level:'warning',title:`${n(starters.length)} كتابات تمهيدية تحتاج الاستبدال`,detail:'محفوظة للتحرير ومخفية عن الزوار؛ أضف كتاباتك الفعلية.',tab:'writings'})
+ if(!content.writings.some(w=>!isStarterWriting(w))&&!(content.ideas??[]).some(i=>!i.sample))add({id:'original-content',level:'warning',title:'أضف أول مادة معتمدة',detail:'الجاهزية التقنية لا تعوّض المحتوى. انشر كتابة أو فكرة راجعتها واعتمدتها.',tab:'writings'})
  if(![site.showEmail&&site.email,site.showTiktok&&site.tiktok,site.showWhatsapp&&site.whatsapp].some(Boolean))add({id:'contact',level:'warning',title:'لا توجد وسيلة تواصل ظاهرة',detail:'فعّل وسيلة واحدة على الأقل ليصل إليك القرّاء.',tab:'settings'})
  const pastNoSummary=(content.sessions??[]).filter(s=>!s.cancelled&&Date.parse(s.startsAt)+s.durationMinutes*60000<=now&&!s.summary?.trim()&&!s.recordingUrl?.trim())
  if(pastNoSummary.length)add({id:'session-summary',level:'info',title:`${n(pastNoSummary.length)} لقاءات منتهية بلا ملخص أو تسجيل`,detail:'الملخص يحوّل اللقاء إلى أثر يقرؤه من فاته. يلخّص المساعد ملاحظاتك.',tab:'assist'})

@@ -10,8 +10,8 @@ const quizQuestion={title:'ما الفكرة؟',options:['أ','ب','ج','د'],an
 
 async function run({method='POST',body={task:'proofread',payload:{text}},user=owner,member=true,key='k',generate=async()=>({corrected:text.replace('الاخطاء','الأخطاء'),notes:['همزة القطع']}),imageFetcher=async()=>({mimeType:'image/png',data:'AA=='}),headers={authorization},limits=new Map()}={}){
  let calls=0
- const fetcher=async url=>({ok:true,json:async()=>url.includes('/auth/')?user:member?[{user_id:owner.id}]:[]})
- const handler=createHandler({fetcher,env:{GEMINI_API_KEY:key},limits,imageFetcher,generate:async(...a)=>{calls++;return generate(...a)}})
+ const fetcher=async url=>({ok:true,json:async()=>url.includes('/auth/')?user:member})
+ const handler=createHandler({fetcher,env:{GEMINI_API_KEY:key},quota:async({actor})=>{const last=limits.get(actor),now=Date.now();if(last!==undefined&&now-last<8000)return {allowed:false,retry_after:8,reason:'cooldown'};limits.set(actor,now);return {allowed:true,retry_after:0}},imageFetcher,generate:async(...a)=>{calls++;return generate(...a)}})
  const result={headers:{},statusCode:0}
  await handler({method,body,headers},{setHeader:(k,v)=>result.headers[k]=v,status(c){result.statusCode=c;return this},json(d){result.data=d}})
  return {...result,calls}
@@ -23,6 +23,10 @@ await test('Edit assist: only the verified owner reaches the model',async()=>{
  for(const user of [{...owner,email:'visitor@example.com'},{...owner,email_confirmed_at:null}]){const r=await run({user});assert.equal(r.statusCode,403);assert.equal(r.calls,0)}
  assert.equal((await run({member:false})).calls,0)
  assert.equal((await run({key:''})).statusCode,503)
+ const second={...owner,id:'second-owner-id',email:'bobmorgann2@gmail.com'}
+ assert.equal((await run({user:second})).statusCode,200)
+ assert.equal((await run({user:second,member:false})).statusCode,403)
+ assert.equal((await run({user:{...second,email_confirmed_at:null}})).statusCode,403)
 })
 
 await test('Edit assist: rejects unknown tasks, prototype keys and oversized or malformed input',async()=>{
@@ -35,6 +39,26 @@ await test('Edit assist: proofreading that rewrites the text is refused',async()
  const good=await run();assert.equal(good.statusCode,200);assert.ok(good.data.data.corrected.includes('الأخطاء'))
  assert.equal((await run({generate:async()=>({corrected:'نص مختلف تمامًا',notes:[]})})).statusCode,502)
  assert.equal((await run({generate:async()=>({corrected:text+text,notes:[]})})).statusCode,502)
+})
+await test('Translation is owner-only, bounded, structured and never accepts publish metadata',async()=>{
+ const payload={title:'سؤال',text:'لماذا نبحث؟',format:'plain',sourceLanguage:'ar',targetLanguage:'en'}
+ const body={task:'translate',payload}
+ const result=await run({body,generate:async()=>({title:'A question',text:'Why do we search?'})})
+ assert.equal(result.statusCode,200);assert.deepEqual(result.data.data,{title:'A question',text:'Why do we search?'})
+ const anonymous=await run({body,headers:{}});assert.equal(anonymous.statusCode,401);assert.equal(anonymous.calls,0)
+ for(const bad of [{...payload,targetLanguage:'fr'},{...payload,text:'a'.repeat(12001)},{...payload,publish:true},{...payload,format:'html'}]){
+  const r=await run({body:{task:'translate',payload:bad}});assert.equal(r.statusCode,400);assert.equal(r.calls,0)
+ }
+ assert.equal((await run({body:{task:'translate',payload:{...payload,text:'a'.repeat(12000)}},generate:async()=>({title:'A question',text:'Translated.'})})).statusCode,200)
+ assert.equal((await run({body,key:''})).statusCode,503)
+ for(const error of [Object.assign(new Error('busy'),{status:429}),Object.assign(new Error('timeout'),{name:'TimeoutError'}),new SyntaxError('Unexpected end of JSON input')]){
+  const r=await run({body,generate:async()=>{throw error}});assert.ok(r.statusCode>=500||r.statusCode===429,String(r.statusCode));assert.equal(r.data.success,false);assert.equal(r.data.data,undefined)
+ }
+ assert.equal((await run({body:{task:'translate',payload:{...payload,title:''}},generate:async()=>({title:'',text:'Biography.'})})).statusCode,200)
+ assert.equal((await run({body,generate:async()=>({title:'',text:'Untitled.'})})).statusCode,502)
+ const markdown=await run({body:{task:'translate',payload:{...payload,format:'markdown',text:'## سؤال\n\n- أولًا'}},generate:async()=>({title:'Q',text:'## Question\n\n- First'})})
+ assert.equal(markdown.data.data.text,'## Question\n\n- First')
+ for(const invalid of [{title:'OK',text:''},{title:'OK',text:'x'.repeat(60001)},{title:'OK',text:'Text',approved:true},{title:'OK',text:'<script>alert(1)</script>'}])assert.equal((await run({body,generate:async()=>invalid})).statusCode,502)
 })
 
 await test('Edit assist: images are read only from the platform bucket',async()=>{
@@ -69,4 +93,20 @@ await test('Edit assist: cooldown and provider errors stay safe',async()=>{
  const leak=await run({generate:async()=>{throw new Error('secret provider detail')}})
  assert.equal(leak.statusCode,502);assert.ok(!JSON.stringify(leak.data).includes('secret'))
  assert.equal((await run({generate:async()=>{throw Object.assign(new Error('x'),{status:429})}})).statusCode,429)
+})
+
+await test('Edit assist: objection stays bounded and its quote is grounded in the writing',async()=>{
+ const writing='الحرية أن تختار ما تريد. ومن لا يختار لا يعيش حقًا.'
+ const payload={title:'الحرية',text:writing,style:'logic',turns:[]}
+ const ok=await run({body:{task:'objection',payload},generate:async()=>({objection:'تفترض أن الاختيار وحده يصنع الحياة، لكنك لم تبيّن لماذا.',quote:'ومن لا يختار لا يعيش حقًا.'})})
+ assert.equal(ok.statusCode,200);assert.equal(ok.data.data.quote,'ومن لا يختار لا يعيش حقًا.')
+ const invented=await run({body:{task:'objection',payload},generate:async()=>({objection:'اعتراض طويل بما يكفي ليكون صالحًا هنا.',quote:'جملة غير موجودة'})})
+ assert.equal(invented.statusCode,200);assert.equal(invented.data.data.quote,'')
+ assert.equal((await run({body:{task:'objection',payload},generate:async()=>({objection:'<b>اعتراض</b> يحتوي وسومًا غير مقبولة هنا',quote:''})})).statusCode,502)
+ assert.equal((await run({body:{task:'objection',payload},generate:async()=>({objection:'قصير',quote:''})})).statusCode,502)
+ const turn={role:'critic',text:'اعتراض سابق'}
+ assert.equal((await run({body:{task:'objection',payload:{...payload,turns:Array(6).fill(turn)}},generate:async()=>({objection:'اعتراض جديد على جوابك الأخير بوضوح.',quote:''})})).statusCode,200)
+ for(const bad of [{...payload,style:'oracle'},{...payload,turns:Array(7).fill(turn)},{...payload,turns:[{role:'judge',text:'x'}]},{...payload,turns:[{...turn,extra:1}]},{...payload,turns:[{...turn,text:'ا'.repeat(4001)}]},{...payload,extra:1},{...payload,text:'قصير'}]){
+  const r=await run({body:{task:'objection',payload:bad}});assert.equal(r.statusCode,400);assert.equal(r.calls,0)
+ }
 })

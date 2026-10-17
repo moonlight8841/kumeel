@@ -1,8 +1,9 @@
 import {TeacherReview} from './Teachers'
+import {AdminSparring} from './admin/AdminSparring'
 import {CommunityReview} from './CommunityReview'
 import {IdeaEngine} from './IdeaEngine'
 import {useCallback,useEffect,useState} from 'react'
-import {validContent,type Content} from '../content'
+import {validOwnerDraft as validContent,type OwnerDraft as Content} from '../lib/translations'
 import {NotebookEditor} from './NotebookEditor'
 import {defaultSite} from '../site'
 import {BookEditor} from './BookEditor'
@@ -17,10 +18,11 @@ import {AdminArrange} from './admin/AdminArrange'
 import {AdminBackup} from './admin/AdminBackup'
 import {AdminAssist} from './admin/AdminAssist'
 
-type Props={content:Content;revision:number|null;draft?:boolean;onSave:(content:Content)=>boolean;onPublish:(content:Content,revision:number)=>void}
+type Props={content:Content;revision:number|null;draft?:boolean;onSave:(content:Content)=>boolean;onPublish:(content:Content,revision:number)=>void;onOwnerChange?:(id:string|null)=>void;legacyDraftAvailable?:boolean;onImportLegacy?:()=>void;onDeleteLegacy?:()=>void}
 type Notice={text:string;tone:'success'|'error'|'info'}
 
-export function AdminPanel({content,revision,draft=false,onSave,onPublish}:Props){
+export function AdminPanel({content,revision,draft=false,onSave,onPublish,onOwnerChange,legacyDraftAvailable=false,onImportLegacy,onDeleteLegacy}:Props){
+ const [ownerId,setOwnerId]=useState<string|null>(null)
  const [authorized,setAuthorized]=useState(false)
  const [local,setLocal]=useState(false)
  const [tab,setTab]=useState<AdminTab>('overview')
@@ -31,7 +33,7 @@ export function AdminPanel({content,revision,draft=false,onSave,onPublish}:Props
  const allowed=authorized||(import.meta.env.DEV&&local)
  const dirty=notebookDirty||settingsDirty
  const site=content.site??defaultSite
- const onAuthorizationChange=useCallback((value:boolean)=>setAuthorized(value),[])
+ const onAuthorizationChange=useCallback((value:boolean,id?:string|null)=>{setAuthorized(value);if(id!==undefined){setOwnerId(id);onOwnerChange?.(id)}},[onOwnerChange])
 
  // The hash keeps the open section across reloads and makes it linkable.
  useEffect(()=>{const sync=()=>{const next=parseAdminTab(location.hash);if(next)setTab(next)};sync();window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync)},[])
@@ -49,7 +51,7 @@ export function AdminPanel({content,revision,draft=false,onSave,onPublish}:Props
  }
  function commit(next:Content){
   if(!allowed||!validContent(next)||!onSave(next)){setNotice({tone:'error',text:'لم يتم الحفظ. راجع الحقول والروابط وحجم المحتوى.'});return false}
-  setNotice({tone:'success',text:'حُفظت المسودة. راجعها ثم انشرها من «النشر والحساب».'})
+  setNotice({tone:'success',text:'حُفظت المسودة في هذا التبويب. احفظها سحابيًا أو راجعها ثم انشرها من «النشر والحساب».'})
   return true
  }
  const current=adminTabs.find(t=>t.key===tab)
@@ -77,17 +79,19 @@ export function AdminPanel({content,revision,draft=false,onSave,onPublish}:Props
    </aside>
    <main id="admin-main" className="editor admin-main" tabIndex={-1}>
     {allowed&&current&&<div className="admin-page-head"><span className="admin-page-icon" aria-hidden="true">{current.icon}</span><div><h1>{current.label}</h1><p>{current.hint}</p></div></div>}
-    <div hidden={allowed&&tab!=='publish'}><CloudPanel content={content} revision={revision} onLoad={commit} onPublish={onPublish} onAuthorizationChange={onAuthorizationChange} hasUnsavedChanges={notebookDirty}/></div>
+    <div hidden={allowed&&tab!=='publish'}><CloudPanel content={content} revision={revision} onLoad={commit} onPublish={onPublish} onAuthorizationChange={onAuthorizationChange} hasUnsavedChanges={notebookDirty} hasLocalDraft={draft}/></div>
     {!authorized&&import.meta.env.DEV&&<div className="admin-local"><p>التجربة المحلية تحفظ على هذا المتصفح. النشر السحابي يحتاج حسابًا مخوّلًا.</p><button className="admin-btn" onClick={()=>setLocal(!local)}>{local?'إغلاق التجربة المحلية':'فتح تجربة الإدارة المحلية'}</button></div>}
     {!allowed?<p className="admin-gate">سجّل الدخول بحساب يملك صلاحية الإدارة لفتح أدوات التحرير. تسجيل الحساب وحده لا يمنح صلاحيات.</p>:<div className="admin-panel-body">
+     {authorized&&legacyDraftAvailable&&<section className="admin-card"><p>توجد مسودة بالطريقة القديمة على هذا المتصفح. لن تظهر في الموقع العام أو تُحمّل تلقائيًا.</p><button className="admin-btn" onClick={onImportLegacy}>استيراد المسودة القديمة إلى حسابي في هذا التبويب</button><button className="admin-btn" onClick={onDeleteLegacy}>حذف النسخة القديمة بعد حفظ نسخة احتياطية</button></section>}
      {tab==='overview'&&<AdminOverview content={content} revision={revision} draft={draft} go={go}/>}
      {tab==='teachers'&&authorized&&<TeacherReview/>}
-     {tab==='community'&&authorized&&<CommunityReview/>}
-     {tab==='engine'&&<IdeaEngine content={content} save={commit}/>}
+     {tab==='community'&&authorized&&<CommunityReview writings={content.writings}/>}
+     {tab==='engine'&&<IdeaEngine key={ownerId??'preview'} ownerId={ownerId??'development-preview'} content={content} save={commit}/>}
      {tab==='assist'&&<AdminAssist content={content} save={commit}/>}
+     {tab==='sparring'&&authorized&&<AdminSparring content={content} save={commit} onDirtyChange={setNotebookDirty}/>}
      {tab==='settings'&&<AdminSettings key={JSON.stringify([content.site,content.bio])} content={content} save={commit} onDirtyChange={setSettingsDirty}/>}
      {tab==='thoughts'&&<ThoughtEditor content={content} onSave={commit}/>}
-     {tab==='writings'&&<NotebookEditor content={content} save={commit} onDirtyChange={setNotebookDirty}/>}
+     {tab==='writings'&&<NotebookEditor key={ownerId??'preview'} ownerId={ownerId??'development-preview'} content={content} save={commit} onDirtyChange={setNotebookDirty}/>}
      {tab==='learning'&&<LearningEditor content={content} save={commit}/>}
      {tab==='books'&&<BookEditor content={content} save={commit}/>}
      {tab==='arrange'&&<AdminArrange content={content} save={commit}/>}

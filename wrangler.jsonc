@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kumeel-platform",
+  "account_id": "507f6fe5b3957bfe68fcc7f91534c3c3",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-10-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "rules": [{"type": "Text", "globs": ["**/*.html"], "fallthrough": true}],
+  "vars": {"SITE_URL": "https://kumeelalnahab.com"},
+  "routes": [
+    {"pattern": "kumeelalnahab.com", "zone_id": "00873301882bafdb200472dc92a6afc4", "custom_domain": true},
+    {"pattern": "www.kumeelalnahab.com", "zone_id": "00873301882bafdb200472dc92a6afc4", "custom_domain": true}
+  ],
+  "observability": {"enabled": true, "head_sampling_rate": 0.1, "traces": {"enabled": true}},
+  "workers_dev": true
+}

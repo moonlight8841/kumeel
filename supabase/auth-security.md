@@ -12,6 +12,6 @@ The owner must enroll a TOTP authenticator at first administrative login and com
 
 Cloudflare official skills are installed globally and its MCP OAuth connection is registered. Restart Codex to load the newly registered MCP tools before creating the widget. The Supabase MCP connection currently cannot administer the selected project, so its CAPTCHA secret and password policy require configuration through that project's dashboard.
 
-The sole administrator is `komeil9060@gmail.com`. Run `activate-owner.sql` after this account registers and confirms its email. The script revokes all other editor memberships. `kumeelalnahab@gmail.com` remains the public contact address and an ordinary visitor account.
+The approved owners are `komeil9060@gmail.com` and `bobmorgann2@gmail.com`. Run `activate-owner.sql` to add their existing accounts without revoking the other owner. Unconfirmed membership cannot administer content until email confirmation. Both the temporary database function and the AI API restrict access to these addresses plus database membership. `kumeelalnahab@gmail.com` remains the public contact address and an ordinary visitor account.
 
 Production Turnstile widget: `0x4AAAAAAFTrC5bcPSEVrVIr`, restricted to `kumeel-nine.vercel.app`. The owner configured its secret in Supabase Auth. Direct missing/invalid CAPTCHA requests are verified separately; successful human completion and replay require a fresh real token. Local authentication requires its own development widget/provider configuration.

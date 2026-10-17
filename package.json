@@ -4,11 +4,19 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "check:live": "node scripts/check-live.mjs",
+    "test:release": "node scripts/test-release.mjs",
+    "check:cloudflare": "npm run build && wrangler deploy --dry-run",
+    "dev:cloudflare": "node scripts/dev-worker.mjs",
+    "verify": "npm run lint && npm test && npm run test:release && wrangler deploy --dry-run --minify",
+    "test:published": "node scripts/test-published.mjs",
+    "deploy:cloudflare": "npm run verify && wrangler deploy --minify",
     "dev": "vite",
     "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "npm run build && node scripts/test-platform.mjs && node scripts/test-design.mjs && node scripts/test-lab.mjs && node scripts/test-salon.mjs && node scripts/test-teachers.mjs && node scripts/test-generate-idea.mjs && node scripts/test-edit-assist.mjs && node scripts/test-chat.mjs"
+    "test": "npm run build && node scripts/test-platform.mjs && node scripts/test-i18n.mjs && node scripts/test-translations.mjs && node scripts/test-design.mjs && node scripts/test-lab.mjs && node scripts/test-salon.mjs && node scripts/test-teachers.mjs && node scripts/test-generate-idea.mjs && node scripts/test-edit-assist.mjs && node scripts/test-chat.mjs && node scripts/test-dialogue.mjs && node scripts/test-published-loader.mjs && node scripts/test-security-client.mjs && node scripts/test-owner-guards.mjs && node scripts/test-auth-bff.mjs",
+    "test:security:db": "node scripts/test-security-db.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -20,14 +28,15 @@
     "@eslint/js": "^9.9.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "5.2.0",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
     "globals": "^15.9.0",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.21"
+    "vite": "7.3.7",
+    "wrangler": "4.151.0"
   },
   "engines": {
     "node": "24.x"

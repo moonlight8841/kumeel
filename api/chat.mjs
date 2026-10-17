@@ -2,11 +2,9 @@
 // and stores nothing. Rate limits live in Supabase (supabase/chat.sql).
 import {createHmac} from 'node:crypto'
 import {GoogleGenerativeAI,SchemaType} from '@google/generative-ai'
-import {jsonResponder,parseBody,providerFailure,supabaseConfig,withModelFallback,jsonInstruction,parseModelJson,thinkingFor,generateWithProviders,cloudflareConfigured} from './_shared/owner-ai.mjs'
+import {jsonResponder,bodyTooLarge,parseBody,providerFailure,supabaseConfig,withModelFallback,jsonInstruction,parseModelJson,thinkingFor,generateWithProviders,cloudflareConfigured} from './_shared/owner-ai.mjs'
 
 export const LIMITS={message:600,historyText:800,turns:8,corpus:60000,sources:3}
-const CORPUS_TTL=5*60*1000
-let cache={at:0,corpus:null}
 
 const clip=(v,max)=>typeof v==='string'?v.replace(/\s+/g,' ').trim().slice(0,max):''
 
@@ -76,12 +74,10 @@ export function answer({messages,corpus,env}){
  return generateWithProviders({env,gemini:()=>geminiAnswer({messages,corpus,env}),cloudflare:{system:chatSystem(corpus),messages,maxTokens:800,temperature:.4,timeoutMs:15_000}})
 }
 
-async function defaultCorpus(clock){
- if(cache.corpus&&clock()-cache.at<CORPUS_TTL)return cache.corpus
+async function defaultCorpus(){
  const {publicContent}=await import('./public-content.mjs')
- const {content}=await publicContent()
- cache={at:clock(),corpus:buildCorpus(content)}
- return cache.corpus
+ const {content,fresh}=await publicContent()
+ return fresh?buildCorpus(content):[]
 }
 
 export function createHandler({env=process.env,fetcher=fetch,generate=answer,loadCorpus=defaultCorpus,quota=takeQuota,clock=Date.now}={}){return async(req,res)=>{
@@ -89,7 +85,7 @@ export function createHandler({env=process.env,fetcher=fetch,generate=answer,loa
  const enabled=Boolean((env.GEMINI_API_KEY||cloudflareConfigured(env))&&env.CHAT_RATE_SECRET&&env.CHAT_RATE_SECRET.length>=32)
  if(req.method==='GET'){res.setHeader('Cache-Control','public, max-age=300');return res.status(200).json({success:true,enabled})}
  if(req.method!=='POST'){res.setHeader('Allow','GET, POST');return fail(405,'استخدم طلب POST.')}
- if(Number(req.headers?.['content-length']||0)>24000)return fail(413,'المحادثة أطول من المسموح.')
+ if(bodyTooLarge(req,24000))return fail(413,'المحادثة أطول من المسموح.')
  if(!enabled)return fail(503,'المحاور غير مفعّل بعد.')
  const body=parseBody(req)
  if(!body||!validMessages(body.messages))return fail(400,`اكتب سؤالًا حتى ${LIMITS.message.toLocaleString('ar-SA')} حرف.`)
@@ -100,6 +96,7 @@ export function createHandler({env=process.env,fetcher=fetch,generate=answer,loa
   const state=await quota({secret:env.CHAT_RATE_SECRET,visitor:visitorKey(req,env.CHAT_RATE_SECRET),fetcher})
   if(state!=='ok'){if(limitMessages[state]){res.setHeader('Retry-After',state==='minute'?'60':'3600');return fail(429,limitMessages[state])}return fail(503,'تعذّر التحقق من حدود الاستخدام. أعد المحاولة لاحقًا.')}
   const corpus=await loadCorpus(clock)
+  if(!corpus.length)return fail(503,'المحتوى المنشور غير متاح للمحاور حاليًا. حاول لاحقًا.')
   const data=await generate({messages,corpus,env})
   if(!data||typeof data.answer!=='string'||!data.answer.trim()||data.answer.length>3000||!Array.isArray(data.sources))return fail(502,'تعذّر تكوين إجابة. أعد صياغة السؤال.')
   // Only documents that exist can be cited; the model never supplies links.

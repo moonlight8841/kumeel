@@ -1,0 +1,4 @@
+# Optional Worker development secrets only. Copy to .dev.vars when needed.
+# Keep GitHub and Supabase administrative credentials outside this file.
+# GEMINI_API_KEY=
+# CHAT_RATE_SECRET=

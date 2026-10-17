@@ -4,16 +4,67 @@ import { test } from 'node:test'
 import { createServer } from 'vite'
 const server = await createServer({ server: { middlewareMode: true }, appType: 'custom' })
 try {
-  const { initialContent, validContent, youtubeEmbed, meetingUrl, httpsUrl } = await server.ssrLoadModule('/src/content.ts')
+  const { legacyContent: initialContent, validContent, youtubeEmbed, meetingUrl, httpsUrl } = await server.ssrLoadModule('/src/content.ts')
   const { pageInfo, publicPaths, renderHead, replaceHead, structuredData } = await server.ssrLoadModule('/src/lib/pages.ts')
-  const { validNewPassword, safeAuthReturnUrl } = await server.ssrLoadModule('/src/lib/auth-security.ts')
+  await test('Search identity links the named website, profile and original articles without invented accounts',()=>{
+    const origin='https://kumeelalnahab.com'
+    const home=pageInfo(initialContent,'/')
+    assert.ok(home.title.startsWith('كميل ال نهاب |'))
+    const graph=structuredData(initialContent,home,origin)['@graph']
+    const person=graph.find(n=>n['@type']==='Person')
+    const website=graph.find(n=>n['@type']==='WebSite')
+    assert.ok(website)
+    assert.equal(website.name,'كميل ال نهاب')
+    assert.equal(website.url,origin+'/')
+    assert.ok(website.alternateName.includes('Kumeel Al Nahab'))
+    assert.equal(website.publisher['@id'],person['@id'])
+    assert.equal(person.mainEntityOfPage['@id'],origin+'/about#webpage')
+    assert.equal(person.sameAs,undefined)
+    const about=structuredData(initialContent,pageInfo(initialContent,'/about'),origin)['@graph'].find(n=>n['@type']==='ProfilePage')
+    assert.equal(about['@id'],origin+'/about#webpage')
+    assert.equal(about.mainEntity['@id'],person['@id'])
+    const writing={id:'original-seo',title:'كتابة أصلية',category:'فلسفة',text:'نص أصلي للنشر'}
+    const content={...initialContent,writings:[writing]}
+    const article=structuredData(content,pageInfo(content,'/writings/original-seo'),origin)['@graph'].find(n=>n['@type']==='Article')
+    assert.equal(article.author['@id'],person['@id'])
+    assert.equal(article.author.url,origin+'/about')
+    for(const path of ['/','/about','/writings/original-seo']){
+      const info=pageInfo(content,path)
+      const head=renderHead(content,info,origin)
+      assert.ok(head.includes('content="index, follow"'))
+      assert.ok(head.includes(`rel="canonical" href="${origin}${path}"`))
+      assert.ok(head.includes('property="og:site_name" content="كميل ال نهاب"'))
+      const replaced=replaceHead('<head>'+head+'</head>',head)
+      assert.equal((replaced.match(/property="og:site_name"/g)||[]).length,1)
+    }
+    for(const path of ['/admin','/member','/not-found']){
+      assert.ok(renderHead(content,pageInfo(content,path),origin).includes('noindex, follow'))
+      assert.ok(!publicPaths(content).includes(path))
+    }
+  })
+  const { validNewPassword, safeAuthReturnUrl, authLinkError, authErrorReturnPath } = await server.ssrLoadModule('/src/lib/auth-security.ts')
   await test('Authentication rejects weak passwords and untrusted return origins', () => {
     assert.equal(validNewPassword('short'), false)
     assert.equal(validNewPassword('a'.repeat(14)), true)
     assert.equal(validNewPassword('a'.repeat(129)), false)
     assert.equal(safeAuthReturnUrl('https://kumeel-nine.vercel.app'), 'https://kumeel-nine.vercel.app/admin')
+    assert.equal(safeAuthReturnUrl('https://kumeelalnahab.com'), 'https://kumeelalnahab.com/admin')
+    assert.equal(safeAuthReturnUrl('https://www.kumeelalnahab.com'), 'https://www.kumeelalnahab.com/admin')
     assert.equal(safeAuthReturnUrl('http://127.0.0.1:5173'), 'http://127.0.0.1:5173/admin')
     for (const origin of ['https://evil.example', 'https://kumeel-nine.vercel.app.evil.example', 'http://kumeel-nine.vercel.app']) assert.throws(() => safeAuthReturnUrl(origin))
+  })
+  await test('Auth callback errors return to login without reflecting provider descriptions',()=>{
+    const origin='https://kumeelalnahab.com'
+    assert.equal(authLinkError(new URL(origin+'/admin?error_code=otp_expired')),'expired')
+    assert.equal(authLinkError(new URL(origin+'/#error=access_denied&error_code=otp_expired')),'expired')
+    assert.equal(authLinkError(new URL(origin+'/admin?error=access_denied&error_description=<script>')),'failed')
+    assert.equal(authErrorReturnPath(new URL(origin+'/?error=access_denied&error_code=otp_expired&error_description=private')),'/admin?auth_error=expired')
+    assert.equal(authErrorReturnPath(new URL(origin+'/#error=access_denied')),'/admin?auth_error=failed')
+    assert.equal(authErrorReturnPath(new URL(origin+'/admin?auth_error=expired')),null)
+    assert.equal(authErrorReturnPath(new URL(origin+'/member?error_code=otp_expired')),null)
+    assert.equal(authErrorReturnPath(new URL(origin+'/writings?error=unrelated')),null)
+    assert.equal(authLinkError(new URL(origin+'/?code=pkce-code')),null)
+    assert.equal(authErrorReturnPath(new URL(origin+'/#sparring')),null)
   })
   const { sessionCalendar } = await server.ssrLoadModule('/src/lib/calendar.ts')
   const {totpQrSource,normalizeTotp}=await server.ssrLoadModule('/src/lib/mfa.ts')
@@ -51,8 +102,8 @@ try {
     assert.ok(markup.includes('&lt;script&gt;alert(1)&lt;/script&gt;'))
     assert.ok(!markup.includes('<script>alert(1)</script>'))
     assert.ok(render(content,'/').includes('تسجيل الدخول إلى حسابك'))
-    assert.ok(render(content,'/observatory').includes('اكشف زاوية أخرى'))
-    assert.ok(render(content,'/observatory').includes('السؤال التالي'))
+    assert.ok(render({...content,ideas:content.ideas.map(i=>({...i,sample:false}))},'/observatory').includes('اكشف زاوية أخرى'))
+    assert.ok(render({...content,ideas:content.ideas.map(i=>({...i,sample:false}))},'/observatory').includes('السؤال التالي'))
   })
   await test('Library validates PDF links, preserves legacy content, and exposes author-attributed book pages',()=>{
     assert.equal(defaultBooks.length,30)
@@ -106,9 +157,9 @@ try {
     assert.equal(home.books.length,0)
     assert.ok(validContent(home))
     const single=contentForPage(initialContent,'/writings/meaning')
-    assert.equal(single.writings.length,1)
+    assert.equal(single.writings.length,0)
     assert.equal(single.ideas.length,0)
-    assert.ok(render(single,'/writings/meaning').includes(initialContent.writings[0].title))
+    assert.ok(!render(single,'/writings/meaning').includes(initialContent.writings[0].text))
     const markup=render(initialContent,'/')
     assert.ok(!markup.includes('id="assumption-lab"'))
     assert.ok(!markup.includes('reasoning-game'))
@@ -208,7 +259,7 @@ try {
     const originalFetch = globalThis.fetch
     const originalOrigin = process.env.SITE_URL
     process.env.SITE_URL = 'https://kumeel.example'
-    globalThis.fetch = async () => new Response(JSON.stringify([{ content }]), { headers: { 'Content-Type': 'application/json' } })
+    globalThis.fetch = async () => new Response(JSON.stringify([{ content,revision:1 }]), { headers: { 'Content-Type': 'application/json' } })
     const response = () => ({ code: 200, headers: {}, body: '', setHeader(key, value) { this.headers[key] = value }, status(code) { this.code = code; return this }, send(body) { this.body = body; return this }, end() { return this } })
     try {
       let res = response(); await handler({ method: 'GET', query: { path: '/ideas/approved' } }, res)
@@ -219,6 +270,10 @@ try {
       res = response(); await handler({ method: 'POST' }, res); assert.equal(res.code, 405)
       res = response(); await sitemap({ method: 'GET' }, res); assert.match(res.body, /\/ideas\/approved/); assert.ok(!res.body.includes('/ideas/certainty'))
       res = response(); await robots({ method: 'GET' }, res); assert.match(res.body, /Sitemap: https:\/\/kumeel.example\/sitemap.xml/)
+      globalThis.fetch=async()=>new Response('{}',{status:503})
+      res=response();await handler({method:'GET',query:{path:'/ideas/approved'}},res)
+      assert.equal(res.code,503);assert.equal(res.headers['Cache-Control'],'no-store');assert.ok(!res.body.includes('نص مستقل للفكرة'))
+      res=response();await handler({method:'GET',query:{path:'/admin'}},res);assert.equal(res.code,200);assert.equal(res.headers['Cache-Control'],'no-store')
     } finally { globalThis.fetch = originalFetch; if (originalOrigin === undefined) delete process.env.SITE_URL; else process.env.SITE_URL = originalOrigin }
   })
 } finally { await server.close() }

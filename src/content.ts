@@ -1,13 +1,16 @@
 import { defaultSite, validSite, type SiteSettings } from './site'
 import type { Discovery, QuizQuestion } from './learning'
 import {defaultBooks,validBooks,type Book} from './books'
+import {approvedWritings} from './approved-writings'
+import {validTranslationCatalogue,type TranslationCatalogue} from './lib/translation-records'
+import {validExchange,type ExchangeRound} from './lib/exchange'
 export const heroImage = '/images/desert.png'
-export type Writing = { id: string; title: string; category: 'تأملات' | 'شعر' | 'فلسفة' | 'علوم' | 'ثقافة'; text: string; format?:'plain'|'markdown'; publishedAt?:string }
+export type Writing = { id: string; title: string; category: 'تأملات' | 'شعر' | 'فلسفة' | 'علوم' | 'ثقافة'; text: string; format?:'plain'|'markdown'; publishedAt?:string; exchange?:ExchangeRound[] }
 export type Media = { id: string; title: string; type: 'صورة' | 'فيديو'; url: string; purpose?: 'حكمة بصرية' | 'درس مرئي'; description?: string; source?: string; thumbnail?: string; uploadedAt?: string }
 export type Idea = { id: string; title: string; kind: 'حكمة' | 'درس' | 'تجربة فكرية'; text: string; question: string; counterpoint?: string; source?: string; sourceUrl?: string; sample?: boolean }
 export type Session = { id: string; title: string; question: string; startsAt: string; durationMinutes: number; joinUrl: string; notes?: string; cancelled?: boolean; registrationUrl?:string; recordingUrl?:string; summary?:string; summaryPdfUrl?:string; prepare?: string; relatedIds?: string[] }
-export type Content = { bio: string; writings: Writing[]; media: Media[]; ideas?: Idea[]; sessions?: Session[]; site?: SiteSettings; discoveries?: Discovery[]; quiz?: QuizQuestion[]; books?:Book[] }
-export const initialContent: Content = {
+export type Content = { bio: string; writings: Writing[]; media: Media[]; ideas?: Idea[]; sessions?: Session[]; site?: SiteSettings; discoveries?: Discovery[]; quiz?: QuizQuestion[]; books?:Book[]; translations?:TranslationCatalogue }
+export const legacyContent: Content = {
   books: defaultBooks,
   site: defaultSite,
   bio: 'أنا كميل ال نهاب. أريد لهذه المساحة أن تكون نافذة للفلسفة والعلم والثقافة؛ أشارك فيها الأفكار التي تستحق التأمل، وأفتح أسئلة للتعلّم والحوار. المعرفة هنا دعوة إلى الفهم، وإلى مراجعة ما نظنه بديهيًا.',
@@ -24,6 +27,7 @@ export const initialContent: Content = {
   ],
   sessions: [],
 }
+export const initialContent:Content={...legacyContent,writings:approvedWritings}
 export function httpsUrl(value: unknown): value is string {
   if (typeof value !== 'string' || value.length > 2000 || [...value].some(char => char.charCodeAt(0) <= 32 || char.charCodeAt(0) === 127)) return false
   try { const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password } catch { return false }
@@ -47,7 +51,9 @@ export function meetingUrl(value: unknown): value is string {
 }
 export function validContent(value: unknown): value is Content {
   if (!value || typeof value !== 'object') return false
+  if(Object.prototype.hasOwnProperty.call(value,'translationDrafts'))return false
   const c = value as Content
+  if(c.translations!==undefined&&!validTranslationCatalogue(c.translations))return false
   const text = (v: unknown, max: number) => typeof v === 'string' && v.length <= max
   const ids = (items: { id: string }[]) => new Set(items.map(i => i.id)).size === items.length
   const optional = (v: unknown, max: number) => v === undefined || text(v, max)
@@ -57,6 +63,6 @@ export function validContent(value: unknown): value is Content {
   const discoveryValid = c.discoveries === undefined || (Array.isArray(c.discoveries) && c.discoveries.length <= 500 && c.discoveries.every(d => d && required(d.id, 150) && required(d.title, 150) && ['علوم', 'ثقافة', 'تجارب'].includes(d.category) && text(d.time, 50) && text(d.intro, 1000) && required(d.text, 50000)) && ids(c.discoveries))
   const quizValid = c.quiz === undefined || (Array.isArray(c.quiz) && c.quiz.length <= 100 && c.quiz.every(q => q && required(q.title, 300) && required(q.why, 2000) && Array.isArray(q.options) && q.options.length >= 2 && q.options.length <= 6 && q.options.every(o => required(o, 300)) && Number.isInteger(q.answer) && q.answer >= 0 && q.answer < q.options.length))
   return (c.books===undefined||validBooks(c.books)) && (c.site === undefined || validSite(c.site)) && discoveryValid && quizValid && ideasValid && sessionsValid && text(c.bio, 10000) && Array.isArray(c.writings) && c.writings.length <= 500 &&
-    c.writings.every(w => w && text(w.id, 150) && text(w.title, 150) && text(w.text, 50000) && (w.publishedAt===undefined||(/^\d{4}-\d{2}-\d{2}$/.test(w.publishedAt)&&Number.isFinite(Date.parse(w.publishedAt))&&new Date(w.publishedAt).toISOString().slice(0,10)===w.publishedAt)) && (w.format===undefined||['plain','markdown'].includes(w.format)) && ['شعر', 'تأملات', 'فلسفة', 'علوم', 'ثقافة'].includes(w.category)) && ids(c.writings) &&
+    c.writings.every(w => w && text(w.id, 150) && text(w.title, 150) && text(w.text, 50000) && (w.publishedAt===undefined||(/^\d{4}-\d{2}-\d{2}$/.test(w.publishedAt)&&Number.isFinite(Date.parse(w.publishedAt))&&new Date(w.publishedAt).toISOString().slice(0,10)===w.publishedAt)) && (w.format===undefined||['plain','markdown'].includes(w.format)) && (w.exchange===undefined||validExchange(w.exchange)) && ['شعر', 'تأملات', 'فلسفة', 'علوم', 'ثقافة'].includes(w.category)) && ids(c.writings) &&
     Array.isArray(c.media) && c.media.length <= 500 && c.media.every(m => m && text(m.id, 150) && text(m.title, 150) && ['صورة', 'فيديو'].includes(m.type) && typeof m.url === 'string' && (httpsUrl(m.url) || /^\/images\/[^\s]+$/.test(m.url) || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(m.url)) && (m.purpose === undefined || (m.type === 'صورة' ? m.purpose === 'حكمة بصرية' : m.purpose === 'درس مرئي')) && optional(m.description, 10000) && optional(m.source, 1000) && (m.thumbnail === undefined || httpsUrl(m.thumbnail)) && (m.uploadedAt === undefined || (typeof m.uploadedAt === 'string' && Number.isFinite(Date.parse(m.uploadedAt))))) && ids(c.media)
 }
