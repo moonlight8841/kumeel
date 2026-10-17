@@ -27,7 +27,7 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!current) return
       if(_event==='PASSWORD_RECOVERY')setRecovering(true)
-      if (_event === 'SIGNED_IN' && session) { setSessionExpired(false); try { sessionStorage.setItem(`kumeel-idle-${session.user.id}`, String(Date.now())) } catch { /* Optional idle persistence. */ } }
+      if (_event === 'SIGNED_IN' && session) { setSessionExpired(false); try { localStorage.setItem(`kumeel-idle-${session.user.id}`, String(Date.now())) } catch { /* Optional idle persistence. */ } }
       setUserId(session?.user.id ?? null); setAuthVersion(v => v + 1); setChecking(Boolean(session)); setConfirmPublish(false)
       setAuthorized(false); setMember(false); setVerifiedEmail(false)
       const nextIdentity=session?.user.id??null
@@ -57,11 +57,11 @@ export function CloudPanel({ content, revision, onLoad, onPublish, onAuthorizati
     if(!userId)return
     const storageKey=`kumeel-idle-${userId}`
     let last=Date.now()
-    try { const saved=Number(sessionStorage.getItem(storageKey));if(saved>0)last=saved } catch { /* Memory-only fallback. */ }
-    const activity=()=>{last=Date.now();try{sessionStorage.setItem(storageKey,String(last))}catch{/* Memory-only fallback. */}}
+    try { const saved=Number(localStorage.getItem(storageKey));if(saved>0)last=saved } catch { /* Memory-only fallback. */ }
+    const activity=()=>{last=Date.now();try{localStorage.setItem(storageKey,String(last))}catch{/* Memory-only fallback. */}}
     const events=['pointerdown','keydown'] as const
     let expired=false
-    const check=()=>{if(!expired&&Date.now()-last>=15*60*1000){expired=true;setSessionExpired(true);setAuthorized(false);setMember(false);onAuthorizationChange(false,null);void supabase.auth.signOut({scope:'local'}).then(({error})=>{setMessage(error?'انتهت مهلة الخمول. أعد تسجيل الدخول بعد استعادة الاتصال.':'أُغلقت جلسة الإدارة بعد ١٥ دقيقة من الخمول.');try{sessionStorage.removeItem(storageKey)}catch{/* Optional cleanup. */}})}}
+    const check=()=>{try{const shared=Number(localStorage.getItem(storageKey));if(shared>last&&shared<=Date.now())last=shared}catch{/* Memory-only fallback. */}if(!expired&&Date.now()-last>=15*60*1000){expired=true;setSessionExpired(true);setAuthorized(false);setMember(false);onAuthorizationChange(false,null);void supabase.auth.signOut({scope:'local'}).then(({error})=>{setMessage(error?'انتهت مهلة الخمول. أعد تسجيل الدخول بعد استعادة الاتصال.':'أُغلقت جلسة الإدارة بعد ١٥ دقيقة من الخمول.');try{localStorage.removeItem(storageKey)}catch{/* Optional cleanup. */}})}}
     check()
     events.forEach(event=>window.addEventListener(event,activity))
     const timer=setInterval(check,10000)

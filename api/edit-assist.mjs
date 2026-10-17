@@ -1,3 +1,5 @@
+import {nodeOwnerRoute} from './_shared/node-bff.mjs'
+import {ownerBrowserRequest} from './_shared/backend-bff.mjs'
 import {enforceOwnerQuota,takeOwnerQuota} from './_shared/owner-quota.mjs'
 // Owner-only editing assistant: proofreading, image alt text, session summaries,
 // quiz drafts, English translation drafts and sparring objections. Every result is a suggestion the owner reviews before saving.
@@ -146,4 +148,4 @@ export function createHandler({fetcher=fetch,env=process.env,generate=assist,ima
  }catch(error){const failure=providerFailure(error,'edit_assist_failed');return fail(failure.status,failure.error)}
 }}
 
-export default createHandler()
+export default nodeOwnerRoute(createHandler(),ownerBrowserRequest)

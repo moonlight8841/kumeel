@@ -25,7 +25,7 @@ export async function requestAssist<T extends AssistTask>(task:T,payload:AssistR
  const {data:{session}}=await supabase.auth.getSession()
  if(!session)throw new Error('سجّل الدخول بحساب الإدارة لاستخدام المساعد.')
  let response:Response
- try{response=await fetch('/api/edit-assist',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:request})}
+ try{response=await fetch('/api/edit-assist',{method:'POST',headers:{'Content-Type':'application/json','X-Kumeel-BFF':'1'},body:request})}
  catch{throw new Error('تعذّر الاتصال بالخادم. تحقق من الشبكة.')}
  const body:unknown=await response.json().catch(()=>null)
  const ok=body&&typeof body==='object'&&(body as {success?:unknown}).success===true

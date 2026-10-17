@@ -1,0 +1,27 @@
+# Browser session gateway
+
+This replaces the tab-token limitation documented in `2026-10-17-foundation.md`. Supabase email delivery remains unchanged at the user's request; MFA stays optional. No dependency or paid service was added and no database migration is required for this phase.
+
+## Request and trust boundaries
+
+The browser receives a verified user profile, never Supabase access/refresh credentials. `/api/auth` runs the existing Supabase SDK on the server, with a new client and cookie storage for each request. Access and refresh tokens use separate `__Host-` cookies with `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`, and no Domain attribute. They are browser-session cookies; browser session restoration may retain them, so logout is the reliable explicit termination operation. PKCE's verifier also stays HttpOnly and expires in 15 minutes. Passwords are forwarded over HTTPS without storage. Optional TOTP setup intentionally returns its setup secret/QR to the account holder; authentication tokens from verification stay in cookies.
+
+All gateway requests require `X-Kumeel-BFF: 1`; mutations additionally require the exact same Origin. Cross-site Fetch Metadata is rejected. No cross-origin CORS access is provided. Successful session authorization requires provider user verification and the active-session database check. Decoded JWT fields alone never grant access.
+
+`/api/backend` forwards only enumerated public-schema tables, application RPCs and UUID-named uploads into the fixed media bucket. It replaces client Authorization/API keys with the verified user's server credential and the configured publishable key, preserving existing RLS. It cannot reach Auth/admin endpoints, arbitrary hosts, privileged schemas or the secret-protected quota RPCs. Anonymous callers may read only existing public datasets. Owner uploads additionally require database owner authorization. JSON limits and a streamed 50 MiB upload limit apply. Cloudflare is the production upload adapter; Vercel's own request-size limits still apply on that platform.
+
+AI endpoints resolve the cookie session before their existing owner and shared-quota checks. Browser-provided bearer headers do not authorize these entrypoints. Existing unit-testable internal handlers retain their original verified-token contract.
+
+All auth, gateway and cookie responses are private/no-store and never enter the publication cache. Cookie changes happen only on the short auth endpoint; database/upload/AI responses never rotate cookies, preventing a slow response from overwriting logout/login cookies. Expired database requests trigger a single browser auth refresh and retry only after authorization is restored. Where Web Locks are available, auth calls serialize across tabs; BroadcastChannel synchronizes identity changes and logout. Older browsers without Web Locks rely on Supabase refresh reuse tolerance, with provider/database authorization still enforced on every sensitive request. The editor's existing client idle timer shares only an activity timestamp across tabs, not credentials. It is not a server inactivity timeout.
+
+Old tab/local auth credentials are removed without adopting them. Users must sign in once after upgrading. Editorial drafts remain per owner and per tab, with the existing explicit legacy import controls. Session cookies are shared across tabs on the same host; signing out there ends that browser's session and clears active private tab state through the auth event.
+
+## Verification and recovery
+
+Regression tests cover HttpOnly/security attributes, CSRF rejection before upstream calls, token-free response JSON, PKCE and canonical redirects, MFA token rotation, redacted mail quota errors, refresh, invalid/revoked sessions, upstream/schema/RPC allowlists, concurrent identity isolation, and absence of cookie writes on slow data requests. Local Chromium fixtures cover owner UI login, a private notebook buffer, logout cleanup, legacy credential removal and reload-resistant mail cooldown; their Auth responses are mocked.
+
+A disposable ordinary account on the configured live Supabase project verified server profile lookup, its private member query, owner denial, real optional TOTP enrollment/verification, aal2 cookie rotation, password update, global logout and denial of the old JWT. Its session was created through a no-email administrative diagnostic link, not an owner login or a production CAPTCHA bypass. The account was deleted. Actual email delivery was not tested or changed.
+
+Deploy the client and server together; the old client sends bearer tokens and is intentionally incompatible with the new protected browser endpoints. For recovery, restore the previous complete Worker version `8650e200-00f7-4554-b986-249cef8ebe59` and have users sign in again. Existing database authorization remains unchanged and must not be rolled back. Sessions on unrelated hosts are unaffected. Cookie HttpOnly protection reduces credential extraction; it does not prevent malicious same-origin script from acting through the authenticated gateway. Existing CSP, fixed origin checks, RLS and input validation remain necessary.
+
+References: [Supabase advanced server-side auth](https://supabase.com/docs/guides/auth/server-side/advanced-guide), [Cloudflare Workers practices](https://developers.cloudflare.com/workers/best-practices/workers-best-practices/).

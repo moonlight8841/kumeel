@@ -1,3 +1,5 @@
+import {handleAuth} from '../api/_shared/auth-bff.mjs'
+import {handleBackend,ownerBrowserRequest} from '../api/_shared/backend-bff.mjs'
 import {createPublishedLoader} from '../api/_shared/published-loader.mjs'
 import {authErrorReturnPath} from '../src/lib/auth-security.ts'
 import template from '../dist/template.html'
@@ -59,9 +61,11 @@ export async function handleRequest(request,env){
  const authReturn=authErrorReturnPath(url)
  if(authReturn){const target=new URL(authReturn,url);target.hash='#';return new Response(null,{status:302,headers:{Location:target.toString(),'Cache-Control':'no-store'}})}
  if(url.hostname==='www.kumeelalnahab.com'){const target=new URL(origin);target.pathname=url.pathname;target.search=url.search;return Response.redirect(target.toString(),308)}
+ if(path==='/api/auth')return handleAuth(request)
+ if(path==='/api/backend')return handleBackend(request)
  if(path==='/api/chat')return apiResponse(request,createChat({env,loadCorpus:async()=>buildCorpus(readerContent((await loadContent()).content))}))
- if(path==='/api/generate-idea')return apiResponse(request,createIdea({env}))
- if(path==='/api/edit-assist')return apiResponse(request,createAssist({env}))
+ if(path==='/api/generate-idea')return ownerBrowserRequest(request,next=>apiResponse(next,createIdea({env})))
+ if(path==='/api/edit-assist')return ownerBrowserRequest(request,next=>apiResponse(next,createAssist({env})))
  if(path.startsWith('/api/'))return Response.json({success:false,error:'المسار غير موجود.'},{status:404,headers:{'Cache-Control':'no-store'}})
  if(!['GET','HEAD'].includes(request.method))return new Response(null,{status:405,headers:{Allow:'GET, HEAD'}})
  if(path==='/robots.txt')return new Response(request.method==='HEAD'?null:`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /member\nSitemap: ${origin}/sitemap.xml\n`,{headers:{'Content-Type':'text/plain; charset=utf-8'}})

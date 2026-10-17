@@ -2,7 +2,7 @@ import {clearPrivateTabData,PRIVATE_DATA_CLEARED} from './privacy'
 import { createClient } from '@supabase/supabase-js'
 import config from '../supabase-config.json'
 import { validContent } from '../content'
-import { tabAuthStorage } from './auth-security'
+import {createBrowserAuth,backendFetch} from './browser-auth'
 import {adoptApprovedWritings} from './publication'
 import {validOwnerDraft,publicPayload,type OwnerDraft} from './translations'
 import {resolvePublishedTranslations} from './localized-content'
@@ -11,12 +11,11 @@ if (typeof window !== 'undefined') {
   try { localStorage.removeItem('sb-jigypvbqiuakdatkzoul-auth-token') } catch { /* Old persistent sessions are no longer used. */ }
 }
 
-export const supabase = createClient(config.url, config.publishableKey, {
-  auth: { storageKey: 'kumeel-auth-v2', storage: tabAuthStorage, flowType: 'pkce', persistSession: typeof window !== 'undefined', autoRefreshToken: typeof window !== 'undefined', detectSessionInUrl: typeof window !== 'undefined' },
-})
+const database=createClient(config.url,config.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},global:{fetch:typeof window!=='undefined'?backendFetch:fetch}})
+export const supabase={from:database.from.bind(database),rpc:database.rpc.bind(database),storage:database.storage,auth:createBrowserAuth()}
 if(typeof window!=='undefined')supabase.auth.onAuthStateChange(event=>{
  if(event!=='SIGNED_OUT')return
- try{clearPrivateTabData();tabAuthStorage.removeItem('kumeel-auth-v2-code-verifier')}catch{/* Session revocation remains effective if browser storage is unavailable. */}
+ try{clearPrivateTabData()}catch{/* Session revocation remains effective if browser storage is unavailable. */}
  window.dispatchEvent(new Event(PRIVATE_DATA_CLEARED))
 })
 export async function readPublished() {

@@ -23,32 +23,3 @@ export function authErrorReturnPath(url:URL):string|null{
  const error=authLinkError(url)
  return error?`/admin?auth_error=${error}`:null
 }
-const memory = new Map<string, string>()
-export const tabAuthStorage = {
- getItem(key: string): string | null {
-  if (typeof window === 'undefined') return null
-  try {
-   if (key.endsWith('-code-verifier')) {
-    const raw = localStorage.getItem(key)
-    if (!raw) return null
-    const record = JSON.parse(raw)
-    if (typeof record.value !== 'string' || record.expiresAt <= Date.now()) { localStorage.removeItem(key); return null }
-    return record.value
-   }
-   return sessionStorage.getItem(key)
-  } catch { return memory.get(key) ?? null }
- },
- setItem(key: string, value: string) {
-  memory.set(key,value)
-  if (typeof window === 'undefined') return
-  try {
-   if (key.endsWith('-code-verifier')) localStorage.setItem(key,JSON.stringify({value,expiresAt:Date.now()+15*60*1000}))
-   else sessionStorage.setItem(key,value)
-  } catch { /* An ephemeral in-memory session is still usable. */ }
- },
- removeItem(key: string) {
-  memory.delete(key)
-  if (typeof window === 'undefined') return
-  try { sessionStorage.removeItem(key); localStorage.removeItem(key) } catch { /* Storage may be disabled. */ }
- },
-}

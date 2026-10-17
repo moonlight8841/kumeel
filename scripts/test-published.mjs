@@ -35,5 +35,5 @@ for(const resource of [...home.matchAll(/(?:src|href)="(\/assets\/[^"?]+)"/g)].m
  assert.equal((await request(resource)).status,200,resource)
  console.log(`200 ${resource}`)
 }
-assert.equal((await request('/api/generate-idea',['-X','POST','-H','Content-Type: application/json','--data','{}'])).status,401)
+assert.equal((await request('/api/generate-idea',['-X','POST','-H','Content-Type: application/json','-H','X-Kumeel-BFF: 1','-H',`Origin: ${base}`,'--data','{}'])).status,401)
 console.log('Published content, sitemap, assets and protected API verified with TLS validation.')

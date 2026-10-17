@@ -1,3 +1,5 @@
+import {nodeOwnerRoute} from './_shared/node-bff.mjs'
+import {ownerBrowserRequest} from './_shared/backend-bff.mjs'
 import {enforceOwnerQuota,takeOwnerQuota} from './_shared/owner-quota.mjs'
 import {GoogleGenerativeAI,SchemaType} from '@google/generative-ai'
 import {jsonResponder,bodyTooLarge,parseBody,providerFailure,verifyOwner,withModelFallback,jsonInstruction,parseModelJson,thinkingFor,generateWithProviders,cloudflareConfigured} from './_shared/owner-ai.mjs'
@@ -30,4 +32,4 @@ export function createHandler({fetcher=fetch,env=process.env,generate=(topic,met
  return res.status(200).json({success:true,data:Object.fromEntries(['title','text','question','counterpoint'].map(k=>[k,data[k].trim()]))})
  }catch(error){const failure=providerFailure(error,'idea_generation_failed');return fail(failure.status,failure.error)}
 }}
-export default createHandler()
+export default nodeOwnerRoute(createHandler(),ownerBrowserRequest)
