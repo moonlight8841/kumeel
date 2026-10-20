@@ -87,7 +87,9 @@ export async function handleRequest(request,env){
  }
  const markup=`<div id="root">${body}</div><script type="application/json" id="kumeel-content">${safeJson(scoped)}</script>`
  const html=documentLanguage(replaceHead(template,renderHead(edition,info,origin)).replace('<div id="root"></div>',()=>markup),pathname)
- const headers={'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Vary':'Accept'}
+ // RFC 8288 discovery links for agents; the page itself is also available as Markdown via Accept.
+ const links=`<${origin}/llms.txt>; rel="describedby"; type="text/markdown", <${origin}/.well-known/agent-skills/index.json>; rel="describedby"; type="application/json", <${origin}/sitemap.xml>; rel="sitemap"; type="application/xml", <${origin}${info.path}>; rel="alternate"; type="text/markdown"`
+ const headers={'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Vary':'Accept','Link':links}
  if(info.noindex)headers['X-Robots-Tag']='noindex, follow'
  return new Response(request.method==='HEAD'?null:html,{status,headers})
 }
