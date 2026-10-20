@@ -29,7 +29,7 @@ begin
  exception when insufficient_privilege then null; end;
  begin
   perform public.kumeel_owner_ai_take('invalid-audit-secret',gen_random_uuid(),'invalid');
-  raise exception 'Owner quota accepted invalid secret';
+  raise exception 'Anonymous can call owner quota';
  exception when insufficient_privilege then null; end;
 end $$;
 reset role;
