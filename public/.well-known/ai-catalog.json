@@ -1,0 +1,15 @@
+{
+  "specVersion": "1.0",
+  "entries": [
+    {
+      "identifier": "urn:air:kumeelalnahab.com:mcp:writings",
+      "type": "application/mcp-server-card+json",
+      "url": "https://kumeelalnahab.com/.well-known/mcp/server-card.json"
+    },
+    {
+      "identifier": "urn:air:kumeelalnahab.com:a2a:writings-guide",
+      "type": "application/a2a-agent-card+json",
+      "url": "https://kumeelalnahab.com/.well-known/agent-card.json"
+    }
+  ]
+}

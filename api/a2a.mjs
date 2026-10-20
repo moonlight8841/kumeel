@@ -15,8 +15,8 @@ function questionText(message){
  return text&&text.length<=LIMITS.message?text:null
 }
 
-// Calls the chat handler in-process and captures its JSON response.
-async function ask(chat,req,text){
+// Calls the chat handler in-process and captures its JSON response; also used by the MCP server.
+export async function askChat(chat,req,text){
  let status=200,body=null
  const headers={}
  const res={setHeader(key,value){headers[key.toLowerCase()]=String(value);return this},status(value){status=value;return this},json(value){body=value;return this},send(value){body=value;return this},end(){return this}}
@@ -34,7 +34,7 @@ export function createHandler({chat,origin='https://kumeelalnahab.com'}){return 
  const message=call.params?.message
  const text=questionText(message)
  if(!text)return failure(res,call.id,-32602,`Invalid parameters: send one user message with a text part of up to ${LIMITS.message} characters`)
- const {status,body,headers}=await ask(chat,req,text)
+ const {status,body,headers}=await askChat(chat,req,text)
  if(status!==200||!body?.success){
   if(headers['retry-after'])res.setHeader('Retry-After',headers['retry-after'])
   return failure(res,call.id,-32603,body?.error||'Internal error',status===429?429:200)

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json",
+  "name": "com.kumeelalnahab/writings",
+  "title": "Kumeel Al Nahab — writings",
+  "version": "1.0.0",
+  "description": "Read-only access to Kumeel Al Nahab's published writings: list, read, search and ask.",
+  "websiteUrl": "https://kumeelalnahab.com",
+  "icons": [{ "src": "https://kumeelalnahab.com/favicon.svg", "mimeType": "image/svg+xml" }],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://kumeelalnahab.com/api/mcp",
+      "supportedProtocolVersions": ["2025-11-25", "2025-06-18", "2025-03-26"]
+    }
+  ],
+  "serverInfo": { "name": "kumeel-writings", "title": "Kumeel Al Nahab — writings", "version": "1.0.0" },
+  "transport": { "type": "streamable-http", "endpoint": "https://kumeelalnahab.com/api/mcp" },
+  "capabilities": { "tools": { "listChanged": false }, "resources": false, "prompts": false },
+  "authentication": { "required": false },
+  "tools": ["list_pages", "get_page", "search_writings", "ask_writings"]
+}

@@ -7,6 +7,8 @@ import {createHandler as createIdea} from '../api/generate-idea.mjs'
 import {createHandler as createAssist} from '../api/edit-assist.mjs'
 import {createHandler as createStreamChat} from '../api/stream-chat.mjs'
 import {createHandler as createA2A} from '../api/a2a.mjs'
+import {createHandler as createMcp} from '../api/mcp.mjs'
+import serverCard from '../public/.well-known/mcp/server-card.json' with {type:'json'}
 import {wantsMarkdown,pageMarkdown,markdownTokens} from './markdown.mjs'
 
 const safeJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')
@@ -62,11 +64,30 @@ export async function handleRequest(request,env){
  const readerChat=()=>createChat({env,loadCorpus:async()=>buildCorpus(readerContent((await loadContent()).content))})
  if(path==='/api/chat')return apiResponse(request,readerChat())
  if(path==='/api/a2a')return apiResponse(request,createA2A({chat:readerChat(),origin}))
+ if(path==='/api/mcp/server-card')return Response.json(serverCard,{headers:{'Cache-Control':'public, max-age=3600'}})
+ if(path==='/api/mcp')return apiResponse(request,createMcp({chat:readerChat(),origin,site:async()=>{
+  const edition=readerContent((await loadContent()).content)
+  const paths=publicPaths(edition)
+  const pages=paths.map(p=>{const info=pageInfo(edition,p);return {path:p,title:info.title.split(' | ')[0],description:info.description}})
+  const corpus=buildCorpus(edition)
+  // Library books and sections live outside the chat corpus; search their titles and descriptions too.
+  const covered=new Set(corpus.map(d=>d.href))
+  return {
+   corpus:[...corpus,...pages.filter(p=>!covered.has(p.path)&&p.path!=='/en'&&!p.path.startsWith('/en/')).map(p=>({id:`p:${p.path}`,title:p.title,href:p.path,body:p.description}))],
+   pages,
+   page:async p=>paths.includes(p)?pageMarkdown(render(contentForPage(edition,p),p),pageInfo(edition,p),origin):null,
+  }
+ }}))
  if(path==='/api/generate-idea')return apiResponse(request,createIdea({env}))
  if(path==='/api/edit-assist')return apiResponse(request,createAssist({env}))
  if(path==='/api/stream-chat')return apiResponse(request,createStreamChat({env}))
  if(path.startsWith('/api/'))return Response.json({success:false,error:'المسار غير موجود.'},{status:404})
  if(!['GET','HEAD'].includes(request.method))return new Response(null,{status:405,headers:{Allow:'GET, HEAD'}})
+ // RFC 9727 API catalog: the two public agent APIs and where they are described.
+ if(path==='/.well-known/api-catalog')return new Response(request.method==='HEAD'?null:JSON.stringify({linkset:[
+  {anchor:`${origin}/api/mcp`,'service-desc':[{href:`${origin}/.well-known/mcp/server-card.json`,type:'application/json'}],'service-doc':[{href:`${origin}/.well-known/agent-skills/kumeel-reading/SKILL.md`,type:'text/markdown'}]},
+  {anchor:`${origin}/api/a2a`,'service-desc':[{href:`${origin}/.well-known/agent-card.json`,type:'application/json'}],'service-doc':[{href:`${origin}/.well-known/agent-skills/kumeel-reading/SKILL.md`,type:'text/markdown'}]},
+ ]}),{headers:{'Content-Type':'application/linkset+json','Cache-Control':'public, max-age=3600'}})
  if(path==='/robots.txt')return new Response(request.method==='HEAD'?null:`User-agent: *\nContent-Signal: search=yes, ai-input=yes, ai-train=no\nAllow: /\nDisallow: /admin\nDisallow: /member\nSitemap: ${origin}/sitemap.xml\n`,{headers:{'Content-Type':'text/plain; charset=utf-8'}})
  // Static resources bypass rendering; HTML routes always use current published data.
  if(/\.[a-z0-9]+$/i.test(path)&&!['/index.html','/sitemap.xml','/llms.txt'].includes(path))return env.ASSETS.fetch(request)
@@ -91,7 +112,7 @@ export async function handleRequest(request,env){
  const markup=`<div id="root">${body}</div><script type="application/json" id="kumeel-content">${safeJson(scoped)}</script>`
  const html=documentLanguage(replaceHead(template,renderHead(edition,info,origin)).replace('<div id="root"></div>',()=>markup),pathname)
  // RFC 8288 discovery links for agents; the page itself is also available as Markdown via Accept.
- const links=`<${origin}/llms.txt>; rel="describedby"; type="text/markdown", <${origin}/.well-known/agent-skills/index.json>; rel="describedby"; type="application/json", <${origin}/sitemap.xml>; rel="sitemap"; type="application/xml", <${origin}${info.path}>; rel="alternate"; type="text/markdown"`
+ const links=`<${origin}/llms.txt>; rel="describedby"; type="text/markdown", <${origin}/.well-known/agent-skills/index.json>; rel="describedby"; type="application/json", <${origin}/sitemap.xml>; rel="sitemap"; type="application/xml", <${origin}/.well-known/api-catalog>; rel="api-catalog",<${origin}${info.path}>; rel="alternate"; type="text/markdown"`
  const headers={'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Vary':'Accept','Link':links}
  if(info.noindex)headers['X-Robots-Tag']='noindex, follow'
  return new Response(request.method==='HEAD'?null:html,{status,headers})
