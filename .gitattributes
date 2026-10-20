@@ -1,0 +1,2 @@
+# Agent skill digests are computed from exact bytes; keep them stable across checkouts.
+public/.well-known/** text eol=lf

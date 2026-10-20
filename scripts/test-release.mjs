@@ -31,7 +31,7 @@ if(process.env.WORKER_TEST_URL){
   console.log(`Workers runtime: ${status} ${path}`)
  }
  const origin=process.env.WORKER_EXPECTED_ORIGIN||'https://kumeelalnahab.com'
- for(const [path,status] of [['/en/',200],['/en/writings',200],['/en/about',200],['/en/admin',404],['/en/library',404],['/en/en/about',404],['/en/writings/not-a-translation',404]]){
+ for(const [path,status] of [['/en/',200],['/en/writings',200],['/en/about',200],['/en/admin',404],['/en/library',200],['/en/en/about',404],['/en/writings/not-a-translation',404]]){
   const response=await fetch(base+path,{signal:AbortSignal.timeout(20000)})
   const body=await response.text()
   assert.equal(response.status,status,path)
@@ -46,6 +46,25 @@ if(process.env.WORKER_TEST_URL){
  const sitemap=await (await fetch(base+'/sitemap.xml')).text()
  assert.ok(sitemap.includes(`<loc>${origin}/en/</loc>`)&&sitemap.includes(`<loc>${origin}/en/writings</loc>`))
  assert.ok(!sitemap.includes('/en/admin'))
+ const skills=await fetch(base+'/.well-known/agent-skills/index.json')
+ assert.equal(skills.status,200)
+ const index=await skills.json()
+ assert.equal(index.$schema,'https://schemas.agentskills.io/discovery/0.2.0/schema.json')
+ for(const skill of index.skills){
+  const bytes=new Uint8Array(await (await fetch(base+new URL(skill.url).pathname)).arrayBuffer())
+  const hex=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('')
+  assert.equal(skill.digest,`sha256:${hex}`,skill.name)
+ }
+ const markdown=await fetch(base+'/writings',{headers:{Accept:'text/markdown'}})
+ assert.equal(markdown.status,200)
+ assert.match(markdown.headers.get('content-type'),/^text\/markdown/)
+ assert.ok(Number(markdown.headers.get('x-markdown-tokens'))>0)
+ const markdownBody=await markdown.text()
+ assert.ok(markdownBody.startsWith('---\ntitle: ')&&markdownBody.includes('\n# ')&&!/<[a-z][^>]*>/i.test(markdownBody))
+ assert.match((await fetch(base+'/writings')).headers.get('content-type'),/^text\/html/)
+ assert.equal((await fetch(base+'/missing-page',{headers:{Accept:'text/markdown'}})).status,404)
+ console.log('Workers runtime: Markdown for agents negotiated; HTML stays the default.')
+ console.log(`Workers runtime: agent skills index with ${index.skills.length} verified digest(s).`)
  const translate=await fetch(base+'/api/edit-assist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:'translate',payload:{title:'س',text:'نص',sourceLanguage:'ar',targetLanguage:'en'}})})
  assert.equal(translate.status,401)
  console.log('Workers runtime: English routes, alternates, sitemap and owner-only translation verified.')

@@ -13,7 +13,7 @@
     "test:auth": "node scripts/test-password-recovery.mjs && node scripts/test-book-upload.mjs",
     "deploy:cloudflare": "npm run verify && wrangler deploy --minify",
     "dev": "vite",
-    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
+    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs && node scripts/agent-skills.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "npm run build && node scripts/test-platform.mjs && node scripts/test-i18n.mjs && node scripts/test-translations.mjs && node scripts/test-design.mjs && node scripts/test-reflection.mjs && node scripts/test-lab.mjs && node scripts/test-salon.mjs && node scripts/test-teachers.mjs && node scripts/test-generate-idea.mjs && node scripts/test-edit-assist.mjs && node scripts/test-chat.mjs && node scripts/test-stream-chat.mjs"

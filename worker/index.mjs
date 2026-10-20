@@ -6,6 +6,7 @@ import {createHandler as createChat,buildCorpus} from '../api/chat.mjs'
 import {createHandler as createIdea} from '../api/generate-idea.mjs'
 import {createHandler as createAssist} from '../api/edit-assist.mjs'
 import {createHandler as createStreamChat} from '../api/stream-chat.mjs'
+import {wantsMarkdown,pageMarkdown,markdownTokens} from './markdown.mjs'
 
 const safeJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')
 const xmlEscape=value=>value.replace(/[<>&"']/g,char=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'})[char])
@@ -76,11 +77,19 @@ export async function handleRequest(request,env){
  const pathname=path==='/index.html'?'/':path
  const info=pageInfo(edition,pathname)
  const scoped=contentForPage(edition,pathname)
- const markup=`<div id="root">${render(scoped,pathname)}</div><script type="application/json" id="kumeel-content">${safeJson(scoped)}</script>`
+ const body=render(scoped,pathname)
+ const status=info.kind==='missing'?404:200
+ if(wantsMarkdown(request)){
+  const md=pageMarkdown(body,info,origin)
+  const headers={'Content-Type':'text/markdown; charset=utf-8','Cache-Control':'no-store','Vary':'Accept','x-markdown-tokens':String(markdownTokens(md))}
+  if(info.noindex)headers['X-Robots-Tag']='noindex, follow'
+  return new Response(request.method==='HEAD'?null:md,{status,headers})
+ }
+ const markup=`<div id="root">${body}</div><script type="application/json" id="kumeel-content">${safeJson(scoped)}</script>`
  const html=documentLanguage(replaceHead(template,renderHead(edition,info,origin)).replace('<div id="root"></div>',()=>markup),pathname)
- const headers={'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}
+ const headers={'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store','Vary':'Accept'}
  if(info.noindex)headers['X-Robots-Tag']='noindex, follow'
- return new Response(request.method==='HEAD'?null:html,{status:info.kind==='missing'?404:200,headers})
+ return new Response(request.method==='HEAD'?null:html,{status,headers})
 }
 
 export default {async fetch(request,env){
