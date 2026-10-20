@@ -7,7 +7,8 @@ const server=await createServer({server:{middlewareMode:true},appType:'custom'})
 try{
  const t=await server.ssrLoadModule('/src/lib/teachers.ts')
  const {defaultSite,withLibrary,validSite}=await server.ssrLoadModule('/src/site.ts')
- const {siteNav}=await server.ssrLoadModule('/src/lib/navigation.ts')
+ const {siteNav,fullSiteNav}=await server.ssrLoadModule('/src/lib/navigation.ts')
+ const {publicPaths}=await server.ssrLoadModule('/src/lib/pages.ts')
  const {initialContent}=await server.ssrLoadModule('/src/content.ts')
  const {render}=await server.ssrLoadModule('/src/entry-server.tsx')
  const sql=await readFile(new URL('../supabase/teachers.sql',import.meta.url),'utf8')
@@ -53,15 +54,18 @@ try{
  })
 
  await test('Teachers: placement in navigation, home sections and stored settings',()=>{
-  const nav=siteNav.map(([href])=>href);assert.equal(nav.indexOf('/teachers'),nav.indexOf('/salon')+1)
+  const nav=fullSiteNav.map(([href])=>href);assert.equal(nav.indexOf('/teachers'),nav.indexOf('/salon')+1)
+  assert.ok(!siteNav.some(([href])=>href==='/teachers'),'Hidden until the council is ready')
   const keys=defaultSite.sections.map(s=>s.key);assert.equal(keys.indexOf('teachers'),keys.indexOf('salon')+1)
   const legacy={...defaultSite,sections:defaultSite.sections.filter(s=>s.key!=='teachers'&&s.key!=='library')}
   assert.equal(validSite(legacy),true,'settings saved before the feature stay valid')
   const restored=withLibrary(legacy).sections.map(s=>s.key)
   assert.deepEqual(restored,keys,'missing sections return at their default position')
   assert.equal(validSite({...defaultSite,sections:[...defaultSite.sections,{key:'ads',label:'x',visible:true}]}),false)
-  assert.ok(render(initialContent,'/').includes('مجلس التعلّم'))
-  assert.match(render(initialContent,'/teachers'),/href="\/teachers" aria-current="page"/)
-  assert.ok(render(initialContent,'/teachers').includes('اكتشف من يساعدك على الفهم'))
+  // The council is hidden from every public surface while TEACHERS_PUBLIC is false.
+  assert.ok(!render(initialContent,'/').includes('href="/teachers"'))
+  assert.ok(!render(initialContent,'/').includes('معلمون يساعدونك على الفهم'))
+  assert.ok(!render(initialContent,'/teachers').includes('اكتشف من يساعدك على الفهم'))
+  assert.ok(!publicPaths(initialContent).some(p=>p.endsWith('/teachers')),'Not listed in the sitemap')
  })
 }finally{await server.close()}

@@ -1,8 +1,11 @@
+import {TEACHERS_PUBLIC} from './features'
 import { initialContent, legacyContent, youtubeEmbed, type Content, type Idea, type Media, type Writing } from '../content'
 import {booksFor,type Book} from '../books'
 import {resolveLocalePath,localePath,messages} from './i18n'
+import {englishText} from './locale-ui'
+import {englishContent} from './english-content'
 
-export type PageInfo = { path: string; kind: 'teachers' | 'community' | 'member' | 'admin' | 'home' | 'about' | 'observatory' | 'salon' | 'library' | 'book' | 'idea' | 'writing' | 'writings' | 'explore' | 'media' | 'missing'; title: string; description: string; noindex: boolean; idea?: Idea; writing?: Writing; media?: Media; book?:Book }
+export type PageInfo = { path: string; kind: 'music' | 'teachers' | 'community' | 'member' | 'admin' | 'home' | 'about' | 'observatory' | 'salon' | 'library' | 'book' | 'idea' | 'writing' | 'writings' | 'explore' | 'media' | 'missing'; title: string; description: string; noindex: boolean; idea?: Idea; writing?: Writing; media?: Media; book?:Book }
 export const ownerName = 'كميل ال نهاب'
 const excerpt = (text: string) => text.replace(/\s+/g, ' ').trim().slice(0, 160)
 export function pageInfo(content: Content, pathname = '/'): PageInfo {
@@ -12,18 +15,18 @@ export function pageInfo(content: Content, pathname = '/'): PageInfo {
   const m=messages.en
   const page=(kind:PageInfo['kind'],title:string,description:string,noindex=false):PageInfo=>({path,kind,title:`${title} | ${m.owner}`,description:excerpt(description),noindex})
   if(!route.supported)return page('missing',m.notFound,m.unavailable,true)
-  if(route.path==='/')return {...page('home',m.owner,m.tagline),title:`${m.owner} | Philosophy, Science and Dialogue`}
-  if(route.path==='/about')return page('about',m.about,content.translations?.bio?.text||m.bioEmpty,!content.translations?.bio)
-  if(route.path==='/writings')return page('writings',m.writings,m.latest)
-  const source=content.writings.find(w=>`/writings/${encodeURIComponent(w.id)}`===route.path)
-  const translation=source&&content.translations?.[`writing:${source.id}`]
-  if(source&&translation)return {...page('writing',translation.title,translation.text,arabicPageInfo(content,route.path).noindex),writing:{...source,title:translation.title,text:translation.text}}
-  return page('missing',m.notFound,m.unavailable,true)
+  const source=arabicPageInfo(content,route.path)
+  const original=arabicPageInfo(englishContent(content),route.path)
+  const title=original.title.split(' | ').map(englishText).join(' | ')
+  const untranslated=Boolean(original.writing&&/[\u0621-\u064a]/.test(original.writing.text))
+  return {...original,path,title,description:englishText(original.description),noindex:source.noindex||untranslated}
+
 }
 function arabicPageInfo(content: Content, pathname = '/'): PageInfo {
   const path = pathname.split('?')[0].replace(/\/+$/, '') || '/'
   const page = (kind: PageInfo['kind'], title: string, description: string, noindex = false): PageInfo => ({ path, kind, title: `${title} | ${ownerName}`, description: excerpt(description), noindex })
-  if (path === '/teachers') return page('teachers','مجلس التعلّم والمعلمون','اكتشف المعلمين وأساليب التعليم في مجتمع كميل.')
+  if (path === '/music') return page('music','الموسيقى والفيديو','مساحة للاستماع والمشاهدة. اختر ما يناسب لحظتك، وابدأ حين ترغب.')
+  if (path === '/teachers' && TEACHERS_PUBLIC) return page('teachers','مجلس التعلّم والمعلمون','اكتشف المعلمين وأساليب التعليم في مجتمع كميل.')
   if (path === '/community') return page('community','مجتمع كميل','مساهمات عربية في الفلسفة والعلم والثقافة، ونقاشات تراجعها إدارة منصة كميل قبل النشر.')
   if (path === '/member') return page('member','مساحة العضو','مسودات ومساهمات أعضاء مجتمع كميل.',true)
   if (path === '/admin') return page('admin', 'لوحة الإدارة', 'إدارة محتوى وتصميم منصة كميل ال نهاب.', true)
@@ -59,13 +62,12 @@ function arabicPageInfo(content: Content, pathname = '/'): PageInfo {
   return page('missing', 'الصفحة غير موجودة', 'تعذّر العثور على الصفحة المطلوبة. يمكنك العودة إلى مرصد الأفكار.', true)
 }
 export function publicPaths(content: Content): string[] {
-  const en=['/en/','/en/writings']
-  if(content.translations?.bio)en.push('/en/about')
-  for(const w of content.writings)if(content.translations?.[`writing:${w.id}`]&&!arabicPageInfo(content,`/writings/${encodeURIComponent(w.id)}`).noindex)en.push(`/en/writings/${encodeURIComponent(w.id)}`)
-  return [...arabicPublicPaths(content),...en]
+  const paths=arabicPublicPaths(content)
+  return [...paths,...paths.map(path=>localePath('en',path)).filter(path=>!pageInfo(content,path).noindex)]
+
 }
 function arabicPublicPaths(content: Content): string[] {
-  return ['/', '/teachers', '/community', '/about', '/observatory', '/salon', '/library', '/writings', '/explore', ...booksFor(content).map(b=>`/library/${b.id}`), ...(content.ideas ?? []).filter(i => !i.sample).map(i => `/ideas/${encodeURIComponent(i.id)}`), ...content.writings.filter(w => !pageInfo(content, `/writings/${encodeURIComponent(w.id)}`).noindex).map(w => `/writings/${encodeURIComponent(w.id)}`), ...content.media.filter(m => m.purpose && m.description?.trim() && !m.url.startsWith('data:')).map(m => `/media/${encodeURIComponent(m.id)}`)]
+  return ['/', '/music', ...(TEACHERS_PUBLIC?['/teachers']:[]), '/community', '/about', '/observatory', '/salon', '/library', '/writings', '/explore', ...booksFor(content).map(b=>`/library/${b.id}`), ...(content.ideas ?? []).filter(i => !i.sample).map(i => `/ideas/${encodeURIComponent(i.id)}`), ...content.writings.filter(w => !pageInfo(content, `/writings/${encodeURIComponent(w.id)}`).noindex).map(w => `/writings/${encodeURIComponent(w.id)}`), ...content.media.filter(m => m.purpose && m.description?.trim() && !m.url.startsWith('data:')).map(m => `/media/${encodeURIComponent(m.id)}`)]
 }
 const htmlEscape = (value: string) => value.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!)
 const safeJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029')
