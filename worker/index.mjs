@@ -5,6 +5,7 @@ import deploymentConfig from '../vercel.json' with {type:'json'}
 import {createHandler as createChat,buildCorpus} from '../api/chat.mjs'
 import {createHandler as createIdea} from '../api/generate-idea.mjs'
 import {createHandler as createAssist} from '../api/edit-assist.mjs'
+import {createHandler as createStreamChat} from '../api/stream-chat.mjs'
 
 const safeJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')
 const xmlEscape=value=>value.replace(/[<>&"']/g,char=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'})[char])
@@ -50,6 +51,7 @@ export async function handleRequest(request,env){
  if(path==='/api/chat')return apiResponse(request,createChat({env,loadCorpus:async()=>buildCorpus(readerContent((await loadContent()).content))}))
  if(path==='/api/generate-idea')return apiResponse(request,createIdea({env}))
  if(path==='/api/edit-assist')return apiResponse(request,createAssist({env}))
+ if(path==='/api/stream-chat')return apiResponse(request,createStreamChat({env}))
  if(path.startsWith('/api/'))return Response.json({success:false,error:'المسار غير موجود.'},{status:404})
  if(!['GET','HEAD'].includes(request.method))return new Response(null,{status:405,headers:{Allow:'GET, HEAD'}})
  if(path==='/robots.txt')return new Response(request.method==='HEAD'?null:`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /member\nSitemap: ${origin}/sitemap.xml\n`,{headers:{'Content-Type':'text/plain; charset=utf-8'}})

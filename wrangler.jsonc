@@ -1,20 +1,20 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "kumeel-platform",
-  "account_id": "507f6fe5b3957bfe68fcc7f91534c3c3",
+  "account_id": "9308b41ae6796fc487cc95b6387e8295",
   "main": "worker/index.mjs",
   "compatibility_date": "2026-10-15",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": true
+    "run_worker_first": ["/*", "!/assets/*"]
   },
   "rules": [{"type": "Text", "globs": ["**/*.html"], "fallthrough": true}],
-  "vars": {"SITE_URL": "https://kumeelalnahab.com"},
+  "vars": {"SITE_URL": "https://kumeelalnahab.com", "STREAM_API_KEY": "68adrwg26x8a"},
   "routes": [
-    {"pattern": "kumeelalnahab.com", "zone_id": "00873301882bafdb200472dc92a6afc4", "custom_domain": true},
-    {"pattern": "www.kumeelalnahab.com", "zone_id": "00873301882bafdb200472dc92a6afc4", "custom_domain": true}
+    {"pattern": "kumeelalnahab.com", "zone_id": "3c8f9b4bbcebcd4694a119f62dffcea7", "custom_domain": true},
+    {"pattern": "www.kumeelalnahab.com", "zone_id": "3c8f9b4bbcebcd4694a119f62dffcea7", "custom_domain": true}
   ],
   "observability": {"enabled": true, "head_sampling_rate": 0.1, "traces": {"enabled": true}},
   "workers_dev": true
