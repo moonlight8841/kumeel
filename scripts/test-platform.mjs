@@ -19,7 +19,12 @@ try {
     assert.ok(website.alternateName.includes('Kumeel Al Nahab'))
     assert.equal(website.publisher['@id'],person['@id'])
     assert.equal(person.mainEntityOfPage['@id'],origin+'/about#webpage')
-    assert.equal(person.sameAs,undefined)
+    // Only the owner-confirmed TikTok from site settings; hiding it removes the link.
+    assert.deepEqual(person.sameAs,['https://www.tiktok.com/@kumeelalnahab'])
+    const hidden={...initialContent,site:{...initialContent.site,showTiktok:false}}
+    assert.equal(structuredData(hidden,pageInfo(hidden,'/'),origin)['@graph'].find(n=>n['@type']==='Person').sameAs,undefined)
+    const unsafe={...initialContent,site:{...initialContent.site,tiktok:'x"><script>'}}
+    assert.equal(structuredData(unsafe,pageInfo(unsafe,'/'),origin)['@graph'].find(n=>n['@type']==='Person').sameAs,undefined)
     const about=structuredData(initialContent,pageInfo(initialContent,'/about'),origin)['@graph'].find(n=>n['@type']==='ProfilePage')
     assert.equal(about['@id'],origin+'/about#webpage')
     assert.equal(about.mainEntity['@id'],person['@id'])

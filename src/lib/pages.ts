@@ -74,7 +74,10 @@ const safeJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003
 export function structuredData(_content: Content, info: PageInfo, origin = '') {
   const locale=resolveLocalePath(info.path).locale
   const canonical = origin ? `${origin}${info.path}` : undefined
-  const person = { '@type': 'Person', '@id': origin ? `${origin}/#person` : '#person', name: ownerName, alternateName: ['كميل آل نهاب', 'Kumeel Al Nahab'], url: origin ? `${origin}/about` : undefined, mainEntityOfPage: { '@id': origin ? `${origin}/about#webpage` : '/about#webpage' } }
+  // Public profiles tie the same person across sites for search engines and AI answers.
+  const site = _content.site
+  const sameAs = site?.showTiktok && /^[A-Za-z0-9._]{2,24}$/.test(site.tiktok ?? '') ? [`https://www.tiktok.com/@${site.tiktok}`] : undefined
+  const person = { '@type': 'Person', '@id': origin ? `${origin}/#person` : '#person', name: ownerName, alternateName: ['كميل آل نهاب', 'Kumeel Al Nahab'], url: origin ? `${origin}/about` : undefined, sameAs, mainEntityOfPage: { '@id': origin ? `${origin}/about#webpage` : '/about#webpage' } }
   const website = { '@type': 'WebSite', '@id': origin ? `${origin}/#website` : '#website', name: ownerName, alternateName: ['Kumeel Al Nahab', 'كميل آل نهاب'], url: origin ? `${origin}/` : undefined, inLanguage: ['ar', 'en'], publisher: { '@id': person['@id'] } }
   let main: Record<string, unknown> = { '@type': info.kind === 'about' ? 'ProfilePage' : info.kind === 'home' ? 'WebPage' : 'CollectionPage', '@id': canonical ? `${canonical}#webpage` : `${info.path}#webpage`, name: info.title, description: info.description, url: canonical, inLanguage: 'ar', isPartOf: { '@id': website['@id'] }, mainEntity: person }
   if (info.idea || info.writing) {

@@ -20,7 +20,8 @@ function llmsText(edition,origin){
  const line=info=>`- [${info.title.split(' | ')[0].replace(/[[\]]/g,'')}](${origin}${info.path}): ${info.description.replace(/\s+/g,' ')}`
  const sections=pages.filter(info=>info.path!=='/'&&!info.path.slice(1).includes('/'))
  const items=pages.filter(info=>info.path.slice(1).includes('/'))
- return `# ${home.title.split(' | ')[0]}\n\n> ${home.description}\n\nThe site is written in Arabic; English versions live under ${origin}/en/. Full page list: ${origin}/sitemap.xml\n\n## الأقسام\n\n${sections.map(line).join('\n')}\n\n## المحتوى\n\n${items.map(line).join('\n')}\n`
+ const tiktok=edition.site?.showTiktok&&/^[A-Za-z0-9._]{2,24}$/.test(edition.site.tiktok??'')?`\nOfficial profile: https://www.tiktok.com/@${edition.site.tiktok}\n`:''
+ return `# ${home.title.split(' | ')[0]}\n\n> ${home.description}\n${tiktok}\nThe site is written in Arabic; English versions live under ${origin}/en/. Full page list: ${origin}/sitemap.xml\n\n## الأقسام\n\n${sections.map(line).join('\n')}\n\n## المحتوى\n\n${items.map(line).join('\n')}\n`
 }
 async function loadContent(){
  try{
