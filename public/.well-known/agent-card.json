@@ -1,0 +1,36 @@
+{
+  "name": "Kumeel Writings Guide",
+  "description": "Answers questions about the published writings, ideas and library of Kumeel Al Nahab's site (kumeelalnahab.com), using only the site's own texts and citing the pages it used. Arabic first; also answers in English. It does not speak for Kumeel and gives no medical, legal or financial advice.",
+  "version": "1.0.0",
+  "supportedInterfaces": [
+    {
+      "url": "https://kumeelalnahab.com/api/a2a",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "provider": {
+    "organization": "Kumeel Al Nahab",
+    "url": "https://kumeelalnahab.com"
+  },
+  "documentationUrl": "https://kumeelalnahab.com/.well-known/agent-skills/kumeel-reading/SKILL.md",
+  "iconUrl": "https://kumeelalnahab.com/favicon.svg",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "extendedAgentCard": false
+  },
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/plain", "application/json"],
+  "skills": [
+    {
+      "id": "ask-the-writings",
+      "name": "Ask the writings",
+      "description": "Ask one question (up to 600 characters) about the site's philosophy, science and culture writings. Returns a short Socratic answer grounded in the site, links to the cited pages, and a follow-up question. Single turn; rate limited per client and per day.",
+      "tags": ["philosophy", "science", "culture", "arabic", "citations"],
+      "examples": ["ما الفكرة الأساسية في «السلام والصراع»؟", "What do the writings say about certainty?"],
+      "inputModes": ["text/plain"],
+      "outputModes": ["text/plain", "application/json"]
+    }
+  ]
+}

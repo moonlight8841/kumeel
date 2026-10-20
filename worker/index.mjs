@@ -6,6 +6,7 @@ import {createHandler as createChat,buildCorpus} from '../api/chat.mjs'
 import {createHandler as createIdea} from '../api/generate-idea.mjs'
 import {createHandler as createAssist} from '../api/edit-assist.mjs'
 import {createHandler as createStreamChat} from '../api/stream-chat.mjs'
+import {createHandler as createA2A} from '../api/a2a.mjs'
 import {wantsMarkdown,pageMarkdown,markdownTokens} from './markdown.mjs'
 
 const safeJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')
@@ -58,7 +59,9 @@ export async function handleRequest(request,env){
  const path=url.pathname.replace(/\/+$/,'')||'/'
  const origin=env.SITE_URL||'https://kumeelalnahab.com'
  if(url.hostname==='www.kumeelalnahab.com'){const target=new URL(origin);target.pathname=url.pathname;target.search=url.search;return Response.redirect(target.toString(),308)}
- if(path==='/api/chat')return apiResponse(request,createChat({env,loadCorpus:async()=>buildCorpus(readerContent((await loadContent()).content))}))
+ const readerChat=()=>createChat({env,loadCorpus:async()=>buildCorpus(readerContent((await loadContent()).content))})
+ if(path==='/api/chat')return apiResponse(request,readerChat())
+ if(path==='/api/a2a')return apiResponse(request,createA2A({chat:readerChat(),origin}))
  if(path==='/api/generate-idea')return apiResponse(request,createIdea({env}))
  if(path==='/api/edit-assist')return apiResponse(request,createAssist({env}))
  if(path==='/api/stream-chat')return apiResponse(request,createStreamChat({env}))
