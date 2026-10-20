@@ -1,5 +1,5 @@
 // Members-only live chat (Stream). The token comes from /api/stream-chat; nothing secret lives here.
-export type MajlisSession={apiKey:string;userId:string;name:string;token:string;channel:{type:string;id:string}}
+export type MajlisSession={apiKey:string;userId:string;name:string;token:string;channel:{type:string;id:string};call:{type:string;id:string;host:boolean}}
 export const NAME_KEY='kumeel-majlis-name'
 
 export async function joinMajlis(accessToken:string,name:string):Promise<MajlisSession>{

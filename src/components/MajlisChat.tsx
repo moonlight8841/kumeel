@@ -6,6 +6,7 @@ import {joinMajlis,NAME_KEY,type MajlisSession} from '../lib/majlis-chat'
 import './majlis-chat.css'
 
 const MajlisRoom=lazy(()=>import('./MajlisRoom'))
+const MajlisAudio=lazy(()=>import('./MajlisAudio'))
 
 async function accessToken(){
  const {data:{session}}=await supabase.auth.getSession()
@@ -35,12 +36,13 @@ export function MajlisChat(){
  return <L.section className="majlis-chat" aria-labelledby="majlis-chat-title">
   <L.div className="majlis-chat-head">
    <L.h3 id="majlis-chat-title">حديث المجلس</L.h3>
-   <L.p className="salon-muted">مساحة حيّة للأعضاء المسجّلين: تابع النقاش قبل اللقاء وبعده، واطرح سؤالك بهدوء، والتزم بميثاق الحوار أعلاه.</L.p>
+   <L.p className="salon-muted">مساحة حيّة للأعضاء المسجّلين: مجلس صوتي يفتحه المضيف وقت اللقاء، وحديث مكتوب قبله وبعده. ارفع يدك لتتكلم، والتزم بميثاق الحوار أعلاه.</L.p>
   </L.div>
   {checking?<L.p className="majlis-status" role="status">جارٍ التحقق من الدخول…</L.p>
   :!user?<L.div className="majlis-gate"><L.p>الحديث متاح للأعضاء المسجّلين فقط.</L.p><L.a className="majlis-button" href="/member">سجّل الدخول للانضمام ←</L.a></L.div>
   :session?<>
    <L.div className="majlis-bar"><L.span>تشارك باسم <L.strong>{session.name}</L.strong></L.span><L.button type="button" onClick={()=>setSession(null)}>مغادرة الحديث</L.button></L.div>
+   <Suspense fallback={null}><MajlisAudio session={session} refresh={refresh}/></Suspense>
    <Suspense fallback={<L.p className="majlis-status" role="status">جارٍ تحميل المجلس…</L.p>}><MajlisRoom session={session} refresh={refresh} english={english}/></Suspense>
   </>
   :<L.form className="majlis-gate" onSubmit={join}>

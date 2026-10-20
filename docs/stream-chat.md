@@ -36,3 +36,25 @@ Stream dashboard. Members can flag messages; flags appear in the dashboard under
 
 `node scripts/test-stream-chat.mjs` (part of `npm test`) covers auth, name rules, token signing, roles,
 rate limiting and error redaction with a mocked network.
+
+## Audio majlis (Stream Video)
+
+Above the chat sits a members-only audio room (`majlis:kumeel-majlis`). The same `/api/stream-chat` call
+creates the room (owned by the system user `kumeel`) and tells the browser whether the member is the host.
+
+- The **host** (owner account, Stream role `admin`) presses *Start the session*: joins backstage, goes live
+  and turns on the microphone. Raised hands appear in a list with *Let them speak* / *Dismiss*.
+  *Take back the floor* revokes a speaker's `send-audio`. *End the session* revokes all speakers,
+  stops the live state and leaves; members return to the waiting state.
+- **Members** see "waiting for the host" until the room is live, then *Listen now*, *Raise your hand*,
+  and a mute toggle once granted.
+
+The `majlis` call type is created by `node scripts/setup-stream-video.mjs` (idempotent; rerun after
+changing `api/stream-video-config.mjs`). Unlike Stream's default `audio_room`, anonymous users have no
+grants, members cannot create calls or send audio without a grant, video/screen share/recording are off,
+and a session ends automatically after three hours.
+
+Browser requirements: `Permissions-Policy` allows `microphone=(self)`, and the CSP `connect-src` allows
+`video.stream-io-api.com` and `*.stream-io-video.com` (https and wss).
+
+Server and user tokens back-date `iat` by a minute because Stream rejects tokens issued "in the future".

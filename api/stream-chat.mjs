@@ -1,8 +1,10 @@
 // Members-only Stream Chat: verifies the Supabase session, then issues a short-lived
 // Stream user token. The API secret never leaves the server.
 import {jsonResponder,parseBody,supabaseConfig,OWNER_EMAIL} from './_shared/owner-ai.mjs'
+import {MAJLIS_CALL} from './stream-video-config.mjs'
 
 export const STREAM_BASE='https://chat.stream-io-api.com'
+export const VIDEO_BASE='https://video.stream-io-api.com/api/v2/video'
 export const MAJLIS={type:'messaging',id:'kumeel-majlis',name:'مجلس كميل'}
 const SYSTEM_USER={id:'kumeel',name:'كميل',role:'admin'}
 const TOKEN_TTL=60*60
@@ -46,18 +48,24 @@ export function createHandler({fetcher=fetch,env=process.env,clock=Date.now,limi
   const time=clock(),hits=limits.get(user.id)?.filter(t=>time-t<60_000)??[]
   if(hits.length>=6){res.setHeader('Retry-After','60');return fail(429,'محاولات كثيرة. انتظر دقيقة ثم أعد المحاولة.')}
   limits.set(user.id,[...hits,time])
-  const now=Math.floor(time/1000)
-  const server=await signJwt({server:true,iat:now},env.STREAM_API_SECRET)
-  const stream=async(path,body)=>{
-   const response=await fetcher(`${STREAM_BASE}${path}?api_key=${encodeURIComponent(env.STREAM_API_KEY)}`,{method:'POST',headers:{Authorization:server,'Stream-Auth-Type':'jwt','Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(8000)})
+  // Back-date iat a minute: Stream rejects tokens issued "in the future" when clocks drift.
+  const now=Math.floor(time/1000),issued=now-60
+  const server=await signJwt({server:true,iat:issued},env.STREAM_API_SECRET)
+  const stream=async(path,body,base=STREAM_BASE)=>{
+   const response=await fetcher(`${base}${path}?api_key=${encodeURIComponent(env.STREAM_API_KEY)}`,{method:'POST',headers:{Authorization:server,'Stream-Auth-Type':'jwt','Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(8000)})
    if(!response.ok)throw Object.assign(new Error('stream_request_failed'),{status:response.status,path})
   }
   const role=user.email?.toLowerCase()===OWNER_EMAIL?'admin':'user'
   await stream('/users',{users:{[SYSTEM_USER.id]:SYSTEM_USER,[user.id]:{id:user.id,name,role}}})
-  if(!channelReady){await stream(`/channels/${MAJLIS.type}/${MAJLIS.id}/query`,{data:{created_by_id:SYSTEM_USER.id,custom:{name:MAJLIS.name}}});channelReady=true}
+  if(!channelReady){
+   await stream(`/channels/${MAJLIS.type}/${MAJLIS.id}/query`,{data:{created_by_id:SYSTEM_USER.id,custom:{name:MAJLIS.name}}})
+   // The audio room belongs to the system user, so no member gets call-owner rights.
+   await stream(`/call/${MAJLIS_CALL.type}/${MAJLIS_CALL.id}`,{data:{created_by_id:SYSTEM_USER.id}},VIDEO_BASE)
+   channelReady=true
+  }
   await stream(`/channels/${MAJLIS.type}/${MAJLIS.id}`,{add_members:[{user_id:user.id}]})
-  const token=await signJwt({user_id:user.id,iat:now,exp:now+TOKEN_TTL},env.STREAM_API_SECRET)
-  return res.status(200).json({success:true,data:{apiKey:env.STREAM_API_KEY,userId:user.id,name,token,channel:{type:MAJLIS.type,id:MAJLIS.id}}})
+  const token=await signJwt({user_id:user.id,iat:issued,exp:now+TOKEN_TTL},env.STREAM_API_SECRET)
+  return res.status(200).json({success:true,data:{apiKey:env.STREAM_API_KEY,userId:user.id,name,token,channel:{type:MAJLIS.type,id:MAJLIS.id},call:{type:MAJLIS_CALL.type,id:MAJLIS_CALL.id,host:role==='admin'}}})
  }catch(error){
   console.error('stream_chat_failed',{status:Number.isInteger(error?.status)?error.status:undefined,path:error?.path})
   channelReady=false

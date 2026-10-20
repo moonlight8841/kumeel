@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import {createHmac} from 'node:crypto'
 import {test} from 'node:test'
-import {createHandler,cleanName,signJwt,MAJLIS,STREAM_BASE} from '../api/stream-chat.mjs'
+import {createHandler,cleanName,signJwt,MAJLIS,STREAM_BASE,VIDEO_BASE} from '../api/stream-chat.mjs'
+import {MAJLIS_CALL,majlisCallType} from '../api/stream-video-config.mjs'
 
 const env={STREAM_API_KEY:'testkey123',STREAM_API_SECRET:'test-secret-value'}
 const member={id:'11111111-2222-3333-4444-555555555555',email:'reader@example.com',email_confirmed_at:'2026-01-01T00:00:00Z'}
@@ -12,7 +13,7 @@ function fakeFetch({user=member,streamStatus=200}={}){
  const fetcher=async(url,init={})=>{
   calls.push({url,init})
   if(url.endsWith('/auth/v1/user'))return user?new Response(JSON.stringify(user),{status:200}):new Response('{}',{status:401})
-  if(url.startsWith(STREAM_BASE))return new Response('{}',{status:streamStatus})
+  if(url.startsWith(STREAM_BASE)||url.startsWith(VIDEO_BASE))return new Response('{}',{status:streamStatus})
   throw new Error('unexpected '+url)
  }
  return {fetcher,calls}
@@ -41,22 +42,24 @@ test('Stream chat: issues a signed, expiring member token and adds the member to
  const res=await run(createHandler({env,fetcher,clock:()=>1_800_000_000_000,limits:new Map()}))
  assert.equal(res.statusCode,200)
  const {data}=res.body
- assert.deepEqual({apiKey:data.apiKey,userId:data.userId,name:data.name,channel:data.channel},{apiKey:env.STREAM_API_KEY,userId:member.id,name:'سارة',channel:{type:MAJLIS.type,id:MAJLIS.id}})
+ assert.deepEqual({apiKey:data.apiKey,userId:data.userId,name:data.name,channel:data.channel,call:data.call},{apiKey:env.STREAM_API_KEY,userId:member.id,name:'سارة',channel:{type:MAJLIS.type,id:MAJLIS.id},call:{...MAJLIS_CALL,host:false}})
  const claims=verify(data.token,env.STREAM_API_SECRET)
- assert.equal(claims.user_id,member.id);assert.equal(claims.exp-claims.iat,3600)
+ assert.equal(claims.user_id,member.id);assert.equal(claims.exp,1_800_000_000+3600);assert.ok(claims.iat<1_800_000_000,'iat is back-dated against clock drift')
  assert.ok(!JSON.stringify(res.body).includes(env.STREAM_API_SECRET),'Secret never reaches the browser')
- const stream=calls.filter(c=>c.url.startsWith(STREAM_BASE))
- assert.deepEqual(stream.map(c=>new URL(c.url).pathname),['/users',`/channels/${MAJLIS.type}/${MAJLIS.id}/query`,`/channels/${MAJLIS.type}/${MAJLIS.id}`])
+ const stream=calls.filter(c=>c.url.startsWith(STREAM_BASE)||c.url.startsWith(VIDEO_BASE))
+ assert.deepEqual(stream.map(c=>new URL(c.url).pathname),['/users',`/channels/${MAJLIS.type}/${MAJLIS.id}/query`,`/api/v2/video/call/${MAJLIS_CALL.type}/${MAJLIS_CALL.id}`,`/channels/${MAJLIS.type}/${MAJLIS.id}`])
+ assert.deepEqual(JSON.parse(stream[2].init.body),{data:{created_by_id:'kumeel'}},'The audio room is owned by the system user, never a member')
  for(const c of stream){assert.equal(new URL(c.url).searchParams.get('api_key'),env.STREAM_API_KEY);assert.equal(c.init.headers['Stream-Auth-Type'],'jwt');assert.equal(verify(c.init.headers.Authorization,env.STREAM_API_SECRET).server,true)}
  const users=JSON.parse(stream[0].init.body).users
  assert.deepEqual(users[member.id],{id:member.id,name:'سارة',role:'user'},'Members cannot pick their role and email is not shared')
- assert.deepEqual(JSON.parse(stream[2].init.body),{add_members:[{user_id:member.id}]})
+ assert.deepEqual(JSON.parse(stream[3].init.body),{add_members:[{user_id:member.id}]})
 })
 
 test('Stream chat: the site owner is a room admin; attempts are rate limited; failures stay generic',async()=>{
  const {fetcher,calls}=fakeFetch({user:{...member,email:'Komeil9060@gmail.com'}})
- await run(createHandler({env,fetcher,limits:new Map()}))
+ const owner=await run(createHandler({env,fetcher,limits:new Map()}))
  assert.equal(JSON.parse(calls.find(c=>c.url.includes('/users?')).init.body).users[member.id].role,'admin')
+ assert.equal(owner.body.data.call.host,true,'Only the owner hosts the audio majlis')
  const limits=new Map(),handler=createHandler({env,fetcher:fakeFetch().fetcher,clock:()=>5_000,limits})
  for(let i=0;i<6;i++)assert.equal((await run(handler)).statusCode,200)
  assert.equal((await run(handler)).statusCode,429)
@@ -68,4 +71,18 @@ test('Stream chat: JWT helper produces standard HS256 tokens',async()=>{
  const jwt=await signJwt({user_id:'x'},'k')
  assert.deepEqual(JSON.parse(Buffer.from(jwt.split('.')[0],'base64url').toString()),{alg:'HS256',typ:'JWT'})
  verify(jwt,'k')
+})
+
+test('Stream video: the majlis call type keeps visitors out and members as listeners',()=>{
+ const {grants,settings}=majlisCallType
+ assert.deepEqual(grants.anonymous,[])
+ for(const role of ['user','call_member']){
+  assert.ok(grants[role].includes('join-call'))
+  for(const forbidden of ['send-audio','create-call','update-call','join-backstage','mute-users','update-call-permissions'])assert.ok(!grants[role].includes(forbidden),`${role} cannot ${forbidden}`)
+ }
+ for(const needed of ['send-audio','join-backstage','update-call','update-call-permissions','mute-users'])assert.ok(grants.admin.includes(needed),`host can ${needed}`)
+ assert.equal(settings.audio.access_request_enabled,true,'Members can raise a hand')
+ assert.equal(settings.backstage.enabled,true,'Members wait until the host goes live')
+ assert.equal(settings.video.enabled,false);assert.equal(settings.recording.mode,'disabled')
+ assert.ok(settings.limits.max_duration_seconds<=4*3600)
 })
