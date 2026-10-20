@@ -21,7 +21,10 @@ export async function verifyOwner({authorization,fetcher=fetch,config=supabaseCo
  if(!userResponse.ok)return {status:401,error:'انتهت جلسة الدخول. سجّل الدخول مجددًا.'}
  const user=await userResponse.json()
  if(!user.email_confirmed_at||user.email?.toLowerCase()!==OWNER_EMAIL||typeof user.id!=='string')return {status:403,error:forbidden}
- if(auth.requireAdminMfa){const payload=JSON.parse(Buffer.from(authorization.slice(7).split('.')[1],'base64url').toString());if(payload.aal!=='aal2')return {status:403,error:'أكمل التحقق الثنائي.'}}
+ if(auth.requireAdminMfa){
+  try{const payload=JSON.parse(Buffer.from(authorization.slice(7).split('.')[1]??'','base64url').toString());if(payload?.aal!=='aal2')return {status:403,error:'أكمل التحقق الثنائي.'}}
+  catch{return {status:401,error:'انتهت جلسة الدخول. سجّل الدخول مجددًا.'}}
+ }
  const memberResponse=await fetcher(`${config.url}/rest/v1/kumeel_editors?user_id=eq.${encodeURIComponent(user.id)}&select=user_id`,{headers:{apikey:config.publishableKey,Authorization:authorization},signal:AbortSignal.timeout(8000)})
  if(!memberResponse.ok)return {status:503,error:'تعذّر التحقق من صلاحيات الإدارة.'}
  const members=await memberResponse.json()

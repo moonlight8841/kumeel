@@ -1,13 +1,19 @@
 import config from '../auth-config.json'
 export const captchaConfigured = Boolean(config.turnstileSiteKey)
+export const googleConfigured = config.googleSignInEnabled
 export const MIN_PASSWORD_LENGTH = 14
+// Admin-issued recovery emails use token callbacks; browser-initiated flows use PKCE.
+export function authCallbackFlow(hash: string): 'pkce' | 'implicit' {
+ const params = new URLSearchParams(hash.replace(/^#/, ''))
+ return params.get('type') === 'recovery' && Boolean(params.get('access_token')) && Boolean(params.get('refresh_token')) ? 'implicit' : 'pkce'
+}
 export function validNewPassword(password: string): boolean {
  return [...password].length >= MIN_PASSWORD_LENGTH && [...password].length <= 128
 }
-export function safeAuthReturnUrl(origin: string): string {
+export function safeAuthReturnUrl(origin: string, destination: '/admin' | '/member' = '/admin'): string {
  const url = new URL(origin)
  if (url.origin !== 'https://kumeel-nine.vercel.app' && url.origin !== 'https://kumeel-platform.kumeel9060.workers.dev' && url.origin !== 'https://kumeelalnahab.com' && url.origin !== 'https://www.kumeelalnahab.com' && !(url.protocol === 'http:' && ['127.0.0.1', 'localhost'].includes(url.hostname) && url.port === '5173')) throw new Error('هذا العنوان غير معتمد لتسجيل الدخول.')
- return `${url.origin}/admin`
+ return `${url.origin}${destination}`
 }
 const memory = new Map<string, string>()
 export const tabAuthStorage = {

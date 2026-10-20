@@ -1,0 +1,17 @@
+.sky-reflection{position:relative;isolation:isolate;overflow:hidden;background:var(--sand);color:var(--ink);border-block:1px solid var(--line);margin-block:2rem}
+.sky-reflection::before,.sky-reflection::after{content:"";position:absolute;inset:-30px;z-index:0;pointer-events:none;animation:sky-reflection-drift 18s ease-in-out infinite alternate}
+.sky-reflection::before{opacity:.3;background:radial-gradient(1px 1px at 10% 20%,var(--accent),transparent),radial-gradient(2px 2px at 30% 65%,var(--ochre),transparent),radial-gradient(1px 1px at 52% 18%,var(--accent),transparent),radial-gradient(1px 1px at 70% 80%,var(--accent),transparent),radial-gradient(2px 2px at 86% 26%,var(--ochre),transparent),radial-gradient(1px 1px at 95% 60%,var(--accent),transparent)}
+.sky-reflection::after{opacity:.12;background:radial-gradient(ellipse at 80% 90%,var(--ochre),transparent 55%);animation-duration:24s;animation-direction:alternate-reverse}
+.sky-reflection.is-paused::before,.sky-reflection.is-paused::after{animation-play-state:paused}
+.sky-reflection-inner{position:relative;z-index:1;padding-block:clamp(2.5rem,7vw,5.5rem);max-width:1000px}
+.sky-reflection-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.8rem}
+.sky-reflection .section-label,.sky-reflection-mark{color:var(--accent)}.sky-reflection .section-label::before{background:var(--accent)}
+.sky-reflection-quote{font-family:var(--font-reading);font-size:clamp(1.4rem,3vw,2.15rem);line-height:1.95;margin:0;min-height:8em;max-width:32em;text-wrap:pretty;animation:reflection-appear .6s ease-out}
+.sky-reflection-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;margin-top:1.8rem;padding-top:1.25rem;border-top:1px solid var(--line)}
+.sky-reflection-source{max-width:35em;font-size:.88rem;color:var(--muted)}.sky-reflection a:hover{color:var(--accent)}
+.sky-reflection-controls{display:flex;flex-wrap:wrap;gap:.5rem}.sky-reflection-controls button{border:1px solid var(--line);border-radius:4px;color:inherit;padding:.5rem .8rem;min-height:44px;font-size:.8rem}.sky-reflection-controls button:hover{background:var(--surface)}
+@keyframes sky-reflection-drift{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(3%,2%,0) scale(1.06)}}
+@media(prefers-reduced-motion:reduce){.sky-reflection::before,.sky-reflection::after{animation:none}}
+@media(max-width:600px){.sky-reflection-quote{min-height:8em}.sky-reflection-controls{width:100%}.sky-reflection-footer{gap:1rem}}
+
+@keyframes reflection-appear{from{opacity:.35;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}

@@ -9,8 +9,11 @@ from pathlib import Path
 PROJECT = 'jigypvbqiuakdatkzoul'
 
 def token():
-    values = dict(line.split('=', 1) for line in Path('.env').read_text().splitlines() if '=' in line and not line.startswith('#'))
-    return values['supabase'].strip().strip('\"\'')
+    values = dict(line.split('=', 1) for line in Path('.env').read_text(encoding='utf-8-sig').splitlines() if '=' in line and not line.startswith('#')) if Path('.env').exists() else {}
+    value = os.environ.get('SUPABASE_ACCESS_TOKEN') or values.get('SUPABASE_ACCESS_TOKEN') or values.get('supabase')
+    if not value:
+        raise KeyError('SUPABASE_ACCESS_TOKEN')
+    return value.strip().strip('\"\'')
 
 def request(path, body=None, method=None):
     headers = {'Authorization': 'Bearer ' + token(), 'User-Agent': 'kumeel-deployment', 'Content-Type': 'application/json'}

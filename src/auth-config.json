@@ -1,4 +1,5 @@
 {
   "turnstileSiteKey": "0x4AAAAAAFTrC5bcPSEVrVIr",
-  "requireAdminMfa": false
+  "requireAdminMfa": true,
+  "googleSignInEnabled": false
 }

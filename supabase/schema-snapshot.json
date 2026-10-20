@@ -1,0 +1,2496 @@
+{
+  "grants": null,
+  "tables": [
+    {
+      "udt_name": "text",
+      "table_name": "chat_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "visitor",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "date",
+      "table_name": "chat_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "day",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "CURRENT_DATE",
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "chat_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "day_count",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "0",
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "chat_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "window_start",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "now()",
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "chat_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "window_count",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "0",
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "int2",
+      "table_name": "chat_settings",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "1",
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "text",
+      "table_name": "chat_settings",
+      "udt_schema": "pg_catalog",
+      "column_name": "secret_hash",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "chat_settings",
+      "udt_schema": "pg_catalog",
+      "column_name": "per_minute",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "4",
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "chat_settings",
+      "udt_schema": "pg_catalog",
+      "column_name": "per_day",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "30",
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "chat_settings",
+      "udt_schema": "pg_catalog",
+      "column_name": "global_per_day",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "400",
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "bool",
+      "table_name": "chat_settings",
+      "udt_schema": "pg_catalog",
+      "column_name": "enabled",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "true",
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "date",
+      "table_name": "chat_usage",
+      "udt_schema": "pg_catalog",
+      "column_name": "day",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "chat_usage",
+      "udt_schema": "pg_catalog",
+      "column_name": "count",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "0",
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "community_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "user_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "date",
+      "table_name": "community_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "day",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "CURRENT_DATE",
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "community_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "posts",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "0",
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "community_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "comments",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "0",
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "community_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "writes",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "0",
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "text",
+      "table_name": "owner_ai_limits",
+      "udt_schema": "pg_catalog",
+      "column_name": "scope",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "owner_ai_limits",
+      "udt_schema": "pg_catalog",
+      "column_name": "cooldown_seconds",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "owner_ai_limits",
+      "udt_schema": "pg_catalog",
+      "column_name": "per_day",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "owner_ai_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "actor",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "text",
+      "table_name": "owner_ai_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "scope",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "date",
+      "table_name": "owner_ai_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "day",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "CURRENT_DATE",
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "owner_ai_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "used",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": "0",
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "owner_ai_quota",
+      "udt_schema": "pg_catalog",
+      "column_name": "last_request",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "kumeel_private",
+      "column_default": null,
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_community_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "gen_random_uuid()",
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_community_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "post_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_community_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "author_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_community_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "author_name",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_community_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "body",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_community_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "status",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "'pending'::text",
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "kumeel_community_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "revision",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "1",
+      "ordinal_position": 7
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_community_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "created_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 8
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_community_posts",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_community_posts",
+      "udt_schema": "pg_catalog",
+      "column_name": "author_name",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_community_posts",
+      "udt_schema": "pg_catalog",
+      "column_name": "title",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_community_posts",
+      "udt_schema": "pg_catalog",
+      "column_name": "body",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_community_posts",
+      "udt_schema": "pg_catalog",
+      "column_name": "category",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_community_posts",
+      "udt_schema": "pg_catalog",
+      "column_name": "sources",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "bool",
+      "table_name": "kumeel_community_posts",
+      "udt_schema": "pg_catalog",
+      "column_name": "assisted",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 7
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_community_posts",
+      "udt_schema": "pg_catalog",
+      "column_name": "published_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 8
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_drafts",
+      "udt_schema": "pg_catalog",
+      "column_name": "user_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "jsonb",
+      "table_name": "kumeel_drafts",
+      "udt_schema": "pg_catalog",
+      "column_name": "content",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_drafts",
+      "udt_schema": "pg_catalog",
+      "column_name": "updated_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_editors",
+      "udt_schema": "pg_catalog",
+      "column_name": "user_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_public_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_public_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "post_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_public_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "author_name",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_public_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "body",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_public_comments",
+      "udt_schema": "pg_catalog",
+      "column_name": "published_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_public_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_public_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "writing_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_public_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "author_name",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_public_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "body",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_public_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "published_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_published",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "jsonb",
+      "table_name": "kumeel_published",
+      "udt_schema": "pg_catalog",
+      "column_name": "content",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "kumeel_published",
+      "udt_schema": "pg_catalog",
+      "column_name": "revision",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "1",
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_published",
+      "udt_schema": "pg_catalog",
+      "column_name": "updated_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_review_log",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "gen_random_uuid()",
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_review_log",
+      "udt_schema": "pg_catalog",
+      "column_name": "item_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_review_log",
+      "udt_schema": "pg_catalog",
+      "column_name": "item_kind",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_review_log",
+      "udt_schema": "pg_catalog",
+      "column_name": "reviewer_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_review_log",
+      "udt_schema": "pg_catalog",
+      "column_name": "decision",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_review_log",
+      "udt_schema": "pg_catalog",
+      "column_name": "note",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "kumeel_review_log",
+      "udt_schema": "pg_catalog",
+      "column_name": "revision",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 7
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_review_log",
+      "udt_schema": "pg_catalog",
+      "column_name": "created_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 8
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_sparring",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "gen_random_uuid()",
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_sparring",
+      "udt_schema": "pg_catalog",
+      "column_name": "writing_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_sparring",
+      "udt_schema": "pg_catalog",
+      "column_name": "style",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "jsonb",
+      "table_name": "kumeel_sparring",
+      "udt_schema": "pg_catalog",
+      "column_name": "turns",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "'[]'::jsonb",
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "kumeel_sparring",
+      "udt_schema": "pg_catalog",
+      "column_name": "revision",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "1",
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_sparring",
+      "udt_schema": "pg_catalog",
+      "column_name": "created_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_sparring",
+      "udt_schema": "pg_catalog",
+      "column_name": "updated_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 7
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "gen_random_uuid()",
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "author_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "author_name",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "title",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "body",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "category",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "sources",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "''::text",
+      "ordinal_position": 7
+    },
+    {
+      "udt_name": "bool",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "assisted",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "false",
+      "ordinal_position": 8
+    },
+    {
+      "udt_name": "bool",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "rights_confirmed",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "false",
+      "ordinal_position": 9
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "status",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "'draft'::text",
+      "ordinal_position": 10
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "review_note",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "''::text",
+      "ordinal_position": 11
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "revision",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "1",
+      "ordinal_position": 12
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "created_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 13
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_submissions",
+      "udt_schema": "pg_catalog",
+      "column_name": "updated_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 14
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "user_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "name",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "specialty",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "bio",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "approach",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "audience",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "languages",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 7
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "qualifications",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "''::text",
+      "ordinal_position": 8
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "status",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "'pending'::text",
+      "ordinal_position": 9
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "revision",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "1",
+      "ordinal_position": 10
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "review_note",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "''::text",
+      "ordinal_position": 11
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_teacher_applications",
+      "udt_schema": "pg_catalog",
+      "column_name": "updated_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 12
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_teacher_profiles",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "gen_random_uuid()",
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_teacher_profiles",
+      "udt_schema": "pg_catalog",
+      "column_name": "application_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_profiles",
+      "udt_schema": "pg_catalog",
+      "column_name": "name",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_profiles",
+      "udt_schema": "pg_catalog",
+      "column_name": "specialty",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_profiles",
+      "udt_schema": "pg_catalog",
+      "column_name": "bio",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_profiles",
+      "udt_schema": "pg_catalog",
+      "column_name": "approach",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_profiles",
+      "udt_schema": "pg_catalog",
+      "column_name": "audience",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 7
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_teacher_profiles",
+      "udt_schema": "pg_catalog",
+      "column_name": "languages",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 8
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_teacher_profiles",
+      "udt_schema": "pg_catalog",
+      "column_name": "published_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 9
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "gen_random_uuid()",
+      "ordinal_position": 1
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "writing_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 2
+    },
+    {
+      "udt_name": "uuid",
+      "table_name": "kumeel_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "author_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 3
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "author_name",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 4
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "body",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null,
+      "ordinal_position": 5
+    },
+    {
+      "udt_name": "text",
+      "table_name": "kumeel_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "status",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "'pending'::text",
+      "ordinal_position": 6
+    },
+    {
+      "udt_name": "int4",
+      "table_name": "kumeel_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "revision",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "1",
+      "ordinal_position": 7
+    },
+    {
+      "udt_name": "timestamptz",
+      "table_name": "kumeel_writing_responses",
+      "udt_schema": "pg_catalog",
+      "column_name": "created_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()",
+      "ordinal_position": 8
+    }
+  ],
+  "indexes": [
+    {
+      "indexdef": "CREATE INDEX kumeel_sparring_writing ON public.kumeel_sparring USING btree (writing_id, updated_at DESC)",
+      "indexname": "kumeel_sparring_writing",
+      "tablename": "kumeel_sparring",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_sparring_pkey ON public.kumeel_sparring USING btree (id)",
+      "indexname": "kumeel_sparring_pkey",
+      "tablename": "kumeel_sparring",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_public_writing_responses_writing ON public.kumeel_public_writing_responses USING btree (writing_id, published_at)",
+      "indexname": "kumeel_public_writing_responses_writing",
+      "tablename": "kumeel_public_writing_responses",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_public_writing_responses_pkey ON public.kumeel_public_writing_responses USING btree (id)",
+      "indexname": "kumeel_public_writing_responses_pkey",
+      "tablename": "kumeel_public_writing_responses",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_editors_pkey ON public.kumeel_editors USING btree (user_id)",
+      "indexname": "kumeel_editors_pkey",
+      "tablename": "kumeel_editors",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_published_pkey ON public.kumeel_published USING btree (id)",
+      "indexname": "kumeel_published_pkey",
+      "tablename": "kumeel_published",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_drafts_pkey ON public.kumeel_drafts USING btree (user_id)",
+      "indexname": "kumeel_drafts_pkey",
+      "tablename": "kumeel_drafts",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX community_quota_pkey ON kumeel_private.community_quota USING btree (user_id)",
+      "indexname": "community_quota_pkey",
+      "tablename": "community_quota",
+      "schemaname": "kumeel_private",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_submissions_pkey ON public.kumeel_submissions USING btree (id)",
+      "indexname": "kumeel_submissions_pkey",
+      "tablename": "kumeel_submissions",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_submissions_owner ON public.kumeel_submissions USING btree (author_id, updated_at DESC)",
+      "indexname": "kumeel_submissions_owner",
+      "tablename": "kumeel_submissions",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_submissions_queue ON public.kumeel_submissions USING btree (status, updated_at)",
+      "indexname": "kumeel_submissions_queue",
+      "tablename": "kumeel_submissions",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_comments_post_status ON public.kumeel_community_comments USING btree (post_id, status)",
+      "indexname": "kumeel_comments_post_status",
+      "tablename": "kumeel_community_comments",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_community_comments_pkey ON public.kumeel_community_comments USING btree (id)",
+      "indexname": "kumeel_community_comments_pkey",
+      "tablename": "kumeel_community_comments",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_comments_owner ON public.kumeel_community_comments USING btree (author_id, created_at DESC)",
+      "indexname": "kumeel_comments_owner",
+      "tablename": "kumeel_community_comments",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_comments_queue ON public.kumeel_community_comments USING btree (status, created_at)",
+      "indexname": "kumeel_comments_queue",
+      "tablename": "kumeel_community_comments",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_review_log_pkey ON public.kumeel_review_log USING btree (id)",
+      "indexname": "kumeel_review_log_pkey",
+      "tablename": "kumeel_review_log",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_review_log_reviewer ON public.kumeel_review_log USING btree (reviewer_id)",
+      "indexname": "kumeel_review_log_reviewer",
+      "tablename": "kumeel_review_log",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_community_posts_pkey ON public.kumeel_community_posts USING btree (id)",
+      "indexname": "kumeel_community_posts_pkey",
+      "tablename": "kumeel_community_posts",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_posts_date ON public.kumeel_community_posts USING btree (published_at DESC)",
+      "indexname": "kumeel_posts_date",
+      "tablename": "kumeel_community_posts",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_public_comments_pkey ON public.kumeel_public_comments USING btree (id)",
+      "indexname": "kumeel_public_comments_pkey",
+      "tablename": "kumeel_public_comments",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_public_comments_post ON public.kumeel_public_comments USING btree (post_id, published_at)",
+      "indexname": "kumeel_public_comments_post",
+      "tablename": "kumeel_public_comments",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX chat_settings_pkey ON kumeel_private.chat_settings USING btree (id)",
+      "indexname": "chat_settings_pkey",
+      "tablename": "chat_settings",
+      "schemaname": "kumeel_private",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX chat_quota_pkey ON kumeel_private.chat_quota USING btree (visitor)",
+      "indexname": "chat_quota_pkey",
+      "tablename": "chat_quota",
+      "schemaname": "kumeel_private",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX chat_usage_pkey ON kumeel_private.chat_usage USING btree (day)",
+      "indexname": "chat_usage_pkey",
+      "tablename": "chat_usage",
+      "schemaname": "kumeel_private",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_teacher_profiles_pkey ON public.kumeel_teacher_profiles USING btree (id)",
+      "indexname": "kumeel_teacher_profiles_pkey",
+      "tablename": "kumeel_teacher_profiles",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_teacher_profiles_application_id_key ON public.kumeel_teacher_profiles USING btree (application_id)",
+      "indexname": "kumeel_teacher_profiles_application_id_key",
+      "tablename": "kumeel_teacher_profiles",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_teacher_applications_pkey ON public.kumeel_teacher_applications USING btree (user_id)",
+      "indexname": "kumeel_teacher_applications_pkey",
+      "tablename": "kumeel_teacher_applications",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX owner_ai_limits_pkey ON kumeel_private.owner_ai_limits USING btree (scope)",
+      "indexname": "owner_ai_limits_pkey",
+      "tablename": "owner_ai_limits",
+      "schemaname": "kumeel_private",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_writing_responses_owner ON public.kumeel_writing_responses USING btree (author_id, writing_id, created_at DESC)",
+      "indexname": "kumeel_writing_responses_owner",
+      "tablename": "kumeel_writing_responses",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_writing_responses_queue ON public.kumeel_writing_responses USING btree (status, created_at)",
+      "indexname": "kumeel_writing_responses_queue",
+      "tablename": "kumeel_writing_responses",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX kumeel_writing_responses_pkey ON public.kumeel_writing_responses USING btree (id)",
+      "indexname": "kumeel_writing_responses_pkey",
+      "tablename": "kumeel_writing_responses",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX owner_ai_quota_pkey ON kumeel_private.owner_ai_quota USING btree (actor, scope)",
+      "indexname": "owner_ai_quota_pkey",
+      "tablename": "owner_ai_quota",
+      "schemaname": "kumeel_private",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX kumeel_owner_ai_quota_scope ON kumeel_private.owner_ai_quota USING btree (scope)",
+      "indexname": "kumeel_owner_ai_quota_scope",
+      "tablename": "owner_ai_quota",
+      "schemaname": "kumeel_private",
+      "tablespace": null
+    }
+  ],
+  "policies": [
+    {
+      "cmd": "SELECT",
+      "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_editors",
+      "permissive": "PERMISSIVE",
+      "policyname": "Editors see their own membership",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "tablename": "kumeel_published",
+      "permissive": "PERMISSIVE",
+      "policyname": "Public reads published content",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(EXISTS ( SELECT 1\n   FROM kumeel_editors\n  WHERE (kumeel_editors.user_id = ( SELECT auth.uid() AS uid))))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_published",
+      "permissive": "PERMISSIVE",
+      "policyname": "Only editors publish",
+      "schemaname": "public",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM kumeel_editors\n  WHERE (kumeel_editors.user_id = ( SELECT auth.uid() AS uid))))"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1\n   FROM kumeel_editors\n  WHERE (kumeel_editors.user_id = ( SELECT auth.uid() AS uid)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_drafts",
+      "permissive": "PERMISSIVE",
+      "policyname": "Editors manage only their own drafts",
+      "schemaname": "public",
+      "with_check": "((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1\n   FROM kumeel_editors\n  WHERE (kumeel_editors.user_id = ( SELECT auth.uid() AS uid)))))"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_published",
+      "permissive": "RESTRICTIVE",
+      "policyname": "Kumeel secure publication",
+      "schemaname": "public",
+      "with_check": "( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor)"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_drafts",
+      "permissive": "RESTRICTIVE",
+      "policyname": "Kumeel secure drafts",
+      "schemaname": "public",
+      "with_check": "( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor)"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((author_id = ( SELECT auth.uid() AS uid)) OR ( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_submissions",
+      "permissive": "PERMISSIVE",
+      "policyname": "community_private_submissions",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((author_id = ( SELECT auth.uid() AS uid)) OR ( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_community_comments",
+      "permissive": "PERMISSIVE",
+      "policyname": "community_private_comments",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "tablename": "kumeel_community_posts",
+      "permissive": "PERMISSIVE",
+      "policyname": "community_public_posts",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "tablename": "kumeel_public_comments",
+      "permissive": "PERMISSIVE",
+      "policyname": "community_public_comments",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_review_log",
+      "permissive": "PERMISSIVE",
+      "policyname": "community_admin_log",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((user_id = ( SELECT auth.uid() AS uid)) OR ( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_teacher_applications",
+      "permissive": "PERMISSIVE",
+      "policyname": "teacher_private",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "tablename": "kumeel_teacher_profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "teacher_public",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((author_id = ( SELECT auth.uid() AS uid)) OR ( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_writing_responses",
+      "permissive": "PERMISSIVE",
+      "policyname": "writing_responses_private",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "tablename": "kumeel_public_writing_responses",
+      "permissive": "PERMISSIVE",
+      "policyname": "writing_responses_public",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "( SELECT kumeel_is_secure_editor() AS kumeel_is_secure_editor)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_sparring",
+      "permissive": "PERMISSIVE",
+      "policyname": "sparring_owner",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "ALL",
+      "qual": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_editors",
+      "permissive": "RESTRICTIVE",
+      "policyname": "kumeel_active_session",
+      "schemaname": "public",
+      "with_check": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_submissions",
+      "permissive": "RESTRICTIVE",
+      "policyname": "kumeel_active_session",
+      "schemaname": "public",
+      "with_check": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_community_comments",
+      "permissive": "RESTRICTIVE",
+      "policyname": "kumeel_active_session",
+      "schemaname": "public",
+      "with_check": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_writing_responses",
+      "permissive": "RESTRICTIVE",
+      "policyname": "kumeel_active_session",
+      "schemaname": "public",
+      "with_check": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)"
+    },
+    {
+      "cmd": "ALL",
+      "qual": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "kumeel_teacher_applications",
+      "permissive": "RESTRICTIVE",
+      "policyname": "kumeel_active_session",
+      "schemaname": "public",
+      "with_check": "( SELECT kumeel_has_active_session() AS kumeel_has_active_session)"
+    }
+  ],
+  "triggers": [
+    {
+      "definition": "CREATE TRIGGER kumeel_published_updated BEFORE UPDATE ON kumeel_published FOR EACH ROW EXECUTE FUNCTION kumeel_touch_content()"
+    },
+    {
+      "definition": "CREATE TRIGGER kumeel_drafts_updated BEFORE UPDATE ON kumeel_drafts FOR EACH ROW EXECUTE FUNCTION kumeel_touch_content()"
+    }
+  ],
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_send_comment",
+      "arguments": "p_post uuid, p_name text, p_body text",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_send_comment(p_post uuid, p_name text, p_body text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\ndeclare actor uuid:=kumeel_private.community_actor(); result uuid;\r\nbegin\r\n perform 1 from public.kumeel_community_posts where id=p_post for key share;\r\n if not found then raise exception 'COMMUNITY_NOT_PUBLISHED'; end if;\r\n perform kumeel_private.community_limit(actor,'comment');\r\n insert into public.kumeel_community_comments(post_id,author_id,author_name,body) values(p_post,actor,btrim(p_name),btrim(p_body)) returning id into result;\r\n return result;\r\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_chat_take",
+      "arguments": "p_secret text, p_visitor text",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_chat_take(p_secret text, p_visitor text)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\ndeclare\r\n s kumeel_private.chat_settings;\r\n q kumeel_private.chat_quota;\r\n used integer;\r\nbegin\r\n select * into s from kumeel_private.chat_settings where id = 1;\r\n if not found then raise exception 'CHAT_NOT_CONFIGURED' using errcode = 'P0001'; end if;\r\n if p_secret is null or encode(extensions.digest(p_secret, 'sha256'), 'hex') <> s.secret_hash then\r\n  raise exception 'CHAT_FORBIDDEN' using errcode = '42501';\r\n end if;\r\n if not s.enabled then return 'disabled'; end if;\r\n if p_visitor is null or p_visitor !~ '^[0-9a-f]{64}$' then raise exception 'CHAT_BAD_VISITOR' using errcode = '22023'; end if;\r\n\r\n -- Global cap first so a burst cannot exceed the provider quota.\r\n insert into kumeel_private.chat_usage(day) values (current_date) on conflict do nothing;\r\n select count into used from kumeel_private.chat_usage where day = current_date for update;\r\n if used >= s.global_per_day then return 'global'; end if;\r\n\r\n insert into kumeel_private.chat_quota(visitor) values (p_visitor) on conflict do nothing;\r\n select * into q from kumeel_private.chat_quota where visitor = p_visitor for update;\r\n if q.day <> current_date then q.day_count := 0; end if;\r\n if now() - q.window_start >= interval '1 minute' then q.window_start := now(); q.window_count := 0; end if;\r\n if q.day_count >= s.per_day then return 'day'; end if;\r\n if q.window_count >= s.per_minute then return 'minute'; end if;\r\n\r\n update kumeel_private.chat_quota\r\n  set day = current_date, day_count = q.day_count + 1, window_start = q.window_start, window_count = q.window_count + 1\r\n  where visitor = p_visitor;\r\n update kumeel_private.chat_usage set count = used + 1 where day = current_date;\r\n -- Keep only recent counters.\r\n if used = 0 then\r\n  delete from kumeel_private.chat_quota where day < current_date - 2;\r\n  delete from kumeel_private.chat_usage where day < current_date - 30;\r\n end if;\r\n return 'ok';\r\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_send_writing_response",
+      "arguments": "p_writing text, p_name text, p_body text",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_send_writing_response(p_writing text, p_name text, p_body text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare actor uuid:=kumeel_private.community_actor(); result uuid;\nbegin\n -- Only writings in the public snapshot accept opinions; starter templates have no reader page.\n if p_writing is null or not exists(\n  select 1 from public.kumeel_published p\n  cross join lateral jsonb_array_elements(case when jsonb_typeof(p.content->'writings')='array' then p.content->'writings' else '[]'::jsonb end) w\n  where p.id='main' and w->>'id'=p_writing) then\n  raise exception 'COMMUNITY_NOT_PUBLISHED';\n end if;\n perform kumeel_private.community_limit(actor,'comment');\n insert into public.kumeel_writing_responses(writing_id,author_id,author_name,body) values(p_writing,actor,btrim(p_name),btrim(p_body)) returning id into result;\n return result;\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_touch_content",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_touch_content()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\r\nbegin\r\n  new.updated_at := now();\r\n  if tg_table_name = 'kumeel_published' then\r\n    new.revision := old.revision + 1;\r\n  end if;\r\n  return new;\r\nend;\r\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "nspname": "public",
+      "proname": "rls_auto_enable",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.rls_auto_enable()\n RETURNS event_trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE\n  cmd record;\n  tbl name;\nBEGIN\n  FOR cmd IN\n    SELECT *\n    FROM pg_event_trigger_ddl_commands()\n    WHERE command_tag IN ('CREATE TABLE', 'CREATE TABLE AS', 'SELECT INTO')\n      AND object_type IN ('table','partitioned table')\n  LOOP\n     IF cmd.schema_name IS NOT NULL AND cmd.schema_name IN ('public') AND cmd.schema_name NOT IN ('pg_catalog','information_schema') AND cmd.schema_name NOT LIKE 'pg_toast%' AND cmd.schema_name NOT LIKE 'pg_temp%' THEN\n      BEGIN\n        SELECT c.relname INTO tbl FROM pg_catalog.pg_class c WHERE c.oid = cmd.objid;\n        EXECUTE format('alter table if exists %I.%I enable row level security', cmd.schema_name, tbl);\n        RAISE LOG 'rls_auto_enable: enabled RLS on %', cmd.object_identity;\n      EXCEPTION\n        WHEN OTHERS THEN\n          RAISE LOG 'rls_auto_enable: failed to enable RLS on %', cmd.object_identity;\n      END;\n     ELSE\n        RAISE LOG 'rls_auto_enable: skip % (either system schema or not in enforced list: %.)', cmd.object_identity, cmd.schema_name;\n     END IF;\n  END LOOP;\nEND;\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_is_secure_editor",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_is_secure_editor()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select public.kumeel_has_active_session()\n and (select auth.jwt()->>'aal')='aal2'\n and exists(select 1 from public.kumeel_editors e join auth.users u on u.id=e.user_id\n where u.id=(select auth.uid()) and u.email_confirmed_at is not null\n and lower(u.email) in ('komeil9060@gmail.com','bobmorgann2@gmail.com'));\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "nspname": "kumeel_private",
+      "proname": "community_limit",
+      "arguments": "actor uuid, kind text",
+      "definition": "CREATE OR REPLACE FUNCTION kumeel_private.community_limit(actor uuid, kind text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\ndeclare q kumeel_private.community_quota;\r\nbegin\r\n insert into kumeel_private.community_quota(user_id) values(actor) on conflict do nothing;\r\n select * into q from kumeel_private.community_quota where user_id=actor for update;\r\n if q.day<>current_date then q.posts:=0;q.comments:=0;q.writes:=0; end if;\r\n if q.writes>=100 or (kind='post' and q.posts>=5) or (kind='comment' and q.comments>=20) then\r\n  raise exception 'COMMUNITY_LIMIT' using errcode='P0001';\r\n end if;\r\n update kumeel_private.community_quota set day=current_date,posts=q.posts+(case when kind='post' then 1 else 0 end),\r\n comments=q.comments+(case when kind='comment' then 1 else 0 end),writes=q.writes+1 where user_id=actor;\r\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "nspname": "kumeel_private",
+      "proname": "community_actor",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION kumeel_private.community_actor()\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare actor uuid:=auth.uid();\nbegin\n if not public.kumeel_has_active_session() or actor is null or not exists(select 1 from auth.users where id=actor and email_confirmed_at is not null) then\n  raise exception 'COMMUNITY_AUTH' using errcode='42501';\n end if;\n return actor;\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_save_submission",
+      "arguments": "p_id uuid, p_revision integer, p_name text, p_title text, p_body text, p_category text, p_sources text, p_assisted boolean, p_submit boolean, p_rights boolean",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_save_submission(p_id uuid, p_revision integer, p_name text, p_title text, p_body text, p_category text, p_sources text, p_assisted boolean, p_submit boolean, p_rights boolean)\n RETURNS kumeel_submissions\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\ndeclare actor uuid:=kumeel_private.community_actor(); item public.kumeel_submissions;\r\nbegin\r\n if p_submit and (not coalesce(p_rights,false) or char_length(btrim(p_body))<80) then raise exception 'COMMUNITY_CONTENT'; end if;\r\n if p_id is null then\r\n  perform kumeel_private.community_limit(actor,'post');\r\n  insert into public.kumeel_submissions(author_id,author_name,title,body,category,sources,assisted,rights_confirmed,status)\r\n  values(actor,btrim(p_name),btrim(p_title),p_body,p_category,p_sources,p_assisted,p_rights,case when p_submit then 'pending' else 'draft' end) returning * into item;\r\n else\r\n  select * into item from public.kumeel_submissions where id=p_id and author_id=actor for update;\r\n  if not found then raise exception 'COMMUNITY_FORBIDDEN' using errcode='42501'; end if;\r\n  if item.revision is distinct from p_revision then raise exception 'COMMUNITY_CONFLICT'; end if;\r\n  if item.status not in ('draft','changes_requested') then raise exception 'COMMUNITY_LOCKED'; end if;\r\n  perform kumeel_private.community_limit(actor,'write');\r\n  update public.kumeel_submissions set author_name=btrim(p_name),title=btrim(p_title),body=p_body,category=p_category,\r\n   sources=p_sources,assisted=p_assisted,rights_confirmed=p_rights,status=case when p_submit then 'pending' else 'draft' end,\r\n   revision=revision+1,updated_at=now() where id=p_id returning * into item;\r\n end if;\r\n return item;\r\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_review_community",
+      "arguments": "p_kind text, p_id uuid, p_revision integer, p_decision text, p_note text",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_review_community(p_kind text, p_id uuid, p_revision integer, p_decision text, p_note text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\ndeclare actor uuid:=kumeel_private.community_actor(); item public.kumeel_submissions; reply public.kumeel_community_comments;\r\nbegin\r\n if not public.kumeel_is_secure_editor() then raise exception 'COMMUNITY_FORBIDDEN' using errcode='42501'; end if;\r\n if p_decision is null or p_decision not in ('published','changes_requested','rejected') or p_note is null or char_length(p_note)>1000 then raise exception 'COMMUNITY_CONTENT'; end if;\r\n if p_decision<>'published' and char_length(btrim(p_note))<3 then raise exception 'COMMUNITY_NOTE_REQUIRED'; end if;\r\n if p_kind='post' then\r\n  select * into item from public.kumeel_submissions where id=p_id for update;\r\n  if not found then raise exception 'COMMUNITY_NOT_FOUND'; end if;\r\n  if item.revision is distinct from p_revision then raise exception 'COMMUNITY_CONFLICT'; end if;\r\n  if item.status not in ('pending','published') or (p_decision='published' and item.status<>'pending') then raise exception 'COMMUNITY_LOCKED'; end if;\r\n  if p_decision='published' then\r\n   if not item.rights_confirmed or char_length(btrim(item.body))<80 then raise exception 'COMMUNITY_CONTENT'; end if;\r\n   insert into public.kumeel_community_posts(id,author_name,title,body,category,sources,assisted)\r\n    values(item.id,item.author_name,item.title,item.body,item.category,item.sources,item.assisted);\r\n  else\r\n   delete from public.kumeel_community_posts where id=p_id;\r\n   -- Removing a post hides its comments; they must be reviewed again after republication.\r\n   update public.kumeel_community_comments set status='pending',revision=revision+1 where post_id=p_id and status='published';\r\n  end if;\r\n  update public.kumeel_submissions set status=p_decision,review_note=btrim(p_note),revision=revision+1,updated_at=now() where id=p_id;\r\n elsif p_kind='comment' then\r\n  if p_decision='changes_requested' then raise exception 'COMMUNITY_CONTENT'; end if;\r\n  -- Lock the parent before the comment to serialize moderation with post withdrawal.\r\n  select s.* into item from public.kumeel_submissions s join public.kumeel_community_comments c on c.post_id=s.id where c.id=p_id for update of s;\r\n  select * into reply from public.kumeel_community_comments where id=p_id for update;\r\n  if not found then raise exception 'COMMUNITY_NOT_FOUND'; end if;\r\n  if reply.revision is distinct from p_revision then raise exception 'COMMUNITY_CONFLICT'; end if;\r\n  if reply.status not in ('pending','published') or (p_decision='published' and reply.status<>'pending') then raise exception 'COMMUNITY_LOCKED'; end if;\r\n  if p_decision='published' then\r\n   if item.status<>'published' then raise exception 'COMMUNITY_NOT_PUBLISHED'; end if;\r\n   insert into public.kumeel_public_comments(id,post_id,author_name,body) values(reply.id,reply.post_id,reply.author_name,reply.body);\r\n  else delete from public.kumeel_public_comments where id=p_id; end if;\r\n  update public.kumeel_community_comments set status=p_decision,revision=revision+1 where id=p_id;\r\n else raise exception 'COMMUNITY_CONTENT'; end if;\r\n insert into public.kumeel_review_log(item_id,item_kind,reviewer_id,decision,note,revision) values(p_id,p_kind,actor,p_decision,btrim(p_note),p_revision);\r\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_apply_teacher",
+      "arguments": "p_revision integer, p_name text, p_specialty text, p_bio text, p_approach text, p_audience text, p_languages text, p_qualifications text",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_apply_teacher(p_revision integer, p_name text, p_specialty text, p_bio text, p_approach text, p_audience text, p_languages text, p_qualifications text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\ndeclare actor uuid:=kumeel_private.community_actor(); old public.kumeel_teacher_applications;\r\nbegin\r\n -- Serialize both initial creation and subsequent edits for this account.\r\n perform 1 from auth.users where id=actor for update;\r\n select * into old from public.kumeel_teacher_applications where user_id=actor for update;\r\n if found then\r\n  if old.revision is distinct from p_revision then raise exception 'COMMUNITY_CONFLICT'; end if;\r\n  if old.status not in ('published','changes_requested') then raise exception 'COMMUNITY_LOCKED'; end if;\r\n  perform kumeel_private.community_limit(actor,'write');\r\n  update public.kumeel_teacher_applications set name=btrim(p_name),specialty=btrim(p_specialty),bio=btrim(p_bio),approach=btrim(p_approach),audience=btrim(p_audience),languages=btrim(p_languages),qualifications=p_qualifications,status='pending',revision=revision+1,updated_at=now() where user_id=actor;\r\n else\r\n  perform kumeel_private.community_limit(actor,'write');\r\n  insert into public.kumeel_teacher_applications(user_id,name,specialty,bio,approach,audience,languages,qualifications) values(actor,btrim(p_name),btrim(p_specialty),btrim(p_bio),btrim(p_approach),btrim(p_audience),btrim(p_languages),p_qualifications);\r\n end if;\r\n -- An approved profile remains visible unchanged until the revised application is reviewed.\r\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_review_teacher",
+      "arguments": "p_user uuid, p_revision integer, p_decision text, p_note text",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_review_teacher(p_user uuid, p_revision integer, p_decision text, p_note text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\r\ndeclare actor uuid:=kumeel_private.community_actor(); item public.kumeel_teacher_applications;\r\nbegin\r\n if not public.kumeel_is_secure_editor() then raise exception 'COMMUNITY_FORBIDDEN' using errcode='42501';end if;\r\n if p_decision is null or p_decision not in ('published','changes_requested','rejected') or p_note is null or char_length(p_note)>1000 then raise exception 'COMMUNITY_CONTENT';end if;\r\n if p_decision<>'published' and char_length(btrim(p_note))<3 then raise exception 'COMMUNITY_NOTE_REQUIRED';end if;\r\n select * into item from public.kumeel_teacher_applications where user_id=p_user for update;\r\n if not found then raise exception 'COMMUNITY_NOT_FOUND';end if;\r\n if item.revision is distinct from p_revision then raise exception 'COMMUNITY_CONFLICT';end if;\r\n if item.status not in ('pending','published') or (item.status='published' and p_decision='published') then raise exception 'COMMUNITY_LOCKED';end if;\r\n if p_decision='published' then\r\n  insert into public.kumeel_teacher_profiles(application_id,name,specialty,bio,approach,audience,languages)\r\n  values(item.user_id,item.name,item.specialty,item.bio,item.approach,item.audience,item.languages)\r\n  on conflict(application_id) do update set name=excluded.name,specialty=excluded.specialty,bio=excluded.bio,approach=excluded.approach,audience=excluded.audience,languages=excluded.languages;\r\n else delete from public.kumeel_teacher_profiles where application_id=p_user;end if;\r\n update public.kumeel_teacher_applications set status=p_decision,review_note=btrim(p_note),revision=revision+1,updated_at=now() where user_id=p_user;\r\n insert into public.kumeel_review_log(item_id,item_kind,reviewer_id,decision,note,revision) values(p_user,'teacher',actor,p_decision,btrim(p_note),p_revision);\r\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "nspname": "kumeel_private",
+      "proname": "valid_sparring_turns",
+      "arguments": "t jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION kumeel_private.valid_sparring_turns(t jsonb)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n select case when t is null or jsonb_typeof(t)<>'array' then false\n when jsonb_array_length(t)>40 then false\n else not exists(select 1 from jsonb_array_elements(t) e where\n  case when jsonb_typeof(e)<>'object' then true\n  else exists(select 1 from jsonb_object_keys(e) k where k not in ('role','text','quote'))\n   or coalesce(e->>'role','') not in ('critic','owner')\n   or case when jsonb_typeof(e->'text') is distinct from 'string' then true else char_length(e->>'text') not between 1 and 4000 end\n   or case when not (e ? 'quote') then false when jsonb_typeof(e->'quote')<>'string' then true else char_length(e->>'quote')>500 end\n  end)\n end\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_valid_public_translations",
+      "arguments": "document jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_valid_public_translations(document jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\ndeclare k text; r jsonb; w jsonb; bytes bytea; expected text;\nbegin\n if jsonb_typeof(document) is distinct from 'object' or document ? 'translationDrafts' then return false; end if;\n if not document ? 'translations' then return true; end if;\n if jsonb_typeof(document->'translations') is distinct from 'object' then return false; end if;\n if jsonb_typeof(document->'writings') is distinct from 'array' then return false; end if;\n if (select count(*) from jsonb_object_keys(document->'translations'))>501 then return false; end if;\n for k,r in select * from jsonb_each(document->'translations') loop\n  if jsonb_typeof(r) is distinct from 'object' then return false; end if;\n  if (select count(*) from jsonb_object_keys(r))<>4 or not r ?& array['locale','title','text','sourceHash'] then return false; end if;\n  if r->>'locale' is distinct from 'en' or jsonb_typeof(r->'title') is distinct from 'string'\n   or jsonb_typeof(r->'text') is distinct from 'string' or jsonb_typeof(r->'sourceHash') is distinct from 'string'\n   or length(r->>'title')>300 or length(r->>'text')>60000 or length(btrim(r->>'text'))=0\n   or r->>'sourceHash' !~ '^[0-9a-f]{64}$' then return false; end if;\n  if k='bio' then\n   if jsonb_typeof(document->'bio') is distinct from 'string' then return false;end if;\n   bytes:=convert_to(E'kumeel-translation-v1\\nbio\\n'||(document->>'bio'),'UTF8');\n  elsif left(k,8)='writing:' and length(k) between 9 and 158 then\n   if length(btrim(r->>'title'))=0 then return false;end if;\n   select item into w from jsonb_array_elements(document->'writings') item where item->>'id'=substr(k,9);\n   if w is null or jsonb_typeof(w->'title') is distinct from 'string' or jsonb_typeof(w->'text') is distinct from 'string' then return false;end if;\n   if coalesce(w->>'format','plain') not in ('plain','markdown') then return false;end if;\n   bytes:=convert_to(E'kumeel-translation-v1\\nwriting\\n'||(w->>'title'),'UTF8')||decode('00','hex')\n    ||convert_to(w->>'text','UTF8')||decode('00','hex')||convert_to(coalesce(w->>'format','plain'),'UTF8');\n  else return false; end if;\n  expected:=encode(extensions.digest(bytes,'sha256'),'hex');\n  if r->>'sourceHash' is distinct from expected then return false;end if;\n end loop;\n return true;\nend $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_review_writing_response",
+      "arguments": "p_id uuid, p_revision integer, p_decision text, p_note text",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_review_writing_response(p_id uuid, p_revision integer, p_decision text, p_note text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare actor uuid:=kumeel_private.community_actor(); reply public.kumeel_writing_responses;\nbegin\n if not public.kumeel_is_secure_editor() then raise exception 'COMMUNITY_FORBIDDEN' using errcode='42501'; end if;\n if p_decision is null or p_decision not in ('published','rejected') or p_note is null or char_length(p_note)>1000 then raise exception 'COMMUNITY_CONTENT'; end if;\n if p_decision='rejected' and char_length(btrim(p_note))<3 then raise exception 'COMMUNITY_NOTE_REQUIRED'; end if;\n select * into reply from public.kumeel_writing_responses where id=p_id for update;\n if not found then raise exception 'COMMUNITY_NOT_FOUND'; end if;\n if reply.revision is distinct from p_revision then raise exception 'COMMUNITY_CONFLICT'; end if;\n if reply.status not in ('pending','published') or (p_decision='published' and reply.status<>'pending') then raise exception 'COMMUNITY_LOCKED'; end if;\n if p_decision='published' then\n  insert into public.kumeel_public_writing_responses(id,writing_id,author_name,body) values(reply.id,reply.writing_id,reply.author_name,reply.body);\n else delete from public.kumeel_public_writing_responses where id=p_id; end if;\n update public.kumeel_writing_responses set status=p_decision,revision=revision+1 where id=p_id;\n insert into public.kumeel_review_log(item_id,item_kind,reviewer_id,decision,note,revision) values(p_id,'writing_response',actor,p_decision,btrim(p_note),p_revision);\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_save_sparring",
+      "arguments": "p_id uuid, p_revision integer, p_writing text, p_style text, p_turns jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_save_sparring(p_id uuid, p_revision integer, p_writing text, p_style text, p_turns jsonb)\n RETURNS kumeel_sparring\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare item public.kumeel_sparring;\nbegin\n if not public.kumeel_is_secure_editor() then raise exception 'COMMUNITY_FORBIDDEN' using errcode='42501'; end if;\n if not kumeel_private.valid_sparring_turns(p_turns) then raise exception 'COMMUNITY_CONTENT'; end if;\n if p_id is null then\n  insert into public.kumeel_sparring(writing_id,style,turns) values(p_writing,p_style,p_turns) returning * into item;\n else\n  select * into item from public.kumeel_sparring where id=p_id for update;\n  if not found then raise exception 'COMMUNITY_NOT_FOUND'; end if;\n  if item.revision is distinct from p_revision then raise exception 'COMMUNITY_CONFLICT'; end if;\n  update public.kumeel_sparring set turns=p_turns,revision=revision+1,updated_at=now() where id=p_id returning * into item;\n end if;\n return item;\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_delete_sparring",
+      "arguments": "p_id uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_delete_sparring(p_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n if not public.kumeel_is_secure_editor() then raise exception 'COMMUNITY_FORBIDDEN' using errcode='42501'; end if;\n delete from public.kumeel_sparring where id=p_id;\nend; $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_has_active_session",
+      "arguments": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_has_active_session()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n select exists(select 1 from auth.sessions s where s.user_id=(select auth.uid())\n  and s.id::text=(select auth.jwt()->>'session_id') and (s.not_after is null or s.not_after>now()));\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "nspname": "public",
+      "proname": "kumeel_owner_ai_take",
+      "arguments": "p_secret text, p_actor uuid, p_scope text",
+      "definition": "CREATE OR REPLACE FUNCTION public.kumeel_owner_ai_take(p_secret text, p_actor uuid, p_scope text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare limits kumeel_private.owner_ai_limits; quota kumeel_private.owner_ai_quota; stamp timestamptz; local_day date; retry integer;\nbegin\n if p_secret is null or char_length(p_secret) not between 32 and 256 or not exists(select 1 from kumeel_private.chat_settings s where s.id=1 and s.secret_hash=encode(extensions.digest(p_secret,'sha256'),'hex')) then\n  raise exception 'QUOTA_FORBIDDEN' using errcode='42501';\n end if;\n if not exists(select 1 from public.kumeel_editors e join auth.users u on u.id=e.user_id where u.id=p_actor and u.email_confirmed_at is not null and lower(u.email) in ('komeil9060@gmail.com','bobmorgann2@gmail.com')) then\n  raise exception 'QUOTA_FORBIDDEN' using errcode='42501';\n end if;\n select * into limits from kumeel_private.owner_ai_limits where scope=p_scope;\n if not found then raise exception 'QUOTA_SCOPE' using errcode='22023'; end if;\n insert into kumeel_private.owner_ai_quota(actor,scope) values(p_actor,p_scope) on conflict do nothing;\n select * into quota from kumeel_private.owner_ai_quota where actor=p_actor and scope=p_scope for update;\n stamp=clock_timestamp();local_day=(stamp at time zone 'Asia/Riyadh')::date;\n if quota.day<>local_day then quota.used=0;end if;\n if quota.used>=limits.per_day then\n  retry=greatest(1,ceil(extract(epoch from((((local_day+1)::timestamp at time zone 'Asia/Riyadh')-stamp))))::integer);\n  return jsonb_build_object('allowed',false,'reason','daily','retry_after',retry,'remaining',0);\n end if;\n if quota.last_request is not null and stamp-quota.last_request<make_interval(secs=>limits.cooldown_seconds) then\n  retry=greatest(1,ceil(limits.cooldown_seconds-extract(epoch from(stamp-quota.last_request)))::integer);\n  return jsonb_build_object('allowed',false,'reason','cooldown','retry_after',retry,'remaining',limits.per_day-quota.used);\n end if;\n update kumeel_private.owner_ai_quota set day=local_day,used=quota.used+1,last_request=stamp where actor=p_actor and scope=p_scope;\n return jsonb_build_object('allowed',true,'retry_after',0,'remaining',limits.per_day-quota.used-1);\nend;\n$function$\n"
+    }
+  ],
+  "constraints": [
+    {
+      "conname": "kumeel_editors_pkey",
+      "nspname": "public",
+      "relname": "kumeel_editors",
+      "definition": "PRIMARY KEY (user_id)"
+    },
+    {
+      "conname": "kumeel_editors_user_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_editors",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "conname": "kumeel_published_id_check",
+      "nspname": "public",
+      "relname": "kumeel_published",
+      "definition": "CHECK (id = 'main'::text)"
+    },
+    {
+      "conname": "kumeel_published_content_check",
+      "nspname": "public",
+      "relname": "kumeel_published",
+      "definition": "CHECK (jsonb_typeof(content) = 'object'::text AND jsonb_typeof(content -> 'bio'::text) = 'string'::text AND jsonb_typeof(content -> 'writings'::text) = 'array'::text AND jsonb_typeof(content -> 'media'::text) = 'array'::text AND octet_length(content::text) <= 4000000)"
+    },
+    {
+      "conname": "kumeel_published_pkey",
+      "nspname": "public",
+      "relname": "kumeel_published",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "kumeel_drafts_content_check",
+      "nspname": "public",
+      "relname": "kumeel_drafts",
+      "definition": "CHECK (jsonb_typeof(content) = 'object'::text AND octet_length(content::text) <= 4000000)"
+    },
+    {
+      "conname": "kumeel_drafts_pkey",
+      "nspname": "public",
+      "relname": "kumeel_drafts",
+      "definition": "PRIMARY KEY (user_id)"
+    },
+    {
+      "conname": "kumeel_drafts_user_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_drafts",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "conname": "kumeel_submissions_author_name_check",
+      "nspname": "public",
+      "relname": "kumeel_submissions",
+      "definition": "CHECK (char_length(btrim(author_name)) >= 2 AND char_length(btrim(author_name)) <= 60)"
+    },
+    {
+      "conname": "kumeel_submissions_title_check",
+      "nspname": "public",
+      "relname": "kumeel_submissions",
+      "definition": "CHECK (char_length(btrim(title)) >= 3 AND char_length(btrim(title)) <= 160)"
+    },
+    {
+      "conname": "kumeel_submissions_body_check",
+      "nspname": "public",
+      "relname": "kumeel_submissions",
+      "definition": "CHECK (char_length(body) >= 1 AND char_length(body) <= 20000)"
+    },
+    {
+      "conname": "chat_quota_visitor_check",
+      "nspname": "kumeel_private",
+      "relname": "chat_quota",
+      "definition": "CHECK (visitor ~ '^[0-9a-f]{64}$'::text)"
+    },
+    {
+      "conname": "chat_quota_pkey",
+      "nspname": "kumeel_private",
+      "relname": "chat_quota",
+      "definition": "PRIMARY KEY (visitor)"
+    },
+    {
+      "conname": "kumeel_submissions_category_check",
+      "nspname": "public",
+      "relname": "kumeel_submissions",
+      "definition": "CHECK (category = ANY (ARRAY['فلسفة'::text, 'علم'::text, 'ثقافة'::text, 'تأملات'::text]))"
+    },
+    {
+      "conname": "kumeel_submissions_sources_check",
+      "nspname": "public",
+      "relname": "kumeel_submissions",
+      "definition": "CHECK (char_length(sources) <= 3000)"
+    },
+    {
+      "conname": "kumeel_submissions_status_check",
+      "nspname": "public",
+      "relname": "kumeel_submissions",
+      "definition": "CHECK (status = ANY (ARRAY['draft'::text, 'pending'::text, 'published'::text, 'changes_requested'::text, 'rejected'::text]))"
+    },
+    {
+      "conname": "kumeel_submissions_review_note_check",
+      "nspname": "public",
+      "relname": "kumeel_submissions",
+      "definition": "CHECK (char_length(review_note) <= 1000)"
+    },
+    {
+      "conname": "kumeel_submissions_pkey",
+      "nspname": "public",
+      "relname": "kumeel_submissions",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "kumeel_submissions_author_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_submissions",
+      "definition": "FOREIGN KEY (author_id) REFERENCES auth.users(id)"
+    },
+    {
+      "conname": "kumeel_community_posts_pkey",
+      "nspname": "public",
+      "relname": "kumeel_community_posts",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "kumeel_community_posts_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_community_posts",
+      "definition": "FOREIGN KEY (id) REFERENCES kumeel_submissions(id)"
+    },
+    {
+      "conname": "kumeel_community_comments_author_name_check",
+      "nspname": "public",
+      "relname": "kumeel_community_comments",
+      "definition": "CHECK (char_length(btrim(author_name)) >= 2 AND char_length(btrim(author_name)) <= 60)"
+    },
+    {
+      "conname": "chat_settings_global_per_day_check",
+      "nspname": "kumeel_private",
+      "relname": "chat_settings",
+      "definition": "CHECK (global_per_day >= 1 AND global_per_day <= 100000)"
+    },
+    {
+      "conname": "chat_settings_pkey",
+      "nspname": "kumeel_private",
+      "relname": "chat_settings",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "chat_usage_pkey",
+      "nspname": "kumeel_private",
+      "relname": "chat_usage",
+      "definition": "PRIMARY KEY (day)"
+    },
+    {
+      "conname": "kumeel_community_comments_body_check",
+      "nspname": "public",
+      "relname": "kumeel_community_comments",
+      "definition": "CHECK (char_length(btrim(body)) >= 10 AND char_length(btrim(body)) <= 2000)"
+    },
+    {
+      "conname": "kumeel_community_comments_status_check",
+      "nspname": "public",
+      "relname": "kumeel_community_comments",
+      "definition": "CHECK (status = ANY (ARRAY['pending'::text, 'published'::text, 'rejected'::text]))"
+    },
+    {
+      "conname": "kumeel_community_comments_pkey",
+      "nspname": "public",
+      "relname": "kumeel_community_comments",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "kumeel_community_comments_post_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_community_comments",
+      "definition": "FOREIGN KEY (post_id) REFERENCES kumeel_submissions(id)"
+    },
+    {
+      "conname": "kumeel_community_comments_author_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_community_comments",
+      "definition": "FOREIGN KEY (author_id) REFERENCES auth.users(id)"
+    },
+    {
+      "conname": "kumeel_public_comments_pkey",
+      "nspname": "public",
+      "relname": "kumeel_public_comments",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "kumeel_public_comments_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_public_comments",
+      "definition": "FOREIGN KEY (id) REFERENCES kumeel_community_comments(id)"
+    },
+    {
+      "conname": "kumeel_public_comments_post_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_public_comments",
+      "definition": "FOREIGN KEY (post_id) REFERENCES kumeel_community_posts(id) ON DELETE CASCADE"
+    },
+    {
+      "conname": "kumeel_review_log_pkey",
+      "nspname": "public",
+      "relname": "kumeel_review_log",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "kumeel_review_log_reviewer_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_review_log",
+      "definition": "FOREIGN KEY (reviewer_id) REFERENCES auth.users(id)"
+    },
+    {
+      "conname": "community_quota_pkey",
+      "nspname": "kumeel_private",
+      "relname": "community_quota",
+      "definition": "PRIMARY KEY (user_id)"
+    },
+    {
+      "conname": "community_quota_user_id_fkey",
+      "nspname": "kumeel_private",
+      "relname": "community_quota",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id)"
+    },
+    {
+      "conname": "chat_settings_id_check",
+      "nspname": "kumeel_private",
+      "relname": "chat_settings",
+      "definition": "CHECK (id = 1)"
+    },
+    {
+      "conname": "chat_settings_secret_hash_check",
+      "nspname": "kumeel_private",
+      "relname": "chat_settings",
+      "definition": "CHECK (secret_hash ~ '^[0-9a-f]{64}$'::text)"
+    },
+    {
+      "conname": "chat_settings_per_minute_check",
+      "nspname": "kumeel_private",
+      "relname": "chat_settings",
+      "definition": "CHECK (per_minute >= 1 AND per_minute <= 60)"
+    },
+    {
+      "conname": "chat_settings_per_day_check",
+      "nspname": "kumeel_private",
+      "relname": "chat_settings",
+      "definition": "CHECK (per_day >= 1 AND per_day <= 1000)"
+    },
+    {
+      "conname": "kumeel_teacher_applications_name_check",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "CHECK (char_length(btrim(name)) >= 2 AND char_length(btrim(name)) <= 60)"
+    },
+    {
+      "conname": "kumeel_teacher_applications_specialty_check",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "CHECK (char_length(btrim(specialty)) >= 3 AND char_length(btrim(specialty)) <= 120)"
+    },
+    {
+      "conname": "kumeel_teacher_applications_bio_check",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "CHECK (char_length(btrim(bio)) >= 80 AND char_length(btrim(bio)) <= 3000)"
+    },
+    {
+      "conname": "kumeel_teacher_applications_approach_check",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "CHECK (char_length(btrim(approach)) >= 30 AND char_length(btrim(approach)) <= 2000)"
+    },
+    {
+      "conname": "kumeel_teacher_applications_audience_check",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "CHECK (char_length(btrim(audience)) >= 3 AND char_length(btrim(audience)) <= 200)"
+    },
+    {
+      "conname": "kumeel_teacher_applications_languages_check",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "CHECK (char_length(btrim(languages)) >= 2 AND char_length(btrim(languages)) <= 120)"
+    },
+    {
+      "conname": "kumeel_teacher_applications_qualifications_check",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "CHECK (char_length(qualifications) <= 2000)"
+    },
+    {
+      "conname": "kumeel_teacher_applications_status_check",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "CHECK (status = ANY (ARRAY['pending'::text, 'published'::text, 'changes_requested'::text, 'rejected'::text]))"
+    },
+    {
+      "conname": "kumeel_teacher_applications_pkey",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "PRIMARY KEY (user_id)"
+    },
+    {
+      "conname": "kumeel_teacher_applications_user_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_teacher_applications",
+      "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id)"
+    },
+    {
+      "conname": "kumeel_teacher_profiles_pkey",
+      "nspname": "public",
+      "relname": "kumeel_teacher_profiles",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "kumeel_teacher_profiles_application_id_key",
+      "nspname": "public",
+      "relname": "kumeel_teacher_profiles",
+      "definition": "UNIQUE (application_id)"
+    },
+    {
+      "conname": "kumeel_teacher_profiles_application_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_teacher_profiles",
+      "definition": "FOREIGN KEY (application_id) REFERENCES kumeel_teacher_applications(user_id)"
+    },
+    {
+      "conname": "kumeel_published_reviewed_translations",
+      "nspname": "public",
+      "relname": "kumeel_published",
+      "definition": "CHECK (kumeel_valid_public_translations(content))"
+    },
+    {
+      "conname": "kumeel_writing_responses_writing_id_check",
+      "nspname": "public",
+      "relname": "kumeel_writing_responses",
+      "definition": "CHECK (char_length(writing_id) >= 1 AND char_length(writing_id) <= 150)"
+    },
+    {
+      "conname": "kumeel_writing_responses_author_name_check",
+      "nspname": "public",
+      "relname": "kumeel_writing_responses",
+      "definition": "CHECK (char_length(btrim(author_name)) >= 2 AND char_length(btrim(author_name)) <= 60)"
+    },
+    {
+      "conname": "kumeel_writing_responses_body_check",
+      "nspname": "public",
+      "relname": "kumeel_writing_responses",
+      "definition": "CHECK (char_length(btrim(body)) >= 10 AND char_length(btrim(body)) <= 2000)"
+    },
+    {
+      "conname": "kumeel_writing_responses_status_check",
+      "nspname": "public",
+      "relname": "kumeel_writing_responses",
+      "definition": "CHECK (status = ANY (ARRAY['pending'::text, 'published'::text, 'rejected'::text]))"
+    },
+    {
+      "conname": "kumeel_writing_responses_pkey",
+      "nspname": "public",
+      "relname": "kumeel_writing_responses",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "kumeel_writing_responses_author_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_writing_responses",
+      "definition": "FOREIGN KEY (author_id) REFERENCES auth.users(id)"
+    },
+    {
+      "conname": "kumeel_public_writing_responses_pkey",
+      "nspname": "public",
+      "relname": "kumeel_public_writing_responses",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "kumeel_public_writing_responses_id_fkey",
+      "nspname": "public",
+      "relname": "kumeel_public_writing_responses",
+      "definition": "FOREIGN KEY (id) REFERENCES kumeel_writing_responses(id)"
+    },
+    {
+      "conname": "kumeel_sparring_writing_id_check",
+      "nspname": "public",
+      "relname": "kumeel_sparring",
+      "definition": "CHECK (char_length(writing_id) >= 1 AND char_length(writing_id) <= 150)"
+    },
+    {
+      "conname": "kumeel_sparring_style_check",
+      "nspname": "public",
+      "relname": "kumeel_sparring",
+      "definition": "CHECK (style = ANY (ARRAY['logic'::text, 'history'::text, 'skeptic'::text]))"
+    },
+    {
+      "conname": "kumeel_sparring_pkey",
+      "nspname": "public",
+      "relname": "kumeel_sparring",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "owner_ai_limits_scope_check",
+      "nspname": "kumeel_private",
+      "relname": "owner_ai_limits",
+      "definition": "CHECK (scope = ANY (ARRAY['assist'::text, 'idea'::text]))"
+    },
+    {
+      "conname": "owner_ai_limits_cooldown_seconds_check",
+      "nspname": "kumeel_private",
+      "relname": "owner_ai_limits",
+      "definition": "CHECK (cooldown_seconds >= 1 AND cooldown_seconds <= 3600)"
+    },
+    {
+      "conname": "owner_ai_limits_per_day_check",
+      "nspname": "kumeel_private",
+      "relname": "owner_ai_limits",
+      "definition": "CHECK (per_day >= 1 AND per_day <= 2000)"
+    },
+    {
+      "conname": "owner_ai_limits_pkey",
+      "nspname": "kumeel_private",
+      "relname": "owner_ai_limits",
+      "definition": "PRIMARY KEY (scope)"
+    },
+    {
+      "conname": "owner_ai_quota_pkey",
+      "nspname": "kumeel_private",
+      "relname": "owner_ai_quota",
+      "definition": "PRIMARY KEY (actor, scope)"
+    },
+    {
+      "conname": "owner_ai_quota_actor_fkey",
+      "nspname": "kumeel_private",
+      "relname": "owner_ai_quota",
+      "definition": "FOREIGN KEY (actor) REFERENCES auth.users(id) ON DELETE CASCADE"
+    },
+    {
+      "conname": "owner_ai_quota_scope_fkey",
+      "nspname": "kumeel_private",
+      "relname": "owner_ai_quota",
+      "definition": "FOREIGN KEY (scope) REFERENCES kumeel_private.owner_ai_limits(scope)"
+    }
+  ]
+}

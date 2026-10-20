@@ -13,7 +13,8 @@ let home
 for(const [path,status] of [['/',200],['/about',200],['/writings',200],['/writings/peace-and-conflict',200],['/writings/feeling-and-conspiracy',200],['/writings/why-the-brain-deceives',200],['/admin',200],['/member',200],['/ideas/certainty',404],['/writings/meaning',404],['/sitemap.xml',200],['/robots.txt',200],['/api/chat',200]]){
  const response=await request(path)
  assert.equal(response.status,status,path)
- if(path==='/'){home=response.body;assert.ok(home.includes('عندما علمت بما لايجب'));assert.ok(home.includes('شعرت ولم أشعر'))}
+ if(path==='/'){home=response.body;assert.ok(home.includes('عرض كل الكتابات'))}
+ if(path==='/writings'){assert.ok(response.body.includes('عندما علمت بما لايجب'));assert.ok(response.body.includes('شعرت ولم أشعر'))}
  if(path==='/'||path==='/about'){
   assert.ok(response.body.includes(`rel="canonical" href="${base}${path}"`))
   assert.ok(response.body.includes('name="robots" content="index, follow"'))

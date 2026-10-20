@@ -1,6 +1,6 @@
 export type Locale='ar'|'en'
 export type ResolvedRoute={locale:Locale;path:string;supported:boolean}
-const englishPath=(path:string)=>['/','/about','/writings'].includes(path)||/^\/writings\/[^/]+$/.test(path)
+const englishPath=(path:string)=>['/','/music','/about','/writings','/observatory','/salon','/teachers','/community','/library','/explore','/member'].includes(path)||/^\/(writings|ideas|media|library)\/[^/]+$/.test(path)
 export function resolveLocalePath(pathname:string):ResolvedRoute{
  const raw=pathname.split(/[?#]/)[0]
  const normalized=raw.replace(/\/+$/,'')||'/'

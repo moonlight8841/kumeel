@@ -6,7 +6,7 @@ import {resolveLocalePath} from './i18n'
 import type {TranslationCatalogue} from './translation-records'
 export function contentForPage(content:Content,path:string,now=Date.now()):Content{
  const route=resolveLocalePath(path)
- const scoped=scopeArabicContent(content,route.locale==='en'&&route.path==='/'?'/writings':route.path,now)
+ const scoped=scopeArabicContent(content,route.path,now)
  if(path==='/admin')return scoped
  const translations:TranslationCatalogue={}
  if(content.translations?.bio)translations.bio=content.translations.bio

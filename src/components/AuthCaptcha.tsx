@@ -1,3 +1,4 @@
+import {L,useLocale} from '../lib/locale-ui'
 import { useEffect, useRef, useState } from 'react'
 import config from '../auth-config.json'
 import { captchaConfigured } from '../lib/auth-security'
@@ -12,6 +13,7 @@ function failureMessage(code: string) {
  return 'تعذّر إكمال التحقق. أعد المحاولة، أو افتح الموقع مباشرة في متصفح محدّث. إذا استمر الخطأ، جرّب دون مانع إعلانات أو VPN.'
 }
 export function AuthCaptcha({onToken}:{onToken:(token:string)=>void}) {
+ const locale=useLocale()
  const target=useRef<HTMLDivElement>(null)
  const [error,setError]=useState('')
  const [attempt,setAttempt]=useState(0)
@@ -21,7 +23,7 @@ export function AuthCaptcha({onToken}:{onToken:(token:string)=>void}) {
   const render=()=>{
    if(!active||!target.current||!window.turnstile||id)return
    try { id=window.turnstile.render(target.current,{
-    sitekey:config.turnstileSiteKey,theme:'light',language:'ar',size:'flexible',
+    sitekey:config.turnstileSiteKey,theme:'light',language:locale,size:'flexible',
     callback:(token:string)=>{if(active){setError('');onToken(token)}},
     'expired-callback':()=>{if(active){onToken('');setError('110600')}},
     'timeout-callback':()=>{if(active){onToken('');setError('110620')}},
@@ -37,6 +39,6 @@ export function AuthCaptcha({onToken}:{onToken:(token:string)=>void}) {
   } else {script.addEventListener('load',render);script.addEventListener('error',failed)}
   render()
   return()=>{active=false;script?.removeEventListener('load',render);script?.removeEventListener('error',failed);if(id)window.turnstile?.remove(id)}
- },[onToken,attempt])
- return captchaConfigured?<div className="auth-captcha"><div ref={target}/>{error&&<><p role="alert">{failureMessage(error)} {/^\d{6}$/.test(error)&&<span dir="ltr">({error})</span>}</p><button type="button" onClick={()=>{onToken('');setError('');setAttempt(v=>v+1)}}>إعادة التحقق</button></>}</div>:null
+ },[onToken,attempt,locale])
+ return captchaConfigured?<L.div className="auth-captcha"><L.div ref={target}/>{error&&<><L.p role="alert">{failureMessage(error)} {/^\d{6}$/.test(error)&&<L.span dir="ltr">({error})</L.span>}</L.p><L.button type="button" onClick={()=>{onToken('');setError('');setAttempt(v=>v+1)}}>إعادة التحقق</L.button></>}</L.div>:null
 }

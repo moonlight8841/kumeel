@@ -3,7 +3,7 @@ import {test} from 'node:test'
 import {createHandler,mediaUrl,fetchImage} from '../api/edit-assist.mjs'
 
 const owner={id:'owner-id',email:'komeil9060@gmail.com',email_confirmed_at:'2026-01-01'}
-const authorization='Bearer '+'a'.repeat(35)
+const authorization='Bearer '+Buffer.from('{"alg":"test"}').toString('base64url')+'.'+Buffer.from('{"aal":"aal2"}').toString('base64url')+'.test-signature'
 const bucket='https://jigypvbqiuakdatkzoul.supabase.co/storage/v1/object/public/kumeel-media/'
 const text='هذا نص للتدقيق اللغوي يحتوي على بعض الاخطاء البسيطة في الهمزات.'
 const quizQuestion={title:'ما الفكرة؟',options:['أ','ب','ج','د'],answer:1,why:'لأن النص يقول ذلك.'}

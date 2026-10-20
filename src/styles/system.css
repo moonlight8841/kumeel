@@ -43,11 +43,11 @@ code, kbd, samp { font-family: var(--font-mono); font-size: .9em; }
 /* ---------- Header ---------- */
 .header { gap: var(--space-4); border-bottom-color: var(--color-line); }
 .wordmark { font-family: var(--font-display); font-weight: 700; color: var(--color-text); }
-.header nav { gap: clamp(.75rem, 1.6vw, 1.75rem); font-size: var(--text-sm); }
-.header nav a { position: relative; color: var(--color-text-muted); transition: color var(--duration-fast) var(--ease-out); }
-.header nav a:hover, .header nav a[aria-current=page] { color: var(--color-text); }
-.header nav a:first-child:after { display: none; }
-.header nav a[aria-current=page]::after {
+.header > nav { gap: clamp(.75rem, 1.6vw, 1.75rem); font-size: var(--text-sm); }
+.header > nav a { position: relative; color: var(--color-text-muted); transition: color var(--duration-fast) var(--ease-out); }
+.header > nav a:hover, .header > nav a[aria-current=page] { color: var(--color-text); }
+.header > nav a:first-child:after { display: none; }
+.header > nav a[aria-current=page]::after {
   content: ''; position: absolute; inset-inline: 0; bottom: 4px;
   height: 2px; border-radius: 2px; background: var(--color-accent);
 }
@@ -58,7 +58,7 @@ code, kbd, samp { font-family: var(--font-mono); font-size: .9em; }
 .reading-mode select { border-color: var(--color-line-strong); }
 
 @media (max-width: 1000px) {
-  .header.tree-header nav {
+  .header.tree-header > nav {
     display: none; position: absolute; top: 100%; inset-inline: 0;
     z-index: var(--z-menu);
     flex-direction: column; align-items: stretch; gap: 0;
@@ -68,11 +68,11 @@ code, kbd, samp { font-family: var(--font-mono); font-size: .9em; }
     box-shadow: var(--shadow-md);
     font-size: var(--text-base);
   }
-  .header.tree-header nav.open { display: flex; }
-  .header.tree-header nav a { padding: var(--space-3) 0; border-bottom: 1px solid var(--color-line); }
-  .header.tree-header nav a:last-child { border-bottom: 0; }
-  .header.tree-header nav a[aria-current=page]::after { inset-inline: 0 auto; inset-block: 25%; bottom: auto; width: 3px; height: 50%; }
-  .header.tree-header nav a[aria-current=page] { padding-inline-start: var(--space-3); }
+  .header.tree-header > nav.open { display: flex; }
+  .header.tree-header > nav a { padding: var(--space-3) 0; border-bottom: 1px solid var(--color-line); }
+  .header.tree-header > nav a:last-child { border-bottom: 0; }
+  .header.tree-header > nav a[aria-current=page]::after { inset-inline: 0 auto; inset-block: 25%; bottom: auto; width: 3px; height: 50%; }
+  .header.tree-header > nav a[aria-current=page] { padding-inline-start: var(--space-3); }
   .header.tree-header .menu-toggle { display: inline-flex; align-items: center; justify-content: center; order: 3; font-size: 1.35rem; }
   .header.tree-header .header-tools { margin-inline-start: auto; }
 }

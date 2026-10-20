@@ -3,7 +3,7 @@ import {GoogleGenerativeAIAbortError} from '@google/generative-ai'
 import {createHandler} from '../api/generate-idea.mjs'
 const owner={id:'owner-id',email:'komeil9060@gmail.com',email_confirmed_at:'2026-01-01'}
 const output={title:'Idea',text:'Reasoning',question:'Why?',counterpoint:'Another view'}
-const authorization='Bearer '+ 'a'.repeat(35)
+const authorization='Bearer '+Buffer.from('{"alg":"test"}').toString('base64url')+'.'+Buffer.from('{"aal":"aal2"}').toString('base64url')+'.test-signature'
 async function run({method='POST',body={topic:'Certainty',method:'concept'},user=owner,member=true,key='test-key',generate=async()=>output,headers={authorization},limits=new Map()}={}){
  let calls=0;const fetcher=async url=>({ok:true,json:async()=>url.includes('/auth/')?user:member?[{user_id:owner.id}]:[]})
  const handler=createHandler({fetcher,env:{GEMINI_API_KEY:key},limits,generate:async(...args)=>{calls++;return generate(...args)}})
@@ -12,6 +12,8 @@ async function run({method='POST',body={topic:'Certainty',method:'concept'},user
 }
 assert.equal((await run({method:'GET'})).statusCode,405)
 assert.equal((await run({headers:{}})).statusCode,401)
+assert.equal((await run({headers:{authorization:'Bearer '+'a'.repeat(35)}})).statusCode,401)
+assert.equal((await run({headers:{authorization:authorization.replace(Buffer.from('{"aal":"aal2"}').toString('base64url'),Buffer.from('{"aal":"aal1"}').toString('base64url'))}})).statusCode,403)
 for(const user of [{...owner,email:'visitor@example.com'},{...owner,email_confirmed_at:null}]){const result=await run({user});assert.equal(result.statusCode,403);assert.equal(result.calls,0)}
 assert.equal((await run({member:false})).statusCode,403)
 assert.equal((await run({body:{topic:'x'.repeat(1001)}})).statusCode,400)

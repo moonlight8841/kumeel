@@ -13,6 +13,7 @@ import {ThoughtEditor} from './ThoughtEditor'
 import {adminNav,adminTabs,parseAdminTab,type AdminTab} from '../lib/admin'
 import {AdminOverview} from './admin/AdminOverview'
 import {AdminSettings} from './admin/AdminSettings'
+import {AdminMusic} from './admin/AdminMusic'
 import {AdminArrange} from './admin/AdminArrange'
 import {AdminBackup} from './admin/AdminBackup'
 import {AdminAssist} from './admin/AdminAssist'
@@ -86,6 +87,7 @@ export function AdminPanel({content,revision,draft=false,onSave,onPublish}:Props
      {tab==='engine'&&<IdeaEngine content={content} save={commit}/>}
      {tab==='assist'&&<AdminAssist content={content} save={commit}/>}
      {tab==='settings'&&<AdminSettings key={JSON.stringify([content.site,content.bio])} content={content} save={commit} onDirtyChange={setSettingsDirty}/>}
+     {tab==='music'&&<AdminMusic key={JSON.stringify(content.site?.music)} content={content} save={commit} onDirtyChange={setSettingsDirty}/>}
      {tab==='thoughts'&&<ThoughtEditor content={content} onSave={commit}/>}
      {tab==='writings'&&<NotebookEditor content={content} save={commit} onDirtyChange={setNotebookDirty}/>}
      {tab==='learning'&&<LearningEditor content={content} save={commit}/>}

@@ -8,6 +8,27 @@ try {
   const { render } = await server.ssrLoadModule('/src/entry-server.tsx')
   const { parseAdminTab, contentHealth, contentStats, adminTabs } = await server.ssrLoadModule('/src/lib/admin.ts')
   const { isCurrentPath } = await server.ssrLoadModule('/src/lib/navigation.ts')
+  const {reflectionExcerpts}=await server.ssrLoadModule('/src/lib/reflection.ts')
+
+  await test('Reflection preserves source attribution, bounded excerpts and an accessible pause control without media downloads',()=>{
+    const writing={id:'a/b',title:'Source title',text:'word '.repeat(100),category:'فلسفة'}
+    const [excerpt]=reflectionExcerpts([writing])
+    assert.ok(excerpt.text.endsWith('…'));assert.ok(excerpt.text.length<=221)
+    assert.equal(excerpt.source,writing.title);assert.equal(excerpt.href,'/writings/a%2Fb')
+    assert.equal(reflectionExcerpts([{...writing,text:'  '}]).length,0)
+    const html=render(initialContent,'/')
+    assert.ok(html.includes('sky-reflection'))
+    assert.ok(html.includes('تقليل الحركة مفعّل'))
+    assert.ok(!html.includes('<audio'))
+    assert.ok(!html.includes('<video'))
+    assert.ok(!html.includes('music-dock'))
+    const music=render(initialContent,'/music')
+    assert.ok(music.includes('music-library'))
+    assert.ok(music.includes('music-dock is-inline'))
+    assert.ok(!music.includes('<iframe'))
+    assert.ok(!html.includes('src="https://bandcamp.com/EmbeddedPlayer/'))
+    assert.ok(!html.includes('bandcamp.com/EmbeddedPlayer/'))
+  })
 
   await test('Site themes: every declared theme validates, unknown themes are rejected', () => {
     for (const theme of ['olive', 'ink', 'sage']) assert.equal(validContent({ ...initialContent, site: { ...initialContent.site, theme } }), true)
@@ -19,7 +40,7 @@ try {
     const sections = initialContent.site.sections
     const reordered = [sections.find(s => s.key === 'quote'), ...sections.filter(s => s.key !== 'quote')]
     const html = render({ ...initialContent, site: { ...initialContent.site, sections: reordered } }, '/')
-    assert.ok(html.indexOf('home-quote') > -1 && html.indexOf('home-quote') < html.indexOf('hero-name'), 'quote should precede hero')
+    assert.ok(html.indexOf('sky-reflection') > -1 && html.indexOf('sky-reflection') < html.indexOf('hero-name'), 'quote should precede hero')
     const hidden = sections.map(s => (s.key === 'writings' ? { ...s, visible: false } : s))
     assert.ok(!render({ ...initialContent, site: { ...initialContent.site, sections: hidden } }, '/').includes('أحدث ما كُتب'))
     assert.ok(render(initialContent, '/').includes('أحدث ما كُتب'))

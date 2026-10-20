@@ -1,3 +1,4 @@
+import {L,useLocale} from '../lib/locale-ui'
 import {useEffect,useRef,useState,type FormEvent} from 'react'
 
 type Source={title:string;href:string}
@@ -9,6 +10,7 @@ const starters=['ما الفكرة التي تتكرر في المواد الم�
 function restore():Message[]{try{const v:unknown=JSON.parse(sessionStorage.getItem(STORAGE)||'[]');return Array.isArray(v)?v.filter((m):m is Message=>m&&typeof m==='object'&&['user','model'].includes(m.role)&&typeof m.text==='string').slice(-16):[]}catch{return []}}
 
 export function ReaderChat(){
+ const locale=useLocale()
  const [enabled,setEnabled]=useState(false)
  const [open,setOpen]=useState(false)
  const [messages,setMessages]=useState<Message[]>([])
@@ -32,7 +34,7 @@ export function ReaderChat(){
   const history:Message[]=[...messages,{role:'user',text:question}]
   setMessages(history);setInput('');setBusy(true);setError('')
   try{
-   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history.slice(-16).map(({role,text})=>({role,text:text.slice(0,800)}))})})
+   const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({locale,messages:history.slice(-16).map(({role,text})=>({role,text:text.slice(0,800)}))})})
    const body=await response.json().catch(()=>null)
    if(!response.ok||!body?.success)throw new Error(typeof body?.error==='string'?body.error:'تعذّر الحصول على إجابة.')
    setMessages(m=>[...m,{role:'model',text:body.data.answer,sources:body.data.sources,followUp:body.data.followUp||undefined}])
@@ -45,28 +47,28 @@ export function ReaderChat(){
 
  if(!enabled)return null
  return <>
-  <button ref={launcherRef} className="chat-launcher" aria-expanded={open} aria-controls="reader-chat" onClick={()=>setOpen(!open)}><span aria-hidden="true">{open?'✕':'❝'}</span><span>{open?'إغلاق المحاور':'اسأل الكتابات'}</span></button>
-  {open&&<section id="reader-chat" className="chat-panel" role="dialog" aria-modal="false" aria-labelledby="chat-title">
-   <header className="chat-head">
-    <div><h2 id="chat-title">محاور الكتابات</h2><p>يجيب من نصوص المنصة فقط، ويحيلك إليها.</p></div>
-    <button className="chat-close" aria-label="إغلاق" onClick={()=>{setOpen(false);launcherRef.current?.focus()}}>✕</button>
-   </header>
-   <ol ref={listRef} className="chat-log" aria-live="polite">
-    {!messages.length&&<li className="chat-welcome"><p>اسأل عن فكرة أو نص أو كتاب في المنصة. سأجيب مما كُتب هنا، وأقترح عليك من أين تقرأ.</p><div className="chat-starters">{starters.map(s=><button key={s} onClick={()=>void send(s)}>{s}</button>)}</div></li>}
-    {messages.map((m,i)=><li key={i} className={`chat-msg is-${m.role}`}>
-     <p>{m.text}</p>
-     {m.sources&&m.sources.length>0&&<div className="chat-sources"><span>من المنصة:</span>{m.sources.map(s=><a key={s.href+s.title} href={s.href}>{s.title}</a>)}</div>}
-     {m.followUp&&i===messages.length-1&&<button className="chat-follow" onClick={()=>{setInput(m.followUp??'');inputRef.current?.focus()}}>{m.followUp}</button>}
-    </li>)}
-    {busy&&<li className="chat-msg is-model is-typing" aria-label="المحاور يكتب"><span/><span/><span/></li>}
-   </ol>
-   {error&&<p className="chat-error" role="alert">{error}</p>}
-   <form className="chat-form" onSubmit={submit}>
-    <label className="sr-only" htmlFor="chat-input">سؤالك</label>
-    <textarea id="chat-input" ref={inputRef} rows={2} maxLength={MAX} value={input} placeholder="اكتب سؤالك…" onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send(input)}}}/>
-    <button className="primary" disabled={busy||!input.trim()} aria-label="إرسال">↑</button>
-   </form>
-   <footer className="chat-foot"><span>إجابات آلية عبر Gemini وقد تخطئ؛ النص الأصلي هو المرجع. لا نحفظها على الخادم.</span>{messages.length>0&&<button onClick={()=>{setMessages([]);setError('')}}>محادثة جديدة</button>}</footer>
-  </section>}
+  <L.button ref={launcherRef} className="chat-launcher" aria-expanded={open} aria-controls="reader-chat" onClick={()=>setOpen(!open)}><L.span aria-hidden="true">{open?'✕':'❝'}</L.span><L.span>{open?'إغلاق المحاور':'اسأل الكتابات'}</L.span></L.button>
+  {open&&<L.section id="reader-chat" className="chat-panel" role="dialog" aria-modal="false" aria-labelledby="chat-title">
+   <L.header className="chat-head">
+    <L.div><L.h2 id="chat-title">محاور الكتابات</L.h2><L.p>يجيب من نصوص المنصة فقط، ويحيلك إليها.</L.p></L.div>
+    <L.button className="chat-close" aria-label="إغلاق" onClick={()=>{setOpen(false);launcherRef.current?.focus()}}>✕</L.button>
+   </L.header>
+   <L.ol ref={listRef} className="chat-log" aria-live="polite">
+    {!messages.length&&<L.li className="chat-welcome"><L.p>اسأل عن فكرة أو نص أو كتاب في المنصة. سأجيب مما كُتب هنا، وأقترح عليك من أين تقرأ.</L.p><L.div className="chat-starters">{starters.map(s=><L.button key={s} onClick={()=>void send(s)}>{s}</L.button>)}</L.div></L.li>}
+    {messages.map((m,i)=><L.li key={i} className={`chat-msg is-${m.role}`}>
+     <L.p>{m.text}</L.p>
+     {m.sources&&m.sources.length>0&&<L.div className="chat-sources"><L.span>من المنصة:</L.span>{m.sources.map(s=><L.a key={s.href+s.title} href={s.href}>{s.title}</L.a>)}</L.div>}
+     {m.followUp&&i===messages.length-1&&<L.button className="chat-follow" onClick={()=>{setInput(m.followUp??'');inputRef.current?.focus()}}>{m.followUp}</L.button>}
+    </L.li>)}
+    {busy&&<L.li className="chat-msg is-model is-typing" aria-label="المحاور يكتب"><L.span/><L.span/><L.span/></L.li>}
+   </L.ol>
+   {error&&<L.p className="chat-error" role="alert">{error}</L.p>}
+   <L.form className="chat-form" onSubmit={submit}>
+    <L.label className="sr-only" htmlFor="chat-input">سؤالك</L.label>
+    <L.textarea id="chat-input" ref={inputRef} rows={2} maxLength={MAX} value={input} placeholder="اكتب سؤالك…" onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();void send(input)}}}/>
+    <L.button className="primary" disabled={busy||!input.trim()} aria-label="إرسال">↑</L.button>
+   </L.form>
+   <L.footer className="chat-foot"><L.span>إجابات آلية عبر Gemini وقد تخطئ؛ النص الأصلي هو المرجع. لا نحفظها على الخادم.</L.span>{messages.length>0&&<L.button onClick={()=>{setMessages([]);setError('')}}>محادثة جديدة</L.button>}</L.footer>
+  </L.section>}
  </>
 }

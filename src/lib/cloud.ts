@@ -1,17 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 import config from '../supabase-config.json'
 import { validContent } from '../content'
-import { tabAuthStorage } from './auth-security'
+import { tabAuthStorage, authCallbackFlow } from './auth-security'
 import {adoptApprovedWritings} from './publication'
 import {validOwnerDraft,publicPayload,type OwnerDraft} from './translations'
 import {resolvePublishedTranslations} from './localized-content'
+import {validateBookPdf} from './book-upload'
 
 if (typeof window !== 'undefined') {
   try { localStorage.removeItem('sb-jigypvbqiuakdatkzoul-auth-token') } catch { /* Old persistent sessions are no longer used. */ }
 }
 
 export const supabase = createClient(config.url, config.publishableKey, {
-  auth: { storageKey: 'kumeel-auth-v2', storage: tabAuthStorage, flowType: 'pkce', persistSession: typeof window !== 'undefined', autoRefreshToken: typeof window !== 'undefined', detectSessionInUrl: typeof window !== 'undefined' },
+  auth: { storageKey: 'kumeel-auth-v2', storage: tabAuthStorage, flowType: typeof window !== 'undefined' ? authCallbackFlow(window.location.hash) : 'pkce', persistSession: typeof window !== 'undefined', autoRefreshToken: typeof window !== 'undefined', detectSessionInUrl: typeof window !== 'undefined' },
 })
 export async function readPublished() {
   const { data, error } = await supabase.from('kumeel_published').select('content,revision').eq('id', 'main').single()
@@ -61,4 +62,15 @@ export async function uploadMedia(file: File) {
   const { error } = await supabase.storage.from('kumeel-media').upload(path, file, { upsert: false, contentType: file.type })
   if (error) throw error
   return supabase.storage.from('kumeel-media').getPublicUrl(path).data.publicUrl
+}
+export async function uploadBook(file:File){
+ await validateBookPdf(file)
+ const {data:user,error:userError}=await supabase.auth.getUser()
+ if(userError||!user.user?.email_confirmed_at)throw new Error('سجّل الدخول بحساب إدارة مؤكّد البريد.')
+ const {data:assurance,error:assuranceError}=await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+ if(assuranceError||assurance.currentLevel!=='aal2')throw new Error('أكمل التحقق الثنائي قبل رفع الكتاب.')
+ const path=`books/${user.user.id}/${crypto.randomUUID()}.pdf`
+ const {error}=await supabase.storage.from('kumeel-books').upload(path,file,{contentType:'application/pdf',upsert:false,cacheControl:'3600'})
+ if(error)throw new Error('تعذّر رفع الكتاب. تحقق من الاتصال وصلاحية الإدارة ثم حاول مجددًا.')
+ return {url:supabase.storage.from('kumeel-books').getPublicUrl(path).data.publicUrl,bytes:file.size}
 }

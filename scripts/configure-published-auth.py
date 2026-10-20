@@ -15,7 +15,9 @@ try:
             urls.append(target)
     admin.request('/config/auth', {'site_url': origin, 'uri_allow_list': ','.join(urls)}, 'PATCH')
     verified = admin.request('/config/auth')
-    print(json.dumps({'updated': True, 'site_url_matches': verified.get('site_url') == origin, 'redirect_allowed': origin + '/admin' in verified.get('uri_allow_list', '')}))
+    allowed = {item.strip() for item in (verified.get('uri_allow_list') or '').split(',')}
+    checks = {'site_url_matches': verified.get('site_url') == origin, 'redirect_allowed': origin + '/admin' in allowed, 'recovery_redirect_allowed': origin + '/admin?reset=1' in allowed}
+    print(json.dumps({'updated': all(checks.values()), **checks}))
 except urllib.error.HTTPError as error:
     print(json.dumps({'updated': False, 'status': error.code}))
 except KeyError:

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { initialContent } from './content'
 import {validOwnerDraft as validContent,type OwnerDraft as Content} from './lib/translations'
 import {resolvePublishedTranslations} from './lib/localized-content'
 import {resolveLocalePath} from './lib/i18n'
-import {EnglishPages} from './components/EnglishPages'
+import {LocaleContext} from './lib/locale-ui'
+import {englishContent} from './lib/english-content'
 import './styles/languages.css'
 import './styles/tokens.css'
 import './App.css'
@@ -23,14 +24,24 @@ import { readPublished } from './lib/cloud'
 import {HomeShowcase} from './components/HomeShowcase'
 import {ReaderChat} from './components/ReaderChat'
 import {readerContent} from './lib/publication'
-function App({ startingContent = initialContent, startingPath = '/' }: { startingContent?: Content; startingPath?: string }) {
+import {ReflectionMusic} from './components/ReflectionMusic'
+import {MusicPage} from './components/MusicPage'
+import {SiteFooter} from './components/SiteFooter'
+import {useMusicNavigation} from './lib/music-navigation'
+function App({ startingContent = initialContent, startingPath: initialPath = '/' }: { startingContent?: Content; startingPath?: string }) {
+ const [startingPath,setPath]=useState(initialPath)
+ const [musicSelected,setMusicSelected]=useState<string|null>(null)
  const [content, setContent] = useState<Content>(startingContent)
  const [notice, setNotice] = useState('')
  const [draft, setDraft] = useState(false)
  const [revision, setRevision] = useState<number | null>(null)
+ const navigate=useCallback((next:Content,path:string)=>{setContent(next);setPath(path);setDraft(false);setNotice('')},[])
+ useMusicNavigation(musicSelected!==null,navigate)
  useEffect(() => { let active=true;try { const saved = localStorage.getItem('kumeel-journal-v1'); if (saved) { const parsed: unknown = JSON.parse(saved); if (validContent(parsed)) { if(startingPath==='/admin'){setContent(parsed);setDraft(true)}else void resolvePublishedTranslations(parsed).then(next=>{if(active){setContent(next);setDraft(true)}}) } } } catch { setNotice('تعذّر تحميل المسودة المحفوظة.') }return()=>{active=false} }, [startingPath])
  useEffect(() => { if(startingPath!=='/admin'&&document.getElementById('kumeel-content'))return; let active = true; readPublished().then(result => { if (!active) return; setRevision(result.revision); let hasDraft = false; try { hasDraft = validContent(JSON.parse(localStorage.getItem('kumeel-journal-v1') || 'null')) } catch { /* Invalid local data must not hide a published update. */ } if (!hasDraft) setContent(result.content) }).catch(() => { if (active) setNotice('تعذّر تحديث النسخة المنشورة؛ نعرض آخر نسخة متاحة.') }); return () => { active = false } }, [startingPath])
- const visibleContent = startingPath === '/admin' ? content : readerContent(content)
+ const locale=resolveLocalePath(startingPath).locale
+ const publicContent=startingPath === '/admin' ? content : readerContent(content)
+ const visibleContent = locale==='en'?englishContent(publicContent):publicContent
  const page = pageInfo(visibleContent, startingPath)
  useEffect(() => {
    const info = pageInfo(startingPath === '/admin' ? content : readerContent(content), startingPath)
@@ -59,9 +70,7 @@ function App({ startingContent = initialContent, startingPath = '/' }: { startin
  }, [content, startingPath, draft])
  function save(next: Content) { if (!validContent(next)) { setNotice('المحتوى غير صالح أو تجاوز حدود الدفتر. راجع الحقول والروابط.'); return false } try { localStorage.setItem('kumeel-journal-v1', JSON.stringify(next)); setContent(next); setDraft(true); setNotice('حُفظت المسودة على هذا المتصفح.'); return true } catch { setNotice('لم يتم الحفظ؛ مساحة المتصفح غير كافية. صدّر نسخة من محتواك.'); return false } }
  const site = withLibrary(content.site ?? defaultSite)
- if(resolveLocalePath(startingPath).locale==='en')return <div className={`site-shell theme-${site.theme}`}><EnglishPages content={visibleContent} pathname={startingPath}/><div lang="ar" dir="rtl"><ReaderChat/></div></div>
  if (page.kind === 'admin') return <AdminPanel content={content} revision={revision} draft={draft} onSave={save} onPublish={(next, version) => { setContent(next); setRevision(version); setDraft(false); try { localStorage.removeItem('kumeel-journal-v1') } catch { /* Published state is authoritative. */ } }} />
- if (page.kind !== 'home') return <div className={`site-shell theme-${site.theme}`}><PublicationPage content={visibleContent} info={page} /><ReaderChat/>{draft && <div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}</div>
- return <div className={`site-shell theme-${site.theme}`}><HomeShowcase content={visibleContent}/><ReaderChat/>{draft&&<div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}<div role="status" className={notice?'toast':''} onClick={()=>setNotice('')}>{notice}</div></div>
+ return <LocaleContext.Provider value={locale}><div className={`site-shell theme-${site.theme}`}><div key={startingPath}>{page.kind==='music'?<MusicPage content={visibleContent} path={startingPath} selected={musicSelected} onSelect={setMusicSelected}/>:page.kind==='home'?<HomeShowcase content={visibleContent}/>:<PublicationPage content={visibleContent} info={page}/>}</div><ReflectionMusic tracks={site.music} selected={musicSelected} onSelect={setMusicSelected} inline={page.kind==='music'}/>{page.kind==='music'&&<SiteFooter/>}<ReaderChat/>{draft&&<div className="draft-banner">تُعرض مسودتك المحلية · لم تُنشر على الإنترنت</div>}<div role="status" className={notice?'toast':''} onClick={()=>setNotice('')}>{notice}</div></div></LocaleContext.Provider>
 }
 export default App

@@ -14,3 +14,16 @@
 .english-footer{padding-block:2rem;border-block-start:1px solid var(--line)}.english-footer nav{display:flex;flex-wrap:wrap;gap:1rem;margin-block:1rem}
 .translation-editors{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}.translation-editors textarea{width:100%;min-height:18rem}
 @media(max-width:640px){.english-header{gap:1rem}.english-header>nav:not(.language-switch){order:3;flex-basis:100%}.translation-editors{grid-template-columns:1fr}.header-tools{flex-wrap:wrap}}
+
+/* The English edition shares the complete reading experience and warm identity. */
+html[lang=en] .site-shell{--font-ui:var(--font-latin-ui);--font-display:var(--font-latin-serif);--font-reading:var(--font-latin-serif)}
+html[lang=en] .wordmark{letter-spacing:-2px;font-size:42px}
+html[lang=en] .hero h2{font-size:clamp(42px,5.2vw,72px);line-height:1.15;letter-spacing:-1.6px}
+html[lang=en] .hero-copy>p,html[lang=en] .publication-lead{line-height:1.8}
+html[lang=en] .publication-text p{line-height:1.9}
+html[lang=en] .hero-secondary{margin-right:0;margin-left:25px}
+html[lang=en] .publication-counterpoint,html[lang=en] .publication-question{border-right:0;border-left:2px solid var(--accent)}
+html[lang=en] .preserve-lines[lang=ar]{text-align:right}
+html[lang=en] .tree-header nav{gap:clamp(10px,1.5vw,24px)}
+html[lang=en] .tree-header .wordmark{flex-shrink:0}
+@media(max-width:1000px){html[lang=en] .tree-header .wordmark{font-size:34px}}

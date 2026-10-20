@@ -56,24 +56,24 @@ const system=`أنت «محاور كتابات كميل»، دليل قراءة 
 
 const schema={type:SchemaType.OBJECT,properties:{answer:{type:SchemaType.STRING},sources:{type:SchemaType.ARRAY,items:{type:SchemaType.STRING}},followUp:{type:SchemaType.STRING}},required:['answer','sources']}
 
-const chatSystem=corpus=>jsonInstruction(`${system}
+const chatSystem=(corpus,locale='ar')=>jsonInstruction(`${locale==='en'?system.replace('بالعربية الفصحى الواضحة','بالإنجليزية الواضحة'):system}
 
 وثائق المنصة (JSON):
 ${JSON.stringify(corpus.map(({id,title,body})=>({id,title,body})))}`,schema)
 
-function geminiAnswer({messages,corpus,env}){
+function geminiAnswer({messages,corpus,env,locale}){
  if(!env.GEMINI_API_KEY)return Promise.reject(Object.assign(new Error('gemini-off'),{status:503}))
  const contents=messages.map(m=>({role:m.role,parts:[{text:m.text}]}))
  // A reader is waiting: give up after ~20s, then the backup provider answers.
  return withModelFallback(env,async name=>{
- const model=new GoogleGenerativeAI(env.GEMINI_API_KEY).getGenerativeModel({model:name,systemInstruction:chatSystem(corpus),generationConfig:{...thinkingFor(name),responseMimeType:'application/json',maxOutputTokens:1024,temperature:.4}})
+ const model=new GoogleGenerativeAI(env.GEMINI_API_KEY).getGenerativeModel({model:name,systemInstruction:chatSystem(corpus,locale),generationConfig:{...thinkingFor(name),responseMimeType:'application/json',maxOutputTokens:1024,temperature:.4}})
  const result=await model.generateContent({contents},{timeout:12000})
  return parseModelJson(result.response.text())
  },{budgetMs:20_000})
 }
 
-export function answer({messages,corpus,env}){
- return generateWithProviders({env,gemini:()=>geminiAnswer({messages,corpus,env}),cloudflare:{system:chatSystem(corpus),messages,maxTokens:800,temperature:.4,timeoutMs:15_000}})
+export function answer({messages,corpus,env,locale}){
+ return generateWithProviders({env,gemini:()=>geminiAnswer({messages,corpus,env,locale}),cloudflare:{system:chatSystem(corpus),messages,maxTokens:800,temperature:.4,timeoutMs:15_000}})
 }
 
 async function defaultCorpus(clock){
@@ -101,7 +101,7 @@ export function createHandler({env=process.env,fetcher=fetch,generate=answer,loa
   const state=await quota({secret:env.CHAT_RATE_SECRET,visitor:visitorKey(req,env.CHAT_RATE_SECRET),fetcher})
   if(state!=='ok'){if(limitMessages[state]){res.setHeader('Retry-After',state==='minute'?'60':'3600');return fail(429,limitMessages[state])}return fail(503,'تعذّر التحقق من حدود الاستخدام. أعد المحاولة لاحقًا.')}
   const corpus=await loadCorpus(clock)
-  const data=await generate({messages,corpus,env})
+  const data=await generate({messages,corpus,env,locale:body.locale==='en'?'en':'ar'})
   if(!data||typeof data.answer!=='string'||!data.answer.trim()||data.answer.length>3000||!Array.isArray(data.sources))return fail(502,'تعذّر تكوين إجابة. أعد صياغة السؤال.')
   // Only documents that exist can be cited; the model never supplies links.
   const byId=new Map(corpus.map(d=>[d.id,d]))

@@ -4,7 +4,7 @@ import {booksFor} from '../books'
 import {isStarterWriting} from './publication'
 
 const n=(value:number)=>value.toLocaleString('ar-SA')
-export type AdminTab='teachers'|'overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'assist'|'settings'|'arrange'|'publish'|'backup'
+export type AdminTab='music'|'teachers'|'overview'|'writings'|'thoughts'|'learning'|'books'|'community'|'engine'|'assist'|'settings'|'arrange'|'publish'|'backup'
 export type AdminNavItem={key:AdminTab;label:string;icon:string;hint:string;ownerOnly?:boolean}
 export type AdminNavGroup={label:string;items:AdminNavItem[]}
 
@@ -24,6 +24,7 @@ export const adminNav:AdminNavGroup[]=[
   {key:'assist',label:'مساعد التحرير',icon:'✧',hint:'تدقيق ووصف صور وملخصات وأسئلة — اقتراحات تراجعها قبل الحفظ'},
  ]},
  {label:'الموقع',items:[
+  {key:'music',label:'الموسيقى والفيديو',icon:'♫',hint:'إضافة روابط YouTube وتعديلها وحذفها'},
   {key:'settings',label:'الهوية والتصميم',icon:'◐',hint:'الواجهة والمظهر وأقسام الرئيسية'},
   {key:'arrange',label:'ترتيب المحتوى',icon:'⇅',hint:'ترتيب العناصر وإزالتها'},
  ]},

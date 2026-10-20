@@ -1,3 +1,4 @@
+import {L} from '../../lib/locale-ui'
 import {useEffect,useId,useState} from 'react'
 import {supabase} from '../../lib/cloud'
 import {communityError} from '../../lib/community'
@@ -31,22 +32,22 @@ export function TeacherApplicationForm({userId}:{userId:string}){
   finally{setBusy(false)}
  }
 
- return <section id="teacher-application" className="teacher-apply" aria-labelledby={`${id}-title`}>
-  <header><span className="section-label">مجلس التعلّم</span><h2 id={`${id}-title`}>صفحتك كمعلم</h2><p>صفحة تعريفية يراجعها فريق الإدارة قبل نشرها في <a href="/teachers">مجلس التعلّم</a>. لا تضع أرقام تواصل أو بيانات طلاب أو وثائق حساسة في النصوص العامة.</p></header>
-  <div className={`teacher-status is-${state.tone}`} role="status"><strong>{loading?'جارٍ تحميل طلبك…':state.label}</strong>{!loading&&<p>{state.text}</p>}{item.review_note&&<blockquote><b>ملاحظة الإدارة:</b> {item.review_note}</blockquote>}</div>
-  <div className="teacher-apply-grid">
-   <form className="teacher-apply-form" noValidate onSubmit={e=>{e.preventDefault();if(editable)void submit()}}>
-    <fieldset disabled={!editable}>
-     {teacherFields.map(f=>{const error=touched?errors[f.key]:undefined;const value=item[f.key]??'';const fieldId=`${id}-${f.key}`;return <label key={f.key} className={`teacher-field${f.private?' is-private':''}`} htmlFor={fieldId}>
-      <span className="teacher-field-label">{f.label}{f.min>0?<i aria-hidden="true"> *</i>:<small> (اختياري)</small>}{f.private&&<em>خاص بالإدارة</em>}</span>
-      {f.multiline?<textarea id={fieldId} rows={f.key==='bio'?6:4} maxLength={f.max} value={value} aria-invalid={Boolean(error)} aria-describedby={`${fieldId}-hint`} onChange={e=>setItem({...item,[f.key]:e.target.value})}/>
-      :<input id={fieldId} maxLength={f.max} value={value} aria-invalid={Boolean(error)} aria-describedby={`${fieldId}-hint`} onChange={e=>setItem({...item,[f.key]:e.target.value})}/>}
-      <span id={`${fieldId}-hint`} className="teacher-field-hint"><span className={error?'is-error':''}>{error??f.hint}</span><span className="teacher-count">{value.trim().length.toLocaleString('ar-SA')}{f.min>0&&value.trim().length<f.min?` / ${f.min.toLocaleString('ar-SA')}`:''}</span></span>
-     </label>})}
-     <div className="teacher-apply-actions"><button className="primary" disabled={busy}>{busy?'جارٍ الإرسال…':item.status?'أرسل التعديل للمراجعة':'أرسل الطلب للمراجعة'}</button><span role="status">{message}</span></div>
-    </fieldset>
-   </form>
-   <aside className="teacher-apply-preview" aria-label="معاينة الصفحة العامة"><span className="teacher-preview-label">هكذا تظهر بطاقتك</span><TeacherCard teacher={item} preview/></aside>
-  </div>
- </section>
+ return <L.section id="teacher-application" className="teacher-apply" aria-labelledby={`${id}-title`}>
+  <L.header><L.span className="section-label">مجلس التعلّم</L.span><L.h2 id={`${id}-title`}>صفحتك كمعلم</L.h2><L.p>صفحة تعريفية يراجعها فريق الإدارة قبل نشرها في <L.a href="/teachers">مجلس التعلّم</L.a>. لا تضع أرقام تواصل أو بيانات طلاب أو وثائق حساسة في النصوص العامة.</L.p></L.header>
+  <L.div className={`teacher-status is-${state.tone}`} role="status"><L.strong>{loading?'جارٍ تحميل طلبك…':state.label}</L.strong>{!loading&&<L.p>{state.text}</L.p>}{item.review_note&&<L.blockquote><L.b>ملاحظة الإدارة:</L.b> {item.review_note}</L.blockquote>}</L.div>
+  <L.div className="teacher-apply-grid">
+   <L.form className="teacher-apply-form" noValidate onSubmit={e=>{e.preventDefault();if(editable)void submit()}}>
+    <L.fieldset disabled={!editable}>
+     {teacherFields.map(f=>{const error=touched?errors[f.key]:undefined;const value=item[f.key]??'';const fieldId=`${id}-${f.key}`;return <L.label key={f.key} className={`teacher-field${f.private?' is-private':''}`} htmlFor={fieldId}>
+      <L.span className="teacher-field-label">{f.label}{f.min>0?<L.i aria-hidden="true"> *</L.i>:<L.small> (اختياري)</L.small>}{f.private&&<L.em>خاص بالإدارة</L.em>}</L.span>
+      {f.multiline?<L.textarea id={fieldId} rows={f.key==='bio'?6:4} maxLength={f.max} value={value} aria-invalid={Boolean(error)} aria-describedby={`${fieldId}-hint`} onChange={e=>setItem({...item,[f.key]:e.target.value})}/>
+      :<L.input id={fieldId} maxLength={f.max} value={value} aria-invalid={Boolean(error)} aria-describedby={`${fieldId}-hint`} onChange={e=>setItem({...item,[f.key]:e.target.value})}/>}
+      <L.span id={`${fieldId}-hint`} className="teacher-field-hint"><L.span className={error?'is-error':''}>{error??f.hint}</L.span><L.span className="teacher-count">{value.trim().length.toLocaleString('ar-SA')}{f.min>0&&value.trim().length<f.min?` / ${f.min.toLocaleString('ar-SA')}`:''}</L.span></L.span>
+     </L.label>})}
+     <L.div className="teacher-apply-actions"><L.button className="primary" disabled={busy}>{busy?'جارٍ الإرسال…':item.status?'أرسل التعديل للمراجعة':'أرسل الطلب للمراجعة'}</L.button><L.span role="status">{message}</L.span></L.div>
+    </L.fieldset>
+   </L.form>
+   <L.aside className="teacher-apply-preview" aria-label="معاينة الصفحة العامة"><L.span className="teacher-preview-label">هكذا تظهر بطاقتك</L.span><TeacherCard teacher={item} preview/></L.aside>
+  </L.div>
+ </L.section>
 }

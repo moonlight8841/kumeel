@@ -1,4 +1,5 @@
-export type SectionKey = 'hero' | 'story' | 'writings' | 'explore' | 'observatory' | 'salon' | 'teachers' | 'library' | 'quote' | 'contact'
+export type SectionKey = 'music' | 'hero' | 'story' | 'writings' | 'explore' | 'observatory' | 'salon' | 'teachers' | 'library' | 'quote' | 'contact'
+import {validMusic,type MusicTrack} from './lib/music'
 export const siteThemes = [
   { key: 'olive', label: 'ورقي دافئ', note: 'الهوية الأصلية: ورق عتيق وحبر طيني', swatches: ['#f7f1e6', '#944b38', '#42352e'] },
   { key: 'ink', label: 'حبر أزرق', note: 'هادئ وأكاديمي لقراءة طويلة', swatches: ['#f2f4f6', '#2f5d86', '#243746'] },
@@ -7,7 +8,7 @@ export const siteThemes = [
 export type SiteTheme = typeof siteThemes[number]['key']
 export type SiteSettings = {
   heroTitle: string; heroSubtitle: string; heroImage: string; heroImageAlt: string;
-  quote: string; quoteSource: string; contactTitle: string;
+  quote: string; quoteSource: string; contactTitle: string; music?:MusicTrack[];
   email: string; tiktok: string; whatsapp: string;
   showEmail: boolean; showTiktok: boolean; showWhatsapp: boolean;
   newsletterUrl?:string; theme: SiteTheme; sections: { key: SectionKey; label: string; visible: boolean }[];
@@ -23,12 +24,13 @@ export const defaultSite: SiteSettings = {
     { key: 'writings', label: 'كتاباتي', visible: true }, { key: 'explore', label: 'اكتشف', visible: true },
     { key: 'observatory', label: 'مرصد الأفكار', visible: true }, { key: 'salon', label: 'مجلس الحوار', visible: true },
     { key: 'teachers', label: 'مجلس التعلّم', visible: true }, { key: 'library', label: 'مكتبة الكتب', visible: true },
+    { key: 'music', label: 'الموسيقى والفيديو', visible: true },
     { key: 'quote', label: 'فكرة للتأمل', visible: true }, { key: 'contact', label: 'تواصل', visible: true },
   ],
 }
 // Sections added after launch. Stored settings may predate them, so they are
 // optional in validation and inserted next to their default neighbour on read.
-export const laterSections:SectionKey[]=['library','teachers']
+export const laterSections:SectionKey[]=['library','teachers','music']
 export function withLibrary(site:SiteSettings):SiteSettings{
  let sections=[...site.sections]
  for(const key of laterSections){
@@ -45,6 +47,7 @@ export function withLibrary(site:SiteSettings):SiteSettings{
 export function validSite(value: unknown): value is SiteSettings {
   if (!value || typeof value !== 'object') return false
   const s = value as SiteSettings
+  if(s.music!==undefined&&!validMusic(s.music))return false
   const str = (v: unknown, max: number) => typeof v === 'string' && v.length <= max
   const image = (v: unknown) => typeof v === 'string' && (/^\/images\/[^\s]+$/.test(v) || (() => { try { const url = new URL(v); return v.length <= 2000 && url.protocol === 'https:' && !url.username && !url.password && ![...v].some(c => c.charCodeAt(0) <= 32) } catch { return false } })())
   return (s.newsletterUrl===undefined||s.newsletterUrl===''||(/^https:\/\//.test(s.newsletterUrl)&&image(s.newsletterUrl))) && str(s.heroTitle, 300) && Boolean(s.heroTitle.trim()) && str(s.heroSubtitle, 1000) && image(s.heroImage) && str(s.heroImageAlt, 500) && str(s.quote, 1500) && str(s.quoteSource, 500) && str(s.contactTitle, 300) && str(s.email, 254) && (!s.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.email)) && str(s.tiktok, 24) && (!s.tiktok || /^[a-zA-Z0-9_.]{1,24}$/.test(s.tiktok)) && str(s.whatsapp, 15) && (!s.whatsapp || /^[1-9][0-9]{6,14}$/.test(s.whatsapp)) && [s.showEmail, s.showTiktok, s.showWhatsapp].every(v => typeof v === 'boolean') && siteThemes.some(t => t.key === s.theme) && Array.isArray(s.sections) && s.sections.length >= defaultSite.sections.length - laterSections.length && s.sections.length <= defaultSite.sections.length && defaultSite.sections.filter(d=>!laterSections.includes(d.key)).every(d=>s.sections.some(v=>v?.key===d.key)) && s.sections.every(v => v && defaultSite.sections.some(d => d.key === v.key) && str(v.label, 60) && typeof v.visible === 'boolean') && new Set(s.sections.map(v => v.key)).size === s.sections.length && s.sections.some(v => v.visible)

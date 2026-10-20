@@ -8,7 +8,7 @@ try{
   assert.deepEqual(resolveLocalePath('/en/about'),{locale:'en',path:'/about',supported:true})
   assert.deepEqual(resolveLocalePath('/en/'),{locale:'en',path:'/',supported:true})
   assert.deepEqual(resolveLocalePath('/admin'),{locale:'ar',path:'/admin',supported:true})
-  for(const path of ['/en/admin','/en/library','/en/en/about','/en/member','/en/writings/a/b'])assert.equal(resolveLocalePath(path).supported,false,path)
+  for(const path of ['/en/admin','/en/en/about','/en/writings/a/b'])assert.equal(resolveLocalePath(path).supported,false,path)
   assert.equal(resolveLocalePath('/english').locale,'ar')
   assert.equal(resolveLocalePath('/en/writings/a%20b?x=1').path,'/writings/a%20b')
   assert.equal(localePath('en','/'),'/en/')
@@ -27,24 +27,24 @@ try{
  const {render}=await server.ssrLoadModule('/src/entry-server.tsx')
  const {initialContent}=await server.ssrLoadModule('/src/content.ts')
  const {sourceDigest}=await server.ssrLoadModule('/src/lib/source-hash.mjs')
- await test('English public rendering never substitutes Arabic or private drafts for translations',async()=>{
+ await test('English rendering prefers approved translations and labels original-language content without exposing drafts',async()=>{
   const base={...initialContent,writings:[{id:'a',title:'العنوان الأصلي',text:'النص الأصلي',category:'فلسفة'}]}
   const hash=await sourceDigest(base,'writing:a')
   const published={...base,translations:{'writing:a':{locale:'en',title:'English title',text:'The reviewed text.',sourceHash:hash}}}
   assert.ok(render(base,'/en/').includes('Kumeel Al Nahab'))
-  assert.ok(render(base,'/en/writings').includes('No English translations'))
-  assert.ok(render(base,'/en/about').includes('awaiting review'))
+  assert.ok(render(base,'/en/writings').includes('href="/en/writings/a"'))
+  assert.ok(!render(base,'/en/about').includes('awaiting review'))
   const detail=render(published,'/en/writings/a')
   assert.ok(detail.includes('The reviewed text.'))
   assert.ok(!detail.includes('النص الأصلي'))
   assert.ok(detail.includes('href="/writings/a"'))
-  assert.ok(render(base,'/en/writings/a').includes('Translation not found'))
+  assert.ok(render(base,'/en/writings/a').includes('shown in its original Arabic'))
   assert.ok(render({...published,translationDrafts:{bio:{text:'PRIVATE-SENTINEL'}}},'/en/').includes('English title'))
   assert.ok(!render({...published,translationDrafts:{bio:{text:'PRIVATE-SENTINEL'}}},'/en/').includes('PRIVATE-SENTINEL'))
  })
  const {pageInfo,publicPaths,renderHead,replaceHead}=await server.ssrLoadModule('/src/lib/pages.ts')
  const {resolvePublishedTranslations}=await server.ssrLoadModule('/src/lib/localized-content.ts')
- await test('English SEO only pairs current published translations and preserves the Arabic author identity',async()=>{
+ await test('English SEO pairs translated articles and preserves the Arabic author identity',async()=>{
   const base={...initialContent,writings:[{id:'a',title:'أصل',text:'النص الأصلي',category:'فلسفة'}]}
   const translated={...base,translations:{'writing:a':{locale:'en',title:'English title',text:'Translated text.',sourceHash:await sourceDigest(base,'writing:a')}}}
   const origin='https://kumeelalnahab.com'
@@ -61,9 +61,9 @@ try{
   assert.equal(article.author['@id'],origin+'/#person')
   assert.equal((replaceHead('<head>'+head+'</head>',head).match(/hreflang="en"/g)||[]).length,1)
   assert.ok(publicPaths(translated).includes('/en/writings/a'))
-  assert.ok(!publicPaths(base).includes('/en/about'))
-  assert.equal(pageInfo(base,'/en/about').noindex,true)
-  assert.equal(pageInfo(base,'/en/writings/a').kind,'missing')
+  assert.ok(publicPaths(base).includes('/en/about'))
+  assert.equal(pageInfo(base,'/en/about').noindex,false)
+  assert.equal(pageInfo(base,'/en/writings/a').noindex,true)
   assert.equal(pageInfo(base,'/en/admin').kind,'missing')
   const stale=await resolvePublishedTranslations({...translated,writings:[{...base.writings[0],title:'تغيير'}]})
   assert.ok(!publicPaths(stale).includes('/en/writings/a'))

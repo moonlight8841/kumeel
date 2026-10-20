@@ -1,3 +1,4 @@
+import {L} from '../lib/locale-ui'
 import {useState,type FormEvent} from 'react'
 import {supabase} from '../lib/cloud'
 import {MIN_PASSWORD_LENGTH,validNewPassword} from '../lib/auth-security'
@@ -25,5 +26,5 @@ export function PasswordResetForm({onDone}:{onDone:()=>void}){
   }catch(error){setMessage(error instanceof Error?error.message:'تعذّر إكمال الاستعادة.')}
   finally{setBusy(false)}
  }
- return <section className="login-card"><h2>تعيين كلمة مرور جديدة</h2><p>اختر عبارة طويلة وفريدة لا تستخدمها في حساب آخر.</p><form onSubmit={submit} aria-busy={busy}><label htmlFor="recovery-password">كلمة المرور الجديدة</label><input id="recovery-password" name="password" type="password" autoComplete="new-password" required minLength={MIN_PASSWORD_LENGTH} maxLength={128} disabled={busy}/><label htmlFor="recovery-confirm">تأكيد كلمة المرور</label><input id="recovery-confirm" name="confirm" type="password" autoComplete="new-password" required minLength={MIN_PASSWORD_LENGTH} maxLength={128} disabled={busy}/><button className="primary" disabled={busy}>{busy?'جارٍ الحفظ…':'حفظ كلمة المرور الجديدة'}</button><p role="status">{message}</p></form></section>
+ return <L.section className="login-card"><L.h2>تعيين كلمة مرور جديدة</L.h2><L.p>اختر عبارة طويلة وفريدة لا تستخدمها في حساب آخر.</L.p><L.form onSubmit={submit} aria-busy={busy}><L.label htmlFor="recovery-password">كلمة المرور الجديدة</L.label><L.input id="recovery-password" name="password" type="password" autoComplete="new-password" required minLength={MIN_PASSWORD_LENGTH} maxLength={128} disabled={busy}/><L.label htmlFor="recovery-confirm">تأكيد كلمة المرور</L.label><L.input id="recovery-confirm" name="confirm" type="password" autoComplete="new-password" required minLength={MIN_PASSWORD_LENGTH} maxLength={128} disabled={busy}/><L.button className="primary" disabled={busy}>{busy?'جارٍ الحفظ…':'حفظ كلمة المرور الجديدة'}</L.button><L.p role="status">{message}</L.p></L.form></L.section>
 }
