@@ -63,7 +63,7 @@ export async function handleRequest(request,env){
  if(path==='/api/stream-chat')return apiResponse(request,createStreamChat({env}))
  if(path.startsWith('/api/'))return Response.json({success:false,error:'المسار غير موجود.'},{status:404})
  if(!['GET','HEAD'].includes(request.method))return new Response(null,{status:405,headers:{Allow:'GET, HEAD'}})
- if(path==='/robots.txt')return new Response(request.method==='HEAD'?null:`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /member\nSitemap: ${origin}/sitemap.xml\n`,{headers:{'Content-Type':'text/plain; charset=utf-8'}})
+ if(path==='/robots.txt')return new Response(request.method==='HEAD'?null:`User-agent: *\nContent-Signal: search=yes, ai-input=yes, ai-train=no\nAllow: /\nDisallow: /admin\nDisallow: /member\nSitemap: ${origin}/sitemap.xml\n`,{headers:{'Content-Type':'text/plain; charset=utf-8'}})
  // Static resources bypass rendering; HTML routes always use current published data.
  if(/\.[a-z0-9]+$/i.test(path)&&!['/index.html','/sitemap.xml','/llms.txt'].includes(path))return env.ASSETS.fetch(request)
  const {content,fresh}=await loadContent()

@@ -26,6 +26,7 @@ if(process.env.WORKER_TEST_URL){
   }
   if(path==='/api/chat')assert.equal(JSON.parse(body).enabled,process.env.CHAT_EXPECTED_ENABLED==='true')
   if(path==='/sitemap.xml')assert.ok(!body.includes('/ideas/certainty'))
+  if(path==='/robots.txt')assert.ok(body.includes('Content-Signal: search=yes, ai-input=yes, ai-train=no'))
   if(path==='/llms.txt'){assert.match(body,/^# /);assert.ok(body.includes(`(${process.env.WORKER_EXPECTED_ORIGIN||'https://kumeelalnahab.com'}/about)`));assert.ok(!body.includes('/admin')&&!body.includes('/member')&&!body.includes('/ideas/certainty'))}
   console.log(`Workers runtime: ${status} ${path}`)
  }
