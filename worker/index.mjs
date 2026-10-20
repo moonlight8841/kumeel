@@ -9,6 +9,15 @@ import {createHandler as createStreamChat} from '../api/stream-chat.mjs'
 
 const safeJson=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')
 const xmlEscape=value=>value.replace(/[<>&"']/g,char=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'})[char])
+// llms.txt (https://llmstxt.org): a Markdown map of the public pages for AI tools, built from the sitemap's paths.
+function llmsText(edition,origin){
+ const pages=publicPaths(edition).filter(p=>p!=='/en'&&!p.startsWith('/en/')).map(p=>pageInfo(edition,p))
+ const home=pageInfo(edition,'/')
+ const line=info=>`- [${info.title.split(' | ')[0].replace(/[[\]]/g,'')}](${origin}${info.path}): ${info.description.replace(/\s+/g,' ')}`
+ const sections=pages.filter(info=>info.path!=='/'&&!info.path.slice(1).includes('/'))
+ const items=pages.filter(info=>info.path.slice(1).includes('/'))
+ return `# ${home.title.split(' | ')[0]}\n\n> ${home.description}\n\nThe site is written in Arabic; English versions live under ${origin}/en/. Full page list: ${origin}/sitemap.xml\n\n## الأقسام\n\n${sections.map(line).join('\n')}\n\n## المحتوى\n\n${items.map(line).join('\n')}\n`
+}
 async function loadContent(){
  try{
   const response=await fetch(`${config.url}/rest/v1/kumeel_published?id=eq.main&select=content`,{headers:{apikey:config.publishableKey},signal:AbortSignal.timeout(5000)})
@@ -56,13 +65,14 @@ export async function handleRequest(request,env){
  if(!['GET','HEAD'].includes(request.method))return new Response(null,{status:405,headers:{Allow:'GET, HEAD'}})
  if(path==='/robots.txt')return new Response(request.method==='HEAD'?null:`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /member\nSitemap: ${origin}/sitemap.xml\n`,{headers:{'Content-Type':'text/plain; charset=utf-8'}})
  // Static resources bypass rendering; HTML routes always use current published data.
- if(/\.[a-z0-9]+$/i.test(path)&&!['/index.html','/sitemap.xml'].includes(path))return env.ASSETS.fetch(request)
+ if(/\.[a-z0-9]+$/i.test(path)&&!['/index.html','/sitemap.xml','/llms.txt'].includes(path))return env.ASSETS.fetch(request)
  const {content,fresh}=await loadContent()
  const edition=path==='/admin'?content:readerContent(content)
  if(path==='/sitemap.xml'){
   const xml=`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${publicPaths(edition).map(p=>`<url><loc>${xmlEscape(origin+p)}</loc></url>`).join('')}</urlset>`
   return new Response(request.method==='HEAD'?null:xml,{headers:{'Content-Type':'application/xml; charset=utf-8','Cache-Control':fresh?'public, max-age=60':'no-store'}})
  }
+ if(path==='/llms.txt')return new Response(request.method==='HEAD'?null:llmsText(edition,origin),{headers:{'Content-Type':'text/markdown; charset=utf-8','Cache-Control':fresh?'public, max-age=300':'no-store'}})
  const pathname=path==='/index.html'?'/':path
  const info=pageInfo(edition,pathname)
  const scoped=contentForPage(edition,pathname)

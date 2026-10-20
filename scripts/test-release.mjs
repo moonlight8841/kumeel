@@ -14,7 +14,7 @@ console.log('Reader edition excludes templates, preserves the owner notebook, an
 
 if(process.env.WORKER_TEST_URL){
  const base=process.env.WORKER_TEST_URL
- for(const [path,status] of [['/',200],['/admin',200],['/writings',200],['/observatory',200],['/ideas/certainty',404],['/writings/meaning',404],['/missing-page',404],['/robots.txt',200],['/sitemap.xml',200],['/api/chat',200]]){
+ for(const [path,status] of [['/',200],['/admin',200],['/writings',200],['/observatory',200],['/ideas/certainty',404],['/writings/meaning',404],['/missing-page',404],['/robots.txt',200],['/sitemap.xml',200],['/llms.txt',200],['/api/chat',200]]){
   const response=await fetch(base+path,{signal:AbortSignal.timeout(20000)})
   const body=await response.text()
   assert.equal(response.status,status,path)
@@ -26,6 +26,7 @@ if(process.env.WORKER_TEST_URL){
   }
   if(path==='/api/chat')assert.equal(JSON.parse(body).enabled,process.env.CHAT_EXPECTED_ENABLED==='true')
   if(path==='/sitemap.xml')assert.ok(!body.includes('/ideas/certainty'))
+  if(path==='/llms.txt'){assert.match(body,/^# /);assert.ok(body.includes(`(${process.env.WORKER_EXPECTED_ORIGIN||'https://kumeelalnahab.com'}/about)`));assert.ok(!body.includes('/admin')&&!body.includes('/member')&&!body.includes('/ideas/certainty'))}
   console.log(`Workers runtime: ${status} ${path}`)
  }
  const origin=process.env.WORKER_EXPECTED_ORIGIN||'https://kumeelalnahab.com'
